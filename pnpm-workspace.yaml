@@ -1,0 +1,11 @@
+packages:
+  - .
+saveExact: true
+engineStrict: true
+storeDir: .pnpm-store
+allowBuilds:
+  unrs-resolver: true
+  esbuild: true
+  sharp: true
+minimumReleaseAgeExclude:
+  - lucide-react@1.48.0
