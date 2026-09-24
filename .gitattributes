@@ -1,0 +1,15 @@
+# Normalize detected text to LF; leave binary content untouched.
+* text=auto eol=lf
+
+# Generated files and output are not normalized.
+next-env.d.ts -text
+pnpm-lock.yaml -text
+*.tsbuildinfo -text
+*.log -text
+node_modules/** -text
+.pnpm-store/** -text
+.next/** -text
+out/** -text
+coverage/** -text
+playwright-report/** -text
+test-results/** -text
