@@ -7,6 +7,7 @@ import { getPricingView } from "@/config/pricing";
 import { isE2EAuthBypassEnabled } from "@/lib/auth/e2e";
 
 export const metadata = { title: "App", robots: { index: false, follow: false } };
+export const dynamic = "force-dynamic";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pricing = getPricingView();
@@ -15,5 +16,5 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     ? <PreviewAppShell pricing={pricing} supportEmail={supportEmail}>{children}</PreviewAppShell>
     : <AuthenticatedAppShell pricing={pricing} supportEmail={supportEmail}>{children}</AuthenticatedAppShell>;
 
-  return <Suspense fallback={<div className="site-container py-12"><PageSkeleton/></div>}>{shell}</Suspense>;
+  return <Suspense fallback={<div className="site-container py-12"><PageSkeleton/></div>}><>{shell}</></Suspense>;
 }
