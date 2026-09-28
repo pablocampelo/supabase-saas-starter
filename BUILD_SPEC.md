@@ -1,7 +1,7 @@
 # DaysNotWeeks — BUILD_SPEC
 
 - **Status:** IMPLEMENTATION CONTRACT
-- **Target:** DaysNotWeeks V1
+- **Target:** DaysNotWeeks V1 Scope 1.1
 - **Date:** 2026-09-24
 - **Canonical product contract:** `docs/product/V1_SCOPE.md`
 - **Precedence:** `V1_SCOPE.md` wins over this document if any conflict exists.
@@ -15,31 +15,22 @@ Before implementation, reconcile the design discussion against the canonical V1 
 
 ### 0.1 Auth methods
 
-The canonical V1 scope supports:
+V1 Scope 1.1 supports exactly three auth paths under Supabase Auth:
 
-- email + password signup/login
-- email verification
-- resend verification
-- forgot password
-- reset password
-- session/logout
-- safe callback/return handling
+- Google OAuth signup/login
+- magic-link signup/login
+- email/password signup/login with verification, resend, and forgot/reset password
+
+All three share Supabase identity/session handling, logout, and safe callback/internal-return handling. Email/password remains a supported fallback. Same-email behavior across methods must follow Supabase's supported guarantees/configuration and be documented and tested; never add unsafe manual account linking by email.
 
 The canonical V1 scope explicitly keeps the following **POST-V1**:
 
-- Google OAuth
-- magic-link login
-- additional auth providers
+- additional OAuth providers beyond Google
 - MFA / SSO
 
-Therefore:
+Alternative auth frameworks remain outside V1; Supabase Auth is the sole identity authority.
 
-- **Do not implement Google OAuth in V1.**
-- **Do not render Google buttons in V1 auth screens.**
-- **Do not require Google client IDs/secrets in `.env.example`.**
-- The visual mockups that contain Google are design references only and must be corrected in implementation.
-
-Any decision to include Google requires a versioned scope change before code.
+The approved V1.1 amendment includes Google OAuth and magic link in C02/PC02/AC02 and G2. Document Google project/consent/callback configuration and SMTP/link delivery per environment. Buyers may disable methods through configuration, but the DNW release must support, document, and test all three. This does not expand Phase 0 beyond foundations.
 
 ### 0.2 Notes entitlement
 
@@ -505,7 +496,7 @@ Recommended anchors:
 /auth/error
 ```
 
-No OAuth provider routes in V1.
+`/login` and `/signup` expose Google OAuth, magic link, and email/password. Use the shared `/auth/callback` for supported OAuth/link completion and safe internal returns, with `/auth/error` for recoverable failures. Verification and password recovery retain their routes above; magic-link request/sent/resend states can live within the existing auth screens. Additional OAuth providers remain outside V1.
 
 ## 7.3 Authenticated app
 
@@ -638,7 +629,7 @@ Six capability cards:
 
 ### Authentication
 
-`Email/password signup, verification, resend, recovery, sessions, logout, and safe callbacks.`
+`Google OAuth, magic-link login, and email/password with verification and recovery, shared sessions, logout, and safe callbacks.`
 
 ### Private data
 
@@ -771,7 +762,7 @@ Questions:
 
 Answers must remain truthful to `V1_SCOPE.md`.
 
-Do not mention Google OAuth as included.
+Describe Google OAuth, magic link, and email/password as supported V1.1 scope; distinguish approved scope from actual implementation and verified release evidence.
 
 ## 8.7 Final CTA
 
@@ -830,21 +821,23 @@ All auth screens use the approved Taxonomy-like composition:
 - Funnel Sans heading
 - Inter UI
 - 40px controls
-- no OAuth divider/button in V1
+- Google OAuth and magic-link entry options alongside email/password on login/signup
 
 ## 9.1 Login
 
 Heading: `Welcome back`
 
-Subtitle: `Enter your email and password to sign in to your account.`
+Subtitle: `Sign in with Google, an email link, or your password.`
 
-Fields:
+Email/password fields:
 
 - Email
 - Password
 
 Actions:
 
+- Continue with Google
+- Send magic link (email required; no password required)
 - Forgot password?
 - Sign in
 - Don't have an account? Sign up
@@ -856,6 +849,9 @@ States:
 - unverified account
 - expired session
 - safe return destination
+- OAuth pending, canceled, or failed
+- magic-link sending, sent, not received, resend/cooldown, or expired/reused
+- invalid callback with a safe retry path
 
 ## 9.2 Signup
 
@@ -863,7 +859,7 @@ Heading: `Create an account`
 
 Subtitle: `Create your account to get started.`
 
-Fields:
+Email/password fields:
 
 - Name
 - Email
@@ -876,9 +872,9 @@ Actions:
 - Privacy
 - Already have an account? Sign in
 
-Do not render Google.
+Also offer `Continue with Google` and `Send magic link` (email required; no password required), with the same safe pending/error/retry states as login. Google and magic link may unify signup/login where supported by Supabase; do not require password creation for these paths.
 
-After successful signup, require/handle verification according to configured Supabase email-confirmation behavior and show Verify Email state.
+After successful email/password signup, require/handle verification according to configured Supabase email-confirmation behavior and show Verify Email state. Magic-link requests show a check-email state with safe resend/cooldown feedback; successful Google/link completion establishes the shared session and preserves the permitted internal destination.
 
 ## 9.3 Verify email
 
@@ -1038,7 +1034,7 @@ Show:
 - email verified state
 - Manage account
 
-Do not show Google connected.
+Any displayed Google connection state must reflect the verified Supabase identity; do not invent a connection or add manual account-linking controls.
 
 ## 10.5 Upgrade surface
 
@@ -1563,7 +1559,7 @@ Required:
 
 # 17. Auth architecture
 
-Supabase is identity authority.
+Supabase Auth is the sole identity authority for Google OAuth, magic-link login, and email/password with verification/reset. All three use a common session and safe callback/return policy; do not add another auth framework or manually merge accounts by email. Document and test Supabase-supported same-email behavior across methods.
 
 Use server-side auth helpers compatible with App Router.
 
@@ -1592,7 +1588,7 @@ Fallback: `/app`
 
 ## 17.2 Enumeration safety
 
-Forgot-password and resend-verification flows should avoid disclosing whether an arbitrary email belongs to an account beyond what Supabase/product constraints require.
+Magic-link requests/resends, forgot-password and resend-verification flows should avoid disclosing whether an arbitrary email belongs to an account beyond what Supabase/product constraints require.
 
 ## 17.3 Rate/abuse protection
 
@@ -1790,7 +1786,7 @@ Auth email/SMTP-related external configuration notes
 Test/staging-only values where needed
 ```
 
-No Google OAuth variables in V1.
+Document Google OAuth project/consent/credentials and callback URLs per environment, alongside SMTP delivery for verification, reset, and magic links. Distinguish provider-side configuration from app environment values; never expose provider secrets in browser-safe variables. This is configuration guidance for the auth slice, not a change to Phase 0 environment implementation.
 
 Use env validation split correctly between browser-safe and server-only values.
 
@@ -1872,6 +1868,8 @@ Canonical agent/human engineering contract:
 - local
 - Supabase
 - SMTP/Auth
+- Google OAuth project/consent/callback configuration per environment
+- magic-link delivery, resend/cooldown, and supported same-email behavior across auth methods
 - Stripe test
 - Vercel
 - callbacks
@@ -1958,9 +1956,11 @@ Test:
 
 ## 27.2 Auth
 
-Against hosted staging Supabase and controlled mailbox:
+Against hosted staging Supabase, a controlled mailbox, and Google test/staging credentials:
 
-- signup
+- Google OAuth signup/login, cancellation, and failure
+- magic-link signup/login, resend, and cooldown
+- email/password signup
 - verification
 - resend
 - login
@@ -1968,7 +1968,10 @@ Against hosted staging Supabase and controlled mailbox:
 - expired/reused link
 - expired session
 - safe return path
+- invalid callback and external return rejection across methods
+- same-email behavior across methods without cross-account access or unsafe manual linking
 - logout
+- safe logout failure
 - edit name
 
 ## 27.3 RLS
@@ -2072,7 +2075,7 @@ Pass:
 
 Pass:
 
-- hosted auth flow real
+- real hosted Google OAuth, magic-link, and email/password flows
 - DB A/B/anon real
 - verification/reset
 - RLS
@@ -2157,6 +2160,8 @@ Deliver:
 - migrations
 - profiles
 - auth UI
+- Google OAuth signup/login
+- magic-link signup/login with sent/resend/cooldown states
 - signup/verify/resend/login
 - forgot/reset
 - session/logout
@@ -2255,8 +2260,8 @@ Append this to every implementation prompt:
 
 Before merge/release verify absence of:
 
-- Google OAuth
-- magic-link login
+- OAuth providers other than Google
+- MFA / SSO
 - teams
 - organizations
 - workspaces

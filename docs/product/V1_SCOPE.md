@@ -1,11 +1,11 @@
 # DaysNotWeeks — V1_SCOPE
 
-- **Versión:** V1 Scope 1.0
-- **Fecha de aprobación:** 2026-09-13
+- **Versión:** V1 Scope 1.1
+- **Fecha de aprobación:** 2026-09-14
 - **Estado:** APPROVED / IMPLEMENTATION NOT STARTED
 - **Ruta canónica:** `docs/product/V1_SCOPE.md`
 - **Aprobación:** decisión explícita de producto de Pablo en esta conversación.
-- **Base aprobada:** DaysNotWeeks-V1-scope-candidate-v0.2.md, sin modificaciones de alcance.
+- **Base aprobada:** V1 Scope 1.0 + decisión explícita de producto del 2026-09-14 que incorpora Google OAuth y magic-link login a C02/PC02/AC02 para reducir fricción de autenticación. El resto del alcance permanece sin cambios.
 
 ## Gobierno del scope
 
@@ -13,11 +13,17 @@ Este documento es la definición definitiva y canónica de DaysNotWeeks V1. Form
 
 **Regla de cambio:** cualquier modificación de PC/AC/AR requiere una decisión explícita de producto y una actualización versionada del scope. Ningún ADR, plan de implementación, backlog o instrucción de Engineering puede modificar implícitamente estos contratos, sus fronteras P2/REJECTED, el posicionamiento o sus criterios/gates de aceptación. Los cambios aprobados deben quedar registrados con versión, fecha, decisión e IDs afectados.
 
-**Regla de precedencia:** V1 Scope 1.0 es la autoridad vigente. No existe ningún requisito implícito heredado de v0.1. v0.1 y v0.2 permanecen como artefactos históricos; no se suman al alcance canónico. PC01–PC13, AC01–AC10 y AR01–AR12, junto con las fronteras, el posicionamiento y los gates aquí preservados, definen el contrato aprobado.
+**Regla de precedencia:** V1 Scope 1.1 es la autoridad vigente. No existe ningún requisito implícito heredado de v0.1. v0.1 y v0.2 permanecen como artefactos históricos; no se suman al alcance canónico. PC01–PC13, AC01–AC10 y AR01–AR12, junto con las fronteras, el posicionamiento y los gates aquí preservados, definen el contrato aprobado.
 
 **Separación de Engineering:** los IMPLEMENTATION_CANDIDATES IC01–IC26 de §8 son inputs no vinculantes para futuros ADRs. Se preservan como ideas, no como requisitos V1 ni autorización para implementar funciones P2. Aprobar un mecanismo técnico no autoriza cambios de producto.
 
-**Estado de ejecución:** aprobación de scope no equivale a implementación, despliegue o superación de gates. La deuda de evidencia continúa abierta según §15. El documento está listo para handoff a Control Tower y Engineering; no se ha enviado a terceros ni iniciado trabajo de código.
+**Estado de ejecución:** aprobación de scope no equivale a implementación, despliegue o superación de gates. La deuda de evidencia continúa abierta según §15. El documento está listo para handoff a Control Tower, Product Design y Engineering; no se ha iniciado trabajo de código de V1.1.
+
+### Amendment V1.1 — autenticación de mínima fricción
+
+Decisión aprobada el 2026-09-14: **Google OAuth y magic-link login pasan de POST-V1 a V1 P0 dentro de C02**. Email/password con verificación y reset se mantiene como fallback soportado. Supabase Auth continúa siendo la única autoridad de identidad; no se añade un segundo framework de autenticación.
+
+Objetivo de producto: reducir al mínimo razonable la fricción tanto de registro como de acceso. La V1 entrega tres caminos soportados —Google OAuth, magic link y email/password— con una sesión común, retorno interno seguro, manejo coherente de errores y pruebas reales de callbacks/links. El cambio amplía únicamente C02/PC02/AC02, sus journeys, documentación y gates asociados; no reabre billing, organizations, blog, leads ni otros P2.
 
 ### Historial y referencias
 
@@ -25,7 +31,8 @@ Este documento es la definición definitiva y canónica de DaysNotWeeks V1. Form
 | --- | --- | --- |
 | [DaysNotWeeks-V1-scope-proposal-v0.1.md](sandbox:/workspace/scratch/8ffc827dad6a/output/DaysNotWeeks-V1-scope-proposal-v0.1.md) | Propuesta amplia y análisis de fase 3 | Histórico; no añade requisitos |
 | [DaysNotWeeks-V1-scope-candidate-v0.2.md](sandbox:/workspace/scratch/8ffc827dad6a/output/DaysNotWeeks-V1-scope-candidate-v0.2.md) | Candidata reducida aprobada por producto | Fuente íntegra del alcance ratificado |
-| V1 Scope 1.0 — 2026-09-13 | Canonización de v0.2 y regla de gobierno | APPROVED / IMPLEMENTATION NOT STARTED; sin cambio de alcance |
+| V1 Scope 1.0 — 2026-09-13 | Canonización de v0.2 y regla de gobierno | Histórico aprobado; sustituido por V1 Scope 1.1 |
+| V1 Scope 1.1 — 2026-09-14 | Amendment de autenticación de baja fricción | APPROVED / IMPLEMENTATION NOT STARTED; Google OAuth + magic link pasan de P2 a V1 |
 
 SHA-256 del artefacto histórico v0.2 aprobado: `3b3abd32d03edc0eba53369f8fc7bdc822ca72cdd13f6347abb750ed5f90ea89`.
 
@@ -33,15 +40,15 @@ Evidencia de referencia: [auditoría ShipFast](sandbox:/workspace/scratch/8ffc82
 
 Las secciones de red-team y comparación conservan el razonamiento de v0.2 como trazabilidad. Las menciones a «candidata» dentro de ese razonamiento describen su origen histórico; el estado vigente es APPROVED. Las observaciones del baseline y los claims pendientes de evidencia no pasan a ser funcionalidades implementadas por esta aprobación.
 
-## 1. Cambios frente a v0.1 y red-team individual
+## 1. Cambios frente a v0.1 y red-team individual — actualizado por V1.1
 
 ### 1.1 Recortes reales
 
-| Área | v0.1 | v0.2 |
+| Área | v0.1 | V1.1 vigente |
 | --- | --- | --- |
 | Monetización | Recurrente y one-time/lifetime, dos perfiles probados | Sólo Free + Pro mensual/anual, un perfil recurrente |
 | Cambios comerciales | Cambio de intervalo y promociones opcionales | Elegir intervalo al contratar; cambio durante suscripción y promociones P2 |
-| Auth | Password, magic link y Google | Password + verificación/reset; Google y magic link P2 |
+| Auth | Password, magic link y Google | Google OAuth + magic link + email/password con verificación/reset; tres caminos bajo Supabase Auth |
 | Cuenta | Edición email y borrado self-service coordinado | Perfil mínimo, reset, logout; cambios sensibles/borrado mediante procedimiento de soporte autenticado; UI de autoservicio avanzada P2 |
 | Marketing/UI | Colección de bloques, variantes y claro/oscuro/sistema | Una oferta pública completa y una UI de app; un tema accesible editable; galería y dark mode P2 |
 | Contenido | Blog local, índice, detalle, taxonomía | SEO de las rutas incluidas + una página de contenido reemplazable; blog P2 |
@@ -80,13 +87,13 @@ Las diez preguntas se responden para cada capacidad original. “Gratis suficien
 1. **Promesa rota al eliminar:** Sin identidad recuperable no puede entregarse un SaaS de pago de forma honesta.
 2. **Alternativa externa razonable:** Supabase Auth es la alternativa adoptada; el comprador aún necesita callbacks, pantallas y pruebas conectadas.
 3. **¿Gratuito suficiente?:** El gratuito cubre password/sesión y ajustes; no cierra forgot/reset/verificación observados como ausentes en el snapshot.
-4. **Relevancia real en ShipFast:** Sí al job de acceso; Google y email sin password son oferta relevante, pero no hacen imprescindible entregar tres métodos.
+4. **Relevancia real en ShipFast:** Sí al job de acceso; Google y email sin password son oferta relevante. V1.1 decide incluirlos por reducción de fricción, manteniendo un único proveedor de identidad y sin ampliar a más social providers.
 5. **Dependencias:** C03/C04 necesitan identidad fiable; C05 la presenta y C07 documenta SMTP/URLs.
 6. **¿Sólo documentación?:** Consolas, SMTP y recuperación operativa pueden documentarse. Signup/reset/logout y sus errores deben funcionar.
-7. **¿P2?:** Google y magic link sí. Password/verificación/reset no. Cambios sensibles self-service pueden esperar con procedimiento seguro de soporte.
+7. **¿P2?:** Google y magic link ya no: son V1 P0 dentro de C02. Cambios sensibles self-service, MFA/SSO y proveedores sociales adicionales sí pueden esperar con procedimiento seguro de soporte.
 8. **Mantenimiento permanente:** SSR/cookies y flujos de links cambian con Next/Supabase; cada proveedor de login añade configuración y casos combinados.
 9. **Starter vs producto comprador:** Starter: identidad/recuperación y perfil mínimo. Comprador: onboarding comercial y atributos de negocio.
-10. **Mínimo que conserva el job:** Password + verificación/reenvío/reset, callback seguro, sesión/logout y nombre visible editable. Email/borrado por soporte autenticado documentado y probado; sin panel admin nuevo.
+10. **Mínimo que conserva el job:** Google OAuth + magic link + email/password con verificación/reenvío/reset, callback seguro compartido, sesión/logout y nombre visible editable. Email/borrado por soporte autenticado documentado y probado; sin panel admin nuevo.
 
 ### C03 — Datos, autorización y reference feature
 
@@ -287,12 +294,18 @@ Recuperación de auth/billing permanece core en C02/C04; contacto accesible en C
 
 Inbox y atención humana son externos; el producto entrega un contacto configurado y un procedimiento seguro. No se prometen tiempos de respuesta del founder. No se añade chat, formulario de tickets, panel admin ni proveedor de observabilidad.
 
+### D-F — Authentication friction: Google OAuth + magic link pasan a V1
+
+V1.1 soporta **Google OAuth, magic-link login y email/password** mediante Supabase Auth. Google y magic link sirven como caminos de baja fricción para alta/entrada; password sigue disponible como fallback y conserva verificación/reset. La UI puede unificar alta y login cuando el proveedor lo permita, pero no debe ocultar la identidad de la sesión ni crear linking manual inseguro.
+
+Se acepta el aumento permanente de configuración y tests: callbacks Google, SMTP/links, expiración/reutilización, cancelación OAuth, cooldown/antiabuso y comportamiento de cuentas que ya existen. La V1 no añade Apple/GitHub ni otros proveedores, MFA/SSO o un segundo framework auth. El comportamiento de identidad con el mismo email entre métodos debe seguir las garantías/configuración soportadas por Supabase y quedar probado/documentado; DNW no fusiona cuentas arbitrariamente por email.
+
 ## 3. Capabilities finales propuestas
 
 | ID conservado | Sistema final de entrega | Resultado de revisión / absorciones | Contratos |
 | --- | --- | --- | --- |
 | C01 | Foundation tipada y configuración | REDUCE | PC01, AC01, AR01–AR03 |
-| C02 | Identidad y recuperación | REDUCE; SMTP de C10, recuperación auth de C12 | PC02–PC03, AC02, AR02–AR05 |
+| C02 | Identidad de baja fricción y recuperación | V1.1: Google OAuth + magic link + password; SMTP de C10 y recuperación auth de C12 | PC02–PC03, AC02, AR02–AR05 |
 | C03 | Datos aislados y ejemplo premium sustituible | KEEP | PC04, AC03, AR04–AR06 |
 | C04 | Suscripción individual y recuperación de billing | REDUCE; operación financiera de C12 | PC05–PC08, AC04–AC05, AR05–AR09 |
 | C05 | Recorrido UI, oferta pública y SEO del perímetro | REDUCE; mínimo C08/C09 y contacto C12 | PC09–PC11, AC06–AC07, AR02/AR10 |
@@ -307,7 +320,7 @@ C06 se conserva como **obligación transversal de seguridad/evidencia**, no sist
 | Sistema P0 | ¿Qué ausencia concreta impide vender esta V1 honestamente? | Lo muy importante que se quitó de su P0 |
 | --- | --- | --- |
 | C01 | No poder arrancar/configurar el stack de manera reproducible | Provisionador universal, múltiple matriz tecnológica |
-| C02 | No poder crear/verificar/recuperar una cuenta | Google, magic link, self-service avanzado |
+| C02 | No poder crear/entrar/verificar/recuperar una cuenta con los caminos de baja fricción vendidos | Self-service avanzado, MFA/SSO y proveedores sociales adicionales |
 | C03 | No demostrar recurso propio y prestación premium aislada | Storage, realtime, funciones extra de Notes |
 | C04 | Cobrar sin mantener/revocar/recuperar acceso recurrente correctamente | One-time, trials, promos, cambios activos de intervalo |
 | C05 | No existir recorrido utilizable desde oferta hasta ayuda | Galería de componentes, social proof, temas múltiples |
@@ -315,13 +328,13 @@ C06 se conserva como **obligación transversal de seguridad/evidencia**, no sist
 
 Los controles y pruebas críticos de C06 son P0 dentro de esos sistemas. No son “importantes” de forma abstracta: su ausencia invalida los claims de dinero/integridad/aislamiento.
 
-**P1: ninguno.** Se pudo construir una V1 premium coherente sin los extras candidatos: pasan a P2. Lo imprescindible de C08–C13 se integra en un contrato core reducido, no se eleva la capacidad original completa a P0. Cero P1 evita usar esa categoría como wishlist obligatoria; no impide que una versión futura vuelva a utilizarla con razón explícita.
+**P1: ninguno.** Se pudo construir una V1 premium coherente sin los extras candidatos: pasan a P2. Lo imprescindible de C08–C13 se integra en un contrato core reducido, no se eleva la capacidad original completa a P0. Cero P1 evita usar esa categoría como wishlist obligatoria; V1.1 amplía C02 dentro de su P0 existente y no crea un P1 nuevo.
 
 ### P2: exclusiones completas, sin código dormido requerido
 
 | Procedencia | POST-V1 |
 | --- | --- |
-| C02 | Google OAuth, magic link login, cambios sensibles/borrado self-service avanzado, MFA/SSO |
+| C02 | Cambios sensibles/borrado self-service avanzado, MFA/SSO y proveedores OAuth adicionales a Google |
 | C04/C15 | One-time/lifetime, recipe ejecutable de ese modelo, trials, promociones, cambio de intervalo de una suscripción vigente, múltiples tiers/asientos/uso/créditos, guest checkout e híbridos |
 | C05/C08 | Dark mode y selector, variantes decorativas, galería de bloques/testimonios/ratings, componentes sin uso |
 | C09 | Blog completo, categorías/tags/autores/feed, buscador y tooling editorial |
@@ -342,7 +355,7 @@ Estos PC definen lo que recibe y puede hacer el comprador. No obligan a nombres 
 | ID | Contrato de producto obligatorio | Frontera |
 | --- | --- | --- |
 | PC01 | Una foundation ejecutable y editable de Next.js App Router + TypeScript + Supabase + Stripe + Vercel, con configuración coherente de identidad, dominio y catálogo | Un stack y una configuración soportada; sin variantes legacy |
-| PC02 | Crear cuenta con email/password, verificar/reenviar, entrar, recuperar contraseña y salir; conservar destino interno permitido y presentar errores útiles | Un método de login; correo de recuperación no equivale a magic-link login |
+| PC02 | Crear cuenta o entrar mediante Google OAuth, magic link o email/password; en password, verificar/reenviar y recuperar contraseña; compartir sesión/callback seguro, conservar destino interno permitido, salir y presentar errores útiles | Tres caminos soportados bajo Supabase Auth. Google/magic link minimizan pasos; password es fallback. Sin otros social providers, MFA/SSO ni linking manual inseguro por email |
 | PC03 | Ver/editar nombre, ver identidad y pedir ayuda para cambios sensibles o eliminación; procedimiento seguro de soporte que coordine identidad, datos y billing | Sin obligación de pantalla propia de cambio de email o borrado automatizado. No borrar billing mapping antes de resolver cargos/acceso |
 | PC04 | Un ejemplo real de datos privados demuestra ownership y una operación premium; al perder Pro se conserva lectura/borrado de datos propios | Notes título/body, crear/editar requieren Pro; sin funciones de negocio adicionales |
 | PC05 | Elegir y contratar Pro mensual o anual; una cuenta, un nivel pagado, una moneda configurada y como máximo una suscripción vigente | Free permite cuenta/recuperación/datos conservados; no trials ni lifetime. Intervalo elegido al contratar, no switch activo |
@@ -382,7 +395,7 @@ Estas AC son obligaciones de evidencia, no declaraciones de pruebas ejecutadas. 
 | ID | Resultado mínimo para PASS | Contratos cubiertos |
 | --- | --- | --- |
 | AC01 | Desde entorno limpio, instalar con lockfile, validar tipos y compilar. Env requerida ausente/incorrecta produce diagnóstico accionable sin imprimir secretos; catálogo incoherente no permite nueva compra | PC01, AR01–AR03 |
-| AC02 | Registro→verificación→login y forgot/reset→login reales contra Supabase alojado con buzón controlado; link caducado/reutilizado, retorno externo, sesión expirada y fallo de logout tienen resultado seguro. Editar nombre funciona. Procedimiento de cambio sensible/borrado ensayado con cuenta test y verificación de identidad | PC02–PC03, AR02–AR05 |
+| AC02 | Contra Supabase alojado, buzón controlado y credenciales Google de test/staging: password signup→verificación→login y forgot/reset→login; magic-link alta/entrada; Google OAuth alta/entrada. Link caducado/reutilizado, reenvío/cooldown, OAuth cancelado/fallido, callback inválido, retorno externo, sesión expirada y fallo de logout tienen resultado seguro. El mismo email entre métodos no crea acceso cruzado ni linking manual inseguro; el comportamiento soportado por Supabase queda probado/documentado. Editar nombre funciona. Procedimiento de cambio sensible/borrado ensayado con cuenta test y verificación de identidad | PC02–PC03, AR02–AR05 |
 | AC03 | En DB real y Data API, A/B/anon: A no lee/edita/borra B; usuario no escribe grants, no cambia owner ni serializa campos secretos. Free no crea/edita; Pro sí; revocado no crea/edita, conserva lectura/borrado propios. Migrations desde vacío y tipos sin drift; restauración de muestra y política de actualización documentadas | PC04, AR04–AR06 |
 | AC04 | En Stripe test mode real: alta mensual y anual, cierre de navegador, confirmación, renovación, fallo, cancelación al periodo/inmediata, recontratación, refund y disputa según matriz; Portal sólo customer propio. Precio ajeno/inactivo y doble intento no producen cobro no previsto ni segunda suscripción | PC05–PC07, AR05–AR09 |
 | AC05 | Firma inválida no aplica cambios; duplicados/concurrencia/orden invertido convergen al mismo estado correcto. Fallo DB/API/worker deja evento reintentable o discrepancia durable visible. Restauradas dependencias, un procedimiento de recuperación repetible alcanza estado correcto en ≤5 minutos desde su inicio en fixture pequeño; retorno del navegador no es necesario | PC06–PC08, AR07–AR09 |
@@ -394,7 +407,7 @@ Estas AC son obligaciones de evidencia, no declaraciones de pruebas ejecutadas. 
 
 **Cobertura negativa transversal obligatoria:** autenticación/autorización por operación, validación server y límites de payload, origen/CSRF en mutaciones con cookie, límites antiabuso en superficies expuestas, firma webhook, grants/DTO y secretos, cabeceras compatibles con los journeys. Los tests deben fallar al introducir la violación de un invariante crítico; no basta buscar una cadena en el código. Pruebas de identidad/dinero no se sustituyen por snapshots visuales.
 
-No se conservan como gates los dos perfiles de billing, Google/OTP, blog, leads, analytics, email de bienvenida ni adapters de tres herramientas. La prueba de quitar blog se sustituye por quitar la página estática EXAMPLE. Los umbrales p95/<60 s de v0.1 pasan a candidatos de Engineering; el contrato de convergencia anterior permanece y no es SLA de producción.
+No se conservan como gates los dos perfiles de billing, blog, leads, analytics, email de bienvenida ni adapters de tres herramientas. Google OAuth y magic link sí forman parte de AC02/G2 en V1.1. La prueba de quitar blog se sustituye por quitar la página estática EXAMPLE. Los umbrales p95/<60 s de v0.1 pasan a candidatos de Engineering; el contrato de convergencia anterior permanece y no es SLA de producción.
 
 ## 7. Architectural constraints — ARCHITECTURAL_CONSTRAINT
 
@@ -467,7 +480,7 @@ Cada grupo de requisitos se descompone por su naturaleza; no se asigna una etiqu
 | 11 Journeys | PC02–PC11 / §10 | AC02–AC07/AC10 | AR02–AR10 | Se eliminan J9/leads y ramas P2 |
 | 12 UI | PC09–PC10 | AC06–AC07 | AR10 | IC11–IC12; biblioteca exacta libre |
 | 13 Billing | PC05–PC08 y matriz | AC04–AC05 | AR03/AR05/AR07–AR09 | IC05–IC09/IC25; sólo recurrente |
-| 14 Auth | PC02–PC03 | AC02 | AR02/AR04–AR05 | IC04/IC10; OAuth/OTP P2 |
+| 14 Auth | PC02–PC03 | AC02 | AR02/AR04–AR05 | Google OAuth + magic link + password IN; IC04/IC10; MFA/SSO y otros OAuth P2 |
 | 15 DB/reference | PC04 | AC03 | AR04–AR06 | IC03–IC04/IC23/IC26 |
 | 16 Email | PC02/PC07 | AC02/AC04 | AR02/AR12 | IC17; app email P2 |
 | 17 SEO | PC10 | AC07 | AR10 | IC18; blog P2 |
@@ -502,7 +515,7 @@ CORE significa que quitar el contrato cambia el producto soportado; no que todos
 | C05 SEO base y contacto | CORE | Adaptar dominio/copy/inbox; sustituir implementación manteniendo job | No dejar canonical demo ni usuario sin ayuda |
 | C07 entrega/docs/doctor local | CORE | Cambiar herramienta interna manteniendo comandos/evidencia equivalentes | AC08–AC10; tests no ocultos en tooling del vendedor |
 | Blog / leads | Fuera V1; P2 | No instalados, sin tablas/SDK/endpoints dormidos; añadir externamente no condiciona core | No recipe que simule soporte nativo |
-| Google OAuth / magic link | Fuera V1; P2 | No activación soportada ni claves requeridas; login base no los importa | No tests multiplicados por proveedores desactivados |
+| Google OAuth / magic link | CORE de C02 | Pueden deshabilitarse por configuración del comprador, pero la release DNW los soporta, documenta y prueba; comparten Supabase Auth/session con password | AC02/G2; no otros OAuth providers ni linking manual por email |
 | One-time billing | Fuera V1; P2, futuro PROFILE candidato | No flag para convertir recurring a payment; cambiar modelo requiere desarrollo/revalidación | No debe seguir apareciendo en documentación V1 como soportado |
 | Analytics | Fuera V1; P2, futuro OPTIONAL_MODULE candidato | No SDK requerido; bloquear tracking añadido por comprador no debe afectar acceso | Logs operativos core permanecen separados |
 | Email transaccional de aplicación | Fuera V1; P2, futuro OPTIONAL_MODULE candidato | No plantilla/SDK obligatorio; añadir bienvenida no interviene en grants | SMTP de Auth permanece CORE |
@@ -514,7 +527,7 @@ No se invierte la dependencia: billing no importa Notes para conceder un permiso
 | Paso exigido | Pieza que permanece | Fallo/estado que debe resolver | PASS |
 | --- | --- | --- | --- |
 | Visitante entiende producto | Landing propia mínima, oferta y FAQ, precio mensual/anual, CTA | Catálogo incompleto bloquea compra; no precio ficticio de fallback | AC07 |
-| Crea cuenta | Password + verificación de email | Envío pendiente, correo no recibido/reenvío, credenciales inválidas y límites | AC02 |
+| Crea cuenta / entra | Google OAuth, magic link o password + verificación de email | OAuth cancelado/fallido, envío pendiente, correo no recibido/reenvío, link expirado/reusado, credenciales inválidas y límites/cooldown | AC02 |
 | Recupera cuenta | Forgot/reset, link seguro y soporte público | Link expirado/reutilizado y sesión inválida no conceden acceso | AC02 |
 | Paga | Checkout autenticado, price/cuenta propios | Doble intento, precio retirado, abandono y error proveedor | AC04 |
 | Pago se procesa sin navegador | Procesamiento fiable independiente de success URL | Evento retrasado/fallido: “confirmando”, recuperación durable | AC04–AC05 |
@@ -525,7 +538,7 @@ No se invierte la dependencia: billing no importa Notes para conceder un permiso
 | Solicita ayuda | Contacto público, ID seguro y runbook | Puede contactar sin sesión; datos sensibles no viajan en error | AC10 |
 | Founder despliega/verifica | Repo/ZIP + comandos + doctor local + pruebas/checklist remotos | Sin credenciales/evidencia no se anuncia PASS de producción | AC08–AC09 |
 
-**Resultado:** no hay corte del recorrido core. La ausencia de blog, leads, Google, one-time, bienvenida o analytics no elimina ningún paso. Se conserva reset frente a la tentación de recortarlo; se conserva recuperación financiera frente a dejar sólo Checkout; se conserva SMTP real frente a confundir quitar app email con quitar correo de Auth.
+**Resultado:** no hay corte del recorrido core. La ausencia de blog, leads, one-time, bienvenida o analytics no elimina ningún paso. Google OAuth y magic link ya forman parte del recorrido core de autenticación en V1.1. Se conserva reset frente a la tentación de recortarlo; se conserva recuperación financiera frente a dejar sólo Checkout; se conserva SMTP real frente a confundir quitar app email con quitar correo de Auth.
 
 La reducción del autoservicio sensible cambia comodidad, no posibilidad de pedir y procesar ayuda. El runbook exige verificación de titularidad adecuada al cambio, reautenticación o procedimiento del proveedor, nunca compartir password ni confiar sólo en un email recibido. La eliminación primero resuelve estado de Stripe/acceso y sólo después datos/identidad; se registra progreso para reanudar una interrupción. Si no puede ejecutarse de forma segura y repetible en ensayo, AC02/AC10 no pasan: no se tolera una nota genérica “bórralo en el panel”. No se construye un backend admin nuevo para esa receta.
 
@@ -577,7 +590,7 @@ C06 no desaparece del coste: las columnas Tests y los gates de cada sistema cont
 | Combinación v0.1 | Carga desproporcionada | Reducción aplicada |
 | --- | --- | --- |
 | Recurrente + one-time + cambio de intervalo + promociones | Semánticas, eventos, docs y reembolsos combinados | Un Pro recurrente, dos intervalos al alta; resto P2 |
-| Password + OTP + OAuth + varios entornos | Callbacks/cookies/links/proveedores y tickets de configuración | Password con verify/reset; no perder recuperación |
+| Password + magic link + Google OAuth + varios entornos | Callbacks/cookies/links/proveedores y tickets de configuración | V1.1 acepta esta matriz por el objetivo de mínima fricción; se limita a estos tres caminos bajo Supabase Auth y no añade más OAuth/MFA/SSO |
 | RLS + organizations + billing owner | Propiedad/membresía/roles y migraciones atraviesan todo | Cuenta individual explícita; no organizaciones latentes |
 | Primitives + galería marketing + dark mode + blog | Matriz visual/accesibilidad y dependencias editoriales | Sólo UI usada, tema único y ejemplo estático |
 | Auth SMTP + app email + leads + campañas | DNS, límites, privacidad, mensajes y expectativas de entrega | Sólo Auth necesario y recibos proveedor |
@@ -595,7 +608,7 @@ Señales de riesgo operativo: tests que sólo pasan con service-role, prueba Str
 ### MUST BUILD
 
 - C01: arranque reproducible, configuración/catálogo y límites tipados del stack.
-- C02: password/verificación/reset/sesión/logout/perfil mínimo con SMTP Auth integrado.
+- C02: Google OAuth + magic link + email/password con verificación/reset, sesión/logout/perfil mínimo y SMTP Auth integrado.
 - C03: ownership/RLS, migrations/tipos/local seguro y Notes premium reemplazable.
 - C04: suscripción mensual/anual, acceso por periodo, Portal/cancelación, fiabilidad y recuperación del ciclo elegido.
 - C05: oferta/pricing/CTA, auth/app/cuenta/billing/ayuda, SEO del perímetro y un ejemplo estático; estados y accesibilidad.
@@ -605,12 +618,12 @@ Los controles AR se construyen dentro de estos sistemas. No se añade subsistema
 
 ### MUST PROVE
 
-AC01–AC10: instalación/build; auth y recuperación reales; A/B/anon en DB/Data API; periodo pagado y revocado; Stripe con navegador cerrado y eventos problemáticos; replay/recovery; UI responsive/a11y; SEO/pricing correcto; equivalencia repo/ZIP y secretos; modificación por comprador/contrato canónico. No sustituir evidencia real por la disponibilidad de un paquete npm.
+AC01–AC10: instalación/build; Google OAuth, magic link, password y recuperación reales; A/B/anon en DB/Data API; periodo pagado y revocado; Stripe con navegador cerrado y eventos problemáticos; replay/recovery; UI responsive/a11y; SEO/pricing correcto; equivalencia repo/ZIP y secretos; modificación por comprador/contrato canónico. No sustituir evidencia real por la disponibilidad de un paquete npm.
 
 ### MUST DOCUMENT
 
 - Recursos y variables por local/staging/live; credenciales sin valores reales; dominio/HTTPS y URLs de callback.
-- SMTP Auth/remitente/DNS y entrega de link; recibos/Portal/price IDs/webhook y separación de Stripe test/live. Mantener un único camino recomendado de SMTP del stack previo, sin afirmar soporte de múltiples SDKs de correo.
+- Google OAuth (proyecto/consentimiento/callbacks por entorno) y SMTP Auth/remitente/DNS/entrega de links para verificación, reset y magic link; recibos/Portal/price IDs/webhook y separación de Stripe test/live. Mantener un único camino recomendado de SMTP del stack previo, sin afirmar soporte de múltiples SDKs de correo.
 - Políticas de acceso/cancelación/refund/disputa; limitaciones de intervalo/modelos; recuperación y reconciliación con permisos mínimos.
 - Verificación de titularidad, cambio sensible y eliminación por soporte, con orden seguro de billing/datos/identidad y reanudación.
 - Migraciones, tipos, seeds, backups/restauración del proveedor y actualización/rollback; advertencia explícita para datos one-time existentes sin migración universal.
@@ -630,7 +643,7 @@ No hay OPTIONAL_MODULE funcional extra ni PROFILE alternativo empaquetado. El co
 
 ### POST-V1
 
-Todo lo enumerado en §4: one-time/lifetime, leads, blog, Google/magic-link login, analytics, app email, teams, monetización avanzada, galería/dark mode, lectores remotos doctor, adapters de agentes, storage/realtime/CMS/chat/remarketing y pruebas extensivas fuera del perímetro. C19/C20 siguen rechazados, no se convierten en P2 implícito.
+Todo lo enumerado en §4: one-time/lifetime, leads, blog, analytics, app email, teams, monetización avanzada, galería/dark mode, lectores remotos doctor, adapters de agentes, storage/realtime/CMS/chat/remarketing, MFA/SSO, proveedores OAuth adicionales a Google y pruebas extensivas fuera del perímetro. C19/C20 siguen rechazados, no se convierten en P2 implícito.
 
 ## 15. Release gates revisados y deuda de evidencia
 
@@ -639,7 +652,7 @@ Estos gates **no han pasado en esta fase**. Auditar/redactar scope no es ejecuta
 | Gate revisado | PASS mínimo y entorno | Cobertura |
 | --- | --- | --- |
 | G1 Paquete reproducible | Tag/ZIP del mismo candidato, lock/matriz probada, instalación/typecheck/build, comandos y secretos verificados desde entorno limpio | AC01/AC08 |
-| G2 Cuenta y datos | Supabase local para DB/migrations + Supabase alojado staging y buzón real controlado para Auth; usuarios A/B/anon; reset/verify y paid writes reales; procedimiento sensible de soporte ensayado | AC02/AC03 |
+| G2 Cuenta y datos | Supabase local para DB/migrations + Supabase alojado staging, buzón real controlado y Google OAuth de test/staging; usuarios A/B/anon; password verify/reset, magic link, Google callback y paid writes reales; procedimiento sensible de soporte ensayado | AC02/AC03 |
 | G3 Dinero y recuperación | Stripe test mode + webhook HTTPS + DB real, mensual/anual, ciclo/matriz, navegador cerrado, firma/dup/orden/error y recuperación repetible; Portal propio | AC04/AC05 |
 | G4 Producto y publicación | Mismo deploy/SHA: recorrido §10, 360/768/1280, teclado/zoom/lector muestreado, errores, pricing/SEO y página eliminable | AC06/AC07 |
 | G5 Operabilidad y modificación | Doctor local honesto + checklist funcional remoto; contactos/runbook, incidente recuperado, actualización/restauración de muestra y ejercicio de adaptación; todos los comandos accesibles al comprador | AC09/AC10 y restauración AC03 |
@@ -651,7 +664,7 @@ Todos son obligatorios para esta V1; no hay gates P1 ni suites residuales de fea
 
 | Deuda de Fase 2 | Sigue abierta | Cómo se cierra |
 | --- | --- | --- |
-| Auth/Supabase/Stripe live validation | Sí | G2/G3 contra servicios alojados reales en staging/test mode. La palabra live no convierte una prueba Stripe test en cobro real; deployment live requiere comprobación propia |
+| Auth/Supabase/Stripe live validation | Sí | G2/G3 contra servicios alojados reales en staging/test mode, incluyendo Google OAuth y magic links. La palabra live no convierte una prueba Stripe test en cobro real; deployment live requiere comprobación propia |
 | A/B RLS en DB real | Sí | G2: usuarios A/B/anon contra DB/Data API del esquema desplegado, no sólo service-role ni lectura de SQL |
 | Browser responsive | Sí | G4: flujo real en los tres viewports, no sólo lectura de CSS |
 | Accessibility | Sí | G4: automated + revisión manual indicada, sin promesa de certificación universal |
@@ -666,7 +679,7 @@ No se ejecutan pagos, despliegues, migraciones ni borrados en esta fase. La deud
 
 La aprobación que estaba pendiente en v0.2 queda resuelta con esta versión. La validación comercial y el precio no añaden funciones al scope. Las decisiones técnicas acotadas permanecen en §8: versiones, primitives, esquema/proyección, procesamiento/reintentos, antiabuso, runners y formato de diagnóstico. Deben satisfacer el contrato aprobado sin ampliarlo. Si Engineering identifica una contradicción o inviabilidad, debe elevarla para decisión explícita de producto; no resolverla cambiando el scope silenciosamente.
 
-- [x] Scope final versionado: V1 Scope 1.0, aprobado el 2026-09-13.
+- [x] Scope final versionado: V1 Scope 1.1, aprobado el 2026-09-14; único cambio material desde 1.0: Google OAuth + magic-link login pasan a C02 V1.
 - [x] Ningún requisito implícito heredado de v0.1.
 - [x] 0 UNRESOLVED materiales.
 - [x] PC01–PC13, AC01–AC10 y AR01–AR12 completos y preservados exactamente.
@@ -675,14 +688,14 @@ La aprobación que estaba pendiente en v0.2 queda resuelta con esta versión. La
 - [x] Implementation Candidates no vinculantes, separados como inputs para futuros ADRs.
 - [x] Listo para handoff a Control Tower y Engineering.
 
-**APPROVED / IMPLEMENTATION NOT STARTED.** Este cierre autoriza el uso del documento como contrato canónico de producto; no declara ni inicia implementación de código.
+**APPROVED / IMPLEMENTATION NOT STARTED.** V1 Scope 1.1 es el contrato canónico vigente; no declara ni inicia implementación de código.
 
 ## Apéndice A. Cambios de obligaciones que podrían pasar inadvertidos
 
 | Obligación anterior | Resolución explícita |
 | --- | --- |
-| “Google opcional pero probado” | Fuera V1; no es módulo incluido opcional |
-| “Magic link ya existe en baseline” | Fuera del contrato V1; reset por email permanece |
+| “Google opcional pero probado” | V1.1 revierte la exclusión de 1.0: Google OAuth es camino CORE soportado de C02 y se prueba en AC02/G2 |
+| “Magic link ya existe en baseline” | V1.1 lo incorpora expresamente a C02; no se conserva por inercia del baseline sino por la decisión de mínima fricción y se prueba en AC02/G2 |
 | “Pago único ya implementado” | No basta para conservar su coste de soporte; P2 y tratamiento seguro de datos previos documentado |
 | “P1 se entrega todo” | Sigue siendo la definición de P1, por eso no dejamos ninguno como wishlist |
 | “Doctor release comprueba todo” | Local sólo diagnostica lo observable; evidencias remotas están en gates y checklist, sin lectores administrativos obligatorios |
@@ -707,13 +720,13 @@ Se conservan los 118 IDs de v0.1. La tabla sustituye sus decisiones de paridad s
 | SF-005 | Organización modular — Cambiar o retirar integraciones. | MATCH | C01 | AC01/AC09 | Módulos localizables; retirada documentada, sin framework de plugins. |
 | SF-006 | Landing en cinco minutos — Publicar una primera oferta. | MATCH | C05 (C08) | AC06/AC07 | Una oferta pública completa; sin promesa de cinco minutos ni biblioteca. |
 | SF-007 | Página estática — Publicar contenido adicional. | MATCH | C05 (C09) | AC07 | Ejemplo estático reemplazable y metadata propia; no blog. |
-| SF-008 | Tutorial de autenticación — Incorporar usuarios. | BETTER | C02 | AC02 | Password/verificación/reset con prueba real; no OAuth/OTP login. |
+| SF-008 | Tutorial de autenticación — Incorporar usuarios. | BETTER | C02 | AC02 | Google OAuth, magic link y password/verificación/reset integrados bajo Supabase Auth y probados de extremo a extremo. |
 | SF-009 | Tutorial de llamada API — Conectar interfaz y operaciones privadas. | BETTER | C03 | AC03 | CRUD real con contrato de errores y autorización por operación. |
 | SF-010 | Tutorial de página privada — Reservar páginas a usuarios. | BETTER | C03 | AC03 | Página privada y recurso aislado demostrados con dos identidades. |
 | SF-011 | Tutorial de suscripción — Vender acceso recurrente. | BETTER | C04 | AC04/AC05 | Suscripción operativa y casos de fallo reproducibles, no sólo tutorial. |
 | SF-012 | Prompts para textos legales — Preparar borradores adaptados al negocio. | DIFFERENT | C05 (C08) | AC06/AC07 | Rutas legales y guía de personalización, no contenido jurídicamente validado. |
-| SF-013 | Inicio con Google — Entrar con identidad existente. | POST-V1 | C02 → P2 | — | Google OAuth P2; no proveedor desactivado que debamos probar en V1. |
-| SF-014 | Login por enlace de email — Entrar sin gestionar contraseña. | POST-V1 | C02 → P2 | — | Magic-link login P2; reset por email permanece y no equivale a ese método. |
+| SF-013 | Inicio con Google — Entrar con identidad existente. | MATCH | C02 | AC02 | Google OAuth soportado para alta/entrada bajo Supabase Auth; callback, cancelación y errores se prueban. |
+| SF-014 | Login por enlace de email — Entrar sin gestionar contraseña. | MATCH | C02 | AC02 | Magic-link login soportado para alta/entrada, con expiración/reutilización/reenvío y cooldown probados. |
 | SF-015 | Persistencia de identidad — Mantener identidad entre sesiones. | MATCH | C02 | AC02 | Sesión Supabase y perfil persistente; no auth paralela. |
 | SF-016 | Cierre de sesión y retorno — Salir y volver al destino útil. | BETTER | C02 | AC02 | Logout con fallo explícito y retorno local validado. |
 | SF-017 | Protección de páginas — Bloquear acceso anónimo. | BETTER | C03 | AC03 | Servidor y DB protegen; middleware no es autoridad única. |
@@ -779,7 +792,7 @@ Se conservan los 118 IDs de v0.1. La tabla sustituye sus decisiones de paridad s
 | SF-077 | Copywriting y estructura de venta — Explicar una oferta que pueda convertirse en ventas. | MATCH | C05 (C08) | AC06/AC07 | Estructura y guía de copy propio, sin garantizar conversión. |
 | SF-078 | Tope Mailgun — Limitar exposición por envíos. | DIFFERENT | C02/C07 (C10) | AC02/AC09 | Guía de cuotas del camino SMTP elegido; no límites Mailgun ni SDK app. |
 | SF-079 | Presupuesto OpenAI — Controlar gasto de una integración de IA. | REJECTED | C20 | — | No se entrega integración OpenAI ni presupuesto para una función inexistente. |
-| SF-080 | Rate limit de magic links — Reducir abuso de solicitudes de acceso. | DIFFERENT | C02 | AC02 | Antiabuso de solicitudes de acceso/reset con Supabase; no integración magic link. |
+| SF-080 | Rate limit de magic links — Reducir abuso de solicitudes de acceso. | BETTER | C02 | AC02 | Magic link V1 con límites/cooldown del proveedor y UX segura sometidos a pruebas negativas; sin contador en memoria como única defensa. |
 | SF-081 | Rate limit de API — Restringir ráfagas de llamadas. | BETTER | C06 transversal | AC01–AC10 | Límites efectivos de superficies IN; mecanismo compartido concreto al ADR. |
 | SF-082 | Cabeceras de seguridad — Establecer protecciones HTTP básicas. | BETTER | C06 transversal | AC01–AC10 | Cabeceras aplicadas y verificadas con compatibilidad de auth/pagos. |
 | SF-083 | Validación de entrada — Rechazar datos inválidos en servidor. | BETTER | C06 transversal | AC01–AC10 | Schemas de servidor y casos negativos por endpoint con límites de payload. |
@@ -817,6 +830,6 @@ Se conservan los 118 IDs de v0.1. La tabla sustituye sus decisiones de paridad s
 | SF-115 | Modal — Resolver una tarea contextual. | BETTER | C05 | AC06 | Confirmación contextual accesible del CRUD, comprobada con foco/errores. |
 | SF-149 | Compra sin sesión en ejemplo alternativo — Vincular una compra anónima a una identidad. | POST-V1 | C15 → P2 | — | No compra anónima ni reclamación posterior: identidad antes de Checkout. |
 | SF-150 | Código de descuento en Checkout alternativo — Aplicar una promoción al comprar. | POST-V1 | C04 → P2 | — | Promociones P2; no cupón activo en configuración soportada. |
-| SF-151 | Configurar Google para producción — Permitir login a clientes reales. | POST-V1 | C02 → P2 | — | Google producción P2 con el método OAuth completo. |
+| SF-151 | Configurar Google para producción — Permitir login a clientes reales. | MATCH | C02 | AC02/AC09 | Configuración Google por entorno, callback/consentimiento y checklist live documentados; staging se prueba de extremo a extremo. |
 
-**Resumen v0.2 de los 118 PRODUCT records:** 33 MATCH, 33 BETTER, 17 DIFFERENT, 31 POST-V1, 4 REJECTED; 0 UNRESOLVED. Los checks de BETTER remiten sólo al contrato reducido, no al Mxx completo de v0.1.
+**Resumen V1.1 de los 118 PRODUCT records:** 36 MATCH, 34 BETTER, 16 DIFFERENT, 28 POST-V1, 4 REJECTED; 0 UNRESOLVED. Los checks de BETTER remiten sólo al contrato reducido, no al Mxx completo de v0.1.
