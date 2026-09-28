@@ -66,16 +66,20 @@
 @layer base {
   * { @apply border-border; }
   body { @apply bg-background font-sans text-foreground antialiased; }
-  h1, h2, h3 { @apply font-heading font-semibold tracking-tight; }
-  input:not([type="checkbox"]):not([type="radio"]), select {
-    height: var(--control-height);
-    @apply rounded-md border border-input bg-background px-3 text-sm;
+  h1, h2, h3 { @apply font-heading font-semibold tracking-tight; text-wrap: balance; }
+  p { text-wrap: pretty; }
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+    @apply w-full rounded-md border border-input bg-background px-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/70 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground;
   }
+  input:not([type="checkbox"]):not([type="radio"]), select { height: var(--control-height); }
+  textarea { @apply py-3; }
+  input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"] { @apply border-destructive; }
   :focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+  ::selection { @apply bg-accent text-accent-foreground; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; }
 }
 
 @layer components {
@@ -84,12 +88,13 @@
   .eyebrow { @apply text-xs font-semibold uppercase tracking-[.12em] text-muted-foreground; }
   .section-heading { @apply text-[40px] leading-[1.02] tracking-[-.025em] sm:text-[56px]; }
   .section-copy { @apply max-w-xl text-base leading-7 text-muted-foreground; }
-  .nav-link { @apply text-sm text-muted-foreground hover:text-foreground; }
-  .text-link { @apply text-sm font-medium underline underline-offset-4; }
+  .nav-link { @apply rounded-sm text-sm text-muted-foreground transition-colors hover:text-foreground; }
+  .text-link { @apply rounded-sm text-sm font-medium underline underline-offset-4; }
   .field { @apply flex flex-col gap-2 text-sm font-medium; }
   .field-error { @apply text-sm font-normal text-destructive; }
-  .skip-link { @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-2 focus:z-50 focus:rounded-md focus:bg-background focus:p-3; }
+  .skip-link { @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-2 focus:z-50 focus:rounded-md focus:border focus:bg-background focus:px-4 focus:py-3 focus:shadow-sm; }
 }
+
 html { scroll-padding-top: 80px; }
 summary::-webkit-details-marker { display: none; }
 .faq-item[open] .faq-plus { transform: rotate(45deg); }

@@ -6,6 +6,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
+  workers: process.env.CI ? 2 : 3,
+  timeout: 60_000,
   use: { baseURL: "http://127.0.0.1:3100", trace: "retain-on-failure" },
   projects: [360, 768, 1280].map((width) => ({ name: `chromium-${width}`, use: { browserName: "chromium", viewport: { width, height: 900 } } })),
   webServer: {

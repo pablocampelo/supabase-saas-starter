@@ -12,8 +12,7 @@ export function generateMetadata(): Metadata {
     metadataBase: new URL(site.url),
     title: { default: site.seo.title, template: `%s | ${site.name}` },
     description: site.seo.description,
-    // The current UI preview is not a published product offer.
-    robots: { index: false, follow: false },
+    robots: { index: true, follow: true },
   };
 }
 

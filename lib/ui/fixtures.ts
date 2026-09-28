@@ -1,4 +1,4 @@
-import type { PreviewViewModel, AccountPlanViewModel, ExampleResourceViewModel } from "./models";
+import type { AppViewModel, AccountPlanViewModel, ExampleResourceViewModel } from "./models";
 
 export const scenarioNames = ["free", "retained", "pro-monthly", "pro-annual", "confirming", "past-due", "canceling", "expired", "failed", "unverified", "pro-empty", "loading", "error"] as const;
 export type Scenario = typeof scenarioNames[number];
@@ -13,7 +13,7 @@ const examples: ExampleResourceViewModel[] = [
 ];
 export const fixtureExampleIds = examples.map((example) => example.id);
 
-export function getPreview(scenario: Scenario): PreviewViewModel {
+export function getPreview(scenario: Scenario): AppViewModel {
   const plan: AccountPlanViewModel = { tier: "free", interval: null, status: "free", currentPeriodEnd: null, cancelAtPeriodEnd: false, hasCurrentSubscription: false };
   if (["pro-monthly", "pro-annual", "pro-empty", "canceling"].includes(scenario)) {
     Object.assign(plan, { tier: "pro", interval: scenario === "pro-annual" ? "year" : "month", status: scenario === "canceling" ? "canceling" : "active", currentPeriodEnd: scenario === "pro-annual" ? "2027-09-24" : "2026-10-24", cancelAtPeriodEnd: scenario === "canceling", hasCurrentSubscription: true });
