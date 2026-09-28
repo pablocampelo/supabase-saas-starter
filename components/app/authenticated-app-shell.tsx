@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { LiveAppShell } from "@/components/app/live-app-shell";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPreview } from "@/lib/ui/fixtures";
-import type { PricingViewModel } from "@/lib/ui/models";
+import type { AppViewModel, PricingViewModel } from "@/lib/ui/models";
 
 function displayName(user: { email?: string; user_metadata?: Record<string, unknown> }) {
   const metadata = user.user_metadata ?? {};
@@ -18,9 +18,10 @@ export async function AuthenticatedAppShell({ children, pricing, supportEmail }:
 
   const name = displayName(user);
   const base = getPreview("free");
-  const app = {
+  const app: AppViewModel = {
     ...base,
     user: {
+      id: user.id,
       name,
       firstName: name.split(/\s+/)[0] || name,
       email: user.email,
