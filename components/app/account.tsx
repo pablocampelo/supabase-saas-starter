@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useAppUi } from "./app-shell";
 import { Badge, PageHeader, Panel, Notice } from "@/components/shared/patterns";
 import { Button } from "@/components/ui/button";
-import { initialAuthFormState, updateDisplayNameAction } from "@/lib/auth/actions";
+import { updateDisplayNameAction } from "@/lib/auth/actions";
+import { initialAuthFormState } from "@/lib/auth/state";
 
 export function Account() {
   const { app, supportEmail } = useAppUi();
