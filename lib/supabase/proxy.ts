@@ -9,6 +9,15 @@ function privateResponse(response: NextResponse) {
   return response;
 }
 
+function copySessionResponse(source: NextResponse, target: NextResponse) {
+  for (const cookie of source.cookies.getAll()) target.cookies.set(cookie);
+  for (const name of ["expires", "pragma"] as const) {
+    const value = source.headers.get(name);
+    if (value) target.headers.set(name, value);
+  }
+  return privateResponse(target);
+}
+
 export async function updateSession(request: NextRequest) {
   if (isE2EAuthBypassEnabled()) {
     return privateResponse(NextResponse.next({ request }));
@@ -42,7 +51,7 @@ export async function updateSession(request: NextRequest) {
     loginUrl.pathname = "/login";
     loginUrl.search = "";
     loginUrl.searchParams.set("next", safeReturnPath(request.nextUrl.pathname));
-    return privateResponse(NextResponse.redirect(loginUrl));
+    return copySessionResponse(response, NextResponse.redirect(loginUrl));
   }
 
   return privateResponse(response);
