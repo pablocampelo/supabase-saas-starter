@@ -27,13 +27,14 @@ describe("Supabase client foundations", () => {
     await serverClient();
     const adapter = mocks.server.mock.calls[0][2].cookies;
     expect(adapter.getAll()).toEqual([{ name: "session", value: "old" }]);
-    adapter.setAll([{ name: "session", value: "new", options: { sameSite: "lax", secure: true, path: "/" } }]);
+    adapter.setAll([{ name: "session", value: "new", options: { sameSite: "lax", secure: true, path: "/" } }], {});
     expect(mocks.set).toHaveBeenCalledWith("session", "new", { sameSite: "lax", secure: true, path: "/" });
   });
-  it("does not swallow failed session writes", async () => {
+  it("lets Server Components ignore cookie-write failures because the proxy refreshes sessions", async () => {
     mocks.set.mockImplementationOnce(() => { throw new Error("Cookies cannot be modified here"); });
     await serverClient();
-    expect(() => mocks.server.mock.calls[0][2].cookies.setAll([{ name: "session", value: "new", options: {} }])).toThrow("Cookies cannot be modified");
+    const adapter = mocks.server.mock.calls[0][2].cookies;
+    expect(() => adapter.setAll([{ name: "session", value: "new", options: {} }], {})).not.toThrow();
   });
   it("fails before constructing a client when configuration is missing", () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "");
