@@ -77,3 +77,40 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
 }
+
+@layer components {
+  .site-container { @apply mx-auto w-full max-w-[1400px] px-5 sm:px-8; }
+  .section-space { @apply py-16 md:py-24; }
+  .eyebrow { @apply text-xs font-semibold uppercase tracking-[.12em] text-muted-foreground; }
+  .section-heading { @apply text-[40px] leading-[1.02] tracking-[-.025em] sm:text-[56px]; }
+  .section-copy { @apply max-w-xl text-base leading-7 text-muted-foreground; }
+  .nav-link { @apply text-sm text-muted-foreground hover:text-foreground; }
+  .text-link { @apply text-sm font-medium underline underline-offset-4; }
+  .field { @apply flex flex-col gap-2 text-sm font-medium; }
+  .field-error { @apply text-sm font-normal text-destructive; }
+  .skip-link { @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-2 focus:z-50 focus:rounded-md focus:bg-background focus:p-3; }
+}
+html { scroll-padding-top: 80px; }
+summary::-webkit-details-marker { display: none; }
+.faq-item[open] .faq-plus { transform: rotate(45deg); }
+body:has(dialog[open]) { overflow: hidden; }
+
+/* Reflow when browser zoom reduces even a phone viewport below 360 CSS px. */
+@media (max-width: 359px) {
+  .site-container { padding-inline: 12px; }
+  h1, h2, h3, p, label { overflow-wrap: anywhere; }
+  input, textarea { min-width: 0; max-width: 100%; }
+  [data-slot="button"] { max-width: 100%; white-space: normal; height: auto; min-height: 40px; padding-block: 8px; }
+  .brand span { display: none; }
+  .hero-preview { padding: 8px; }
+  .hero-preview .p-5 { padding: 12px; }
+  .hero-preview .px-5 { padding-inline: 12px; }
+  .hero-preview .flex, #pricing .flex { flex-wrap: wrap; }
+  #pricing .p-7 { padding: 16px; }
+  [aria-label="Billing interval"] { flex-wrap: wrap; justify-content: center; }
+  .grid > * { min-width: 0; }
+  summary { overflow-wrap: anywhere; }
+  summary > .flex-1 { min-width: 0; }
+  .rounded-lg.border > .flex { flex-wrap: wrap; }
+  header [data-slot="button"] { padding-inline: 8px; }
+}

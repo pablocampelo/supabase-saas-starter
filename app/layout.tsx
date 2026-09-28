@@ -12,7 +12,7 @@ export function generateMetadata(): Metadata {
     metadataBase: new URL(site.url),
     title: { default: site.seo.title, template: `%s | ${site.name}` },
     description: site.seo.description,
-    // The Phase 0 placeholder is not a published product offer.
+    // Phase 1 is a UI preview, not a published product offer.
     robots: { index: false, follow: false },
   };
 }
