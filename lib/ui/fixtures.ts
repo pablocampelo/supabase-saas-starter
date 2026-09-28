@@ -1,4 +1,4 @@
-import type { PreviewViewModel, AccountPlanViewModel, NoteViewModel } from "./models";
+import type { PreviewViewModel, AccountPlanViewModel, ExampleResourceViewModel } from "./models";
 
 export const scenarioNames = ["free", "retained", "pro-monthly", "pro-annual", "confirming", "past-due", "canceling", "expired", "failed", "unverified", "pro-empty", "loading", "error"] as const;
 export type Scenario = typeof scenarioNames[number];
@@ -6,12 +6,12 @@ export function resolveScenario(value: string | null, development: boolean): Sce
   return development && scenarioNames.includes(value as Scenario) ? value as Scenario : "free";
 }
 
-const notes: NoteViewModel[] = [
-  { id: "first-note", title: "Make this space your own", body: "This is an example note for visual review.\n\nReplace Notes with the resource your product needs. Keep ownership, private data, and paid write access at the server and database boundaries.", createdAt: "2026-09-20T10:00:00Z", updatedAt: "2026-09-24T09:30:00Z" },
-  { id: "launch-outline", title: "A small launch outline", body: "Configure your brand.\nConnect your services in a later implementation phase.\nVerify the complete journey before publishing.\n\nExample content only — no data has been saved.", createdAt: "2026-09-19T10:00:00Z", updatedAt: "2026-09-23T15:00:00Z" },
-  { id: "product-principles", title: "Keep the useful parts", body: "A focused product. Clear boundaries. A foundation you can understand and change.\n\nThis document is a deterministic UI fixture.", createdAt: "2026-09-18T10:00:00Z", updatedAt: "2026-09-22T10:00:00Z" },
+const examples: ExampleResourceViewModel[] = [
+  { id: "first-example", title: "Make this space your own", content: "This is an example resource for visual review.\n\nReplace the Example Resource with the domain your product needs while preserving ownership, private data, and paid write access at the server and database boundaries.", createdAt: "2026-09-20T10:00:00Z", updatedAt: "2026-09-24T09:30:00Z" },
+  { id: "launch-outline", title: "A small launch outline", content: "Configure your brand.\nConnect your services in a later implementation slice.\nVerify the complete journey before publishing.\n\nExample content only — no data has been saved.", createdAt: "2026-09-19T10:00:00Z", updatedAt: "2026-09-23T15:00:00Z" },
+  { id: "product-principles", title: "Keep the useful parts", content: "A focused product. Clear boundaries. A foundation you can understand and change.\n\nThis resource is a deterministic UI fixture.", createdAt: "2026-09-18T10:00:00Z", updatedAt: "2026-09-22T10:00:00Z" },
 ];
-export const fixtureNoteIds = notes.map((note) => note.id);
+export const fixtureExampleIds = examples.map((example) => example.id);
 
 export function getPreview(scenario: Scenario): PreviewViewModel {
   const plan: AccountPlanViewModel = { tier: "free", interval: null, status: "free", currentPeriodEnd: null, cancelAtPeriodEnd: false, hasCurrentSubscription: false };
@@ -26,8 +26,8 @@ export function getPreview(scenario: Scenario): PreviewViewModel {
   return {
     user: { id: "ui-fixture", name: "Demo account", firstName: "Demo", email: "demo@example.com", emailVerified: scenario !== "unverified" },
     plan,
-    entitlements: { canCreateNotes: canWrite, canEditNotes: canWrite, canReadOwnNotes: true, canDeleteOwnNotes: true },
-    notes: ["retained", "pro-monthly", "pro-annual", "past-due", "canceling", "expired"].includes(scenario) ? notes.map((note) => ({ ...note })) : [],
+    entitlements: { canCreateExample: canWrite, canEditExample: canWrite, canReadOwnExample: true, canDeleteOwnExample: true },
+    examples: ["retained", "pro-monthly", "pro-annual", "past-due", "canceling", "expired"].includes(scenario) ? examples.map((example) => ({ ...example })) : [],
     display: scenario === "loading" ? "loading" : scenario === "error" ? "error" : "ready",
   };
 }
