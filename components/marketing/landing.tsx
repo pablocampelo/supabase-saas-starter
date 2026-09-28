@@ -12,10 +12,10 @@ const faqs = [
   ["What is DaysNotWeeks?", "A focused Next.js foundation for individual-account subscription products. The Example Resource is deliberately small and replaceable."],
   ["What does the starter cover?", "The supported product surface is intentionally closed: public marketing, Google and email/password Auth, private user-owned data, one Free plan, one Pro entitlement, Billing, Account, Help, and the replaceable Example Resource."],
   ["Which authentication methods are supported?", "Google OAuth and email/password with verification, resend, and recovery. Magic-link authentication is intentionally not part of the product."],
-  ["Why Supabase?", "Supabase is the supported identity and Postgres platform. Private product data is user-owned and protected with row-level security rather than client-side entitlement checks."],
-  ["How is Stripe handled?", "The commercial model is Free plus one Pro plan, billed monthly or annually, using Checkout and Customer Portal. Pro access comes from trusted financial facts and confirmed paid-through semantics."],
-  ["Does access depend on the Checkout success page?", "No. A browser return never grants Pro. Payment confirmation and the local billing projection are server-owned responsibilities."],
-  ["Can I replace the Example Resource with my product?", "Yes. It exists to prove Auth, ownership, RLS, Pro gating, and CRUD together. Replacing it must not require rebuilding Auth, Billing, Account, configuration, or the app shell."],
+  ["Why Supabase?", "Supabase is the supported identity and Postgres platform. The private-data contract uses user ownership and Postgres row-level security rather than client-side entitlement checks."],
+  ["How is Stripe handled?", "The commercial model is Free plus one Pro plan, billed monthly or annually, using Checkout and Customer Portal. The billing contract derives Pro access from trusted financial facts and confirmed paid-through semantics."],
+  ["Does access depend on the Checkout success page?", "No. The supported billing contract never treats a browser return as authority for Pro access."],
+  ["Can I replace the Example Resource with my product?", "Yes. It is the replaceable boundary for exercising Auth, ownership, RLS, Pro gating, and CRUD together. Replacing it must not require rebuilding Auth, Billing, Account, configuration, or the app shell."],
   ["Does it support teams or organizations?", "No. DaysNotWeeks deliberately supports individual customer accounts only."],
   ["Is it friendly to coding agents?", "Yes. The structure favors few canonical documents, explicit boundaries, generated types, executable tests, and centralized configuration rather than agent-specific frameworks."],
   ["Where does it deploy?", "Vercel is the only supported deployment target, with Supabase and Stripe isolated across local, staging, and production environments."],
@@ -28,14 +28,14 @@ export function Landing({ pricing }: { pricing: PricingViewModel }) {
 
     <section id="features" className="border-t py-14 md:py-20" aria-labelledby="process-heading"><div className="site-container"><div className="lg:text-center"><p className="eyebrow">From clone to product</p><h2 id="process-heading" className="section-heading mx-auto mt-4 max-w-3xl">From foundation to revenue.</h2></div><ol className="mx-auto mt-12 grid max-w-xl gap-y-10 lg:max-w-6xl lg:grid-cols-3">{[
       { title: "Configure your foundation.", copy: "Set your brand, environments, Supabase, Auth email, and Stripe configuration on one supported path." },
-      { title: "Build your product.", copy: "Replace the Example Resource with your real domain while preserving Auth, ownership, RLS, account flows, and Billing." },
+      { title: "Build your product.", copy: "Replace the Example Resource with your real domain while preserving the Auth, ownership, RLS, account-flow, and Billing boundaries." },
       { title: "Verify and ship.", copy: "Run the critical local and hosted journeys, deploy to Vercel, and sell monthly or annual Pro access." },
     ].map(({ title, copy }, i) => <li key={title} className="relative grid min-w-0 grid-cols-[72px_minmax(0,1fr)] gap-x-5 lg:flex lg:flex-col lg:items-center lg:px-4 lg:text-center">{i < 2 && <span aria-hidden="true" className="absolute bottom-[-40px] left-9 top-[72px] w-px bg-border lg:bottom-auto lg:left-1/2 lg:top-9 lg:h-px lg:w-full"/>}<span className="relative z-10 flex size-[72px] shrink-0 items-center justify-center rounded-full border border-border bg-background font-heading text-2xl font-semibold tracking-tight text-foreground">0{i + 1}</span><div className="min-w-0 pt-4 lg:pt-7"><h3 className="text-xl leading-7 xl:text-2xl">{title}</h3><p className="mt-4 max-w-sm text-sm leading-7 text-muted-foreground lg:mx-auto lg:max-w-[32ch]">{copy}</p></div></li>)}</ol></div></section>
 
     <section className="section-space border-t bg-muted/40"><div className="site-container"><p className="eyebrow">What’s included</p><h2 className="section-heading mt-4">The parts every SaaS needs.<br/>Designed to work together.</h2><div className="mt-12 grid auto-rows-fr gap-6 sm:grid-cols-2 lg:grid-cols-3">{[
       {icon:KeyRound,title:"Authentication",copy:"Google OAuth plus email/password, verification, resend, and recovery on one Supabase Auth foundation."},
-      {icon:ShieldCheck,title:"Private data",copy:"A clear user-owned data contract demonstrated by the replaceable Example Resource and enforced with Postgres RLS."},
-      {icon:CreditCard,title:"Subscriptions",copy:"Free and Pro, monthly or annual, with Checkout, Customer Portal, paid-through access, and reconciliation as the supported model."},
+      {icon:ShieldCheck,title:"Private data",copy:"A user-owned data contract designed around Postgres RLS and demonstrated through a deliberately replaceable Example Resource."},
+      {icon:CreditCard,title:"Subscriptions",copy:"Free and Pro, monthly or annual, with Checkout, Customer Portal, paid-through access, and reconciliation as the supported billing contract."},
       {icon:UserRound,title:"Account flows",copy:"Profile, identity, billing, help, and recovery journeys built as responsive product surfaces."},
       {icon:Layers2,title:"Production safeguards",copy:"Explicit pending, failure, retained-data, concurrency, and recovery states rather than optimistic browser success."},
       {icon:Code2,title:"Adaptable architecture",copy:"Predictable structure, centralized configuration, semantic UI, explicit schemas, and small replaceable domain boundaries."},
