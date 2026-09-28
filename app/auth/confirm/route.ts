@@ -20,10 +20,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/auth/error?code=confirmation_failed", request.url));
   }
 
+  const next = safeReturnPath(request.nextUrl.searchParams.get("next"), request.nextUrl.origin);
   if (rawType === "recovery") {
-    return NextResponse.redirect(new URL("/reset-password", request.url));
+    const resetUrl = new URL("/reset-password", request.url);
+    resetUrl.searchParams.set("next", next);
+    return NextResponse.redirect(resetUrl);
   }
 
-  const next = safeReturnPath(request.nextUrl.searchParams.get("next"), request.nextUrl.origin);
   return NextResponse.redirect(new URL(next, request.url));
 }
