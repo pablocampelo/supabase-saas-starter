@@ -78,13 +78,17 @@ export async function signUpAction(_previous: AuthFormState, formData: FormData)
 }
 
 export async function forgotPasswordAction(_previous: AuthFormState, formData: FormData): Promise<AuthFormState> {
-  const parsed = z.object({ email }).safeParse({ email: stringValue(formData, "email") });
+  const parsed = z.object({ email, next: z.string().optional() }).safeParse({
+    email: stringValue(formData, "email"),
+    next: stringValue(formData, "next"),
+  });
   if (!parsed.success) return fields(parsed.error);
 
+  const next = safeReturnPath(parsed.data.next);
   const site = getSiteConfig();
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: new URL("/reset-password", site.url).toString(),
+    redirectTo: new URL(next, site.url).toString(),
   });
   if (error) return providerError(error);
 
