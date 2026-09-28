@@ -1,6 +1,6 @@
 # Phase 0 architecture
 
-The immutable product contract is `docs/product/V1_SCOPE.md`; `BUILD_SPEC.md` specifies its implementation. No conflict was found for this slice. Original contracts remain unchanged.
+The immutable product contract is `docs/product/V1_SCOPE.md` (V1 Scope 1.1); `BUILD_SPEC.md` specifies its implementation. This document describes the existing Phase 0 foundation. V1.1 requires Google OAuth, magic-link login, and email/password with verification/reset under Supabase Auth in the later auth slice; this reconciliation does not implement those flows or change the architecture.
 
 | Location | Responsibility |
 | --- | --- |

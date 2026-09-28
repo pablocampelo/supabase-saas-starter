@@ -1,5 +1,7 @@
 # Phase 0 — repository audit and foundation
 
+> **Historical / non-authoritative:** This report records the executed Phase 0 work before reconciliation with V1 Scope 1.1. Its findings and contract references describe that execution, not current product authority or auth scope. See [docs/product/V1_SCOPE.md](../product/V1_SCOPE.md) for the current contract.
+
 Date: 2026-09-24. Starting HEAD: `efc0152e5e68e46f81a947f2b9d4ccf413c1e54e`.
 
 ## Audit before edits
