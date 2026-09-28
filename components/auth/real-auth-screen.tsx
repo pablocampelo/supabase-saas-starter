@@ -68,7 +68,7 @@ export function RealAuthScreen({ mode, supportEmail }: { mode: Mode; supportEmai
   const forgotHref = authHref("/forgot-password", destination);
   const verificationEmail = search.get("email")?.trim() ?? "";
   const formRef = useRef<HTMLFormElement>(null);
-  const [editingRecovery, setEditingRecovery] = useState(false);
+  const [editingRecoveryState, setEditingRecoveryState] = useState<AuthFormState | null>(null);
 
   const [loginState, loginAction, loginPending] = useActionState(signInAction, initialAuthFormState);
   const [signupState, signupAction, signupPending] = useActionState(signUpAction, initialAuthFormState);
@@ -80,15 +80,11 @@ export function RealAuthScreen({ mode, supportEmail }: { mode: Mode; supportEmai
   const pending = mode === "login" ? loginPending : mode === "signup" ? signupPending : mode === "forgot-password" ? forgotPending : mode === "verify-email" ? resendPending : mode === "reset-password" ? resetPending : false;
 
   useEffect(() => {
-    if (forgotState.status === "sent") setEditingRecovery(false);
-  }, [forgotState]);
-
-  useEffect(() => {
     const first = Object.keys(state.fieldErrors ?? {})[0];
     if (first) formRef.current?.querySelector<HTMLInputElement>(`[name="${first}"]`)?.focus();
   }, [state]);
 
-  const sent = mode === "forgot-password" && forgotState.status === "sent" && !editingRecovery;
+  const sent = mode === "forgot-password" && forgotState.status === "sent" && editingRecoveryState !== forgotState;
   const success = mode === "reset-password" && resetState.status === "success";
   const invalidLink = mode === "reset-password" && resetState.code === "invalid_link";
   const centered = mode === "login" || mode === "forgot-password" || mode === "reset-password";
@@ -117,7 +113,7 @@ export function RealAuthScreen({ mode, supportEmail }: { mode: Mode; supportEmai
 
     {mode !== "verify-email" && mode !== "error" && <StateNotice state={state}/>} 
     {mode === "login" && loginState.code === "email_not_confirmed" && unverifiedHref && <Link className="text-link mt-4 inline-block" href={unverifiedHref}>Resend verification email</Link>}
-    {sent && <div className="mt-8 text-center"><Button variant="ghost" onClick={() => setEditingRecovery(true)}>Use a different email</Button></div>}
+    {sent && <div className="mt-8 text-center"><Button variant="ghost" onClick={() => setEditingRecoveryState(forgotState)}>Use a different email</Button></div>}
     {invalidLink && <Button asChild className="mt-6 w-full"><Link href={forgotHref}>Request a new reset link</Link></Button>}
     {success && <Button asChild className="mt-6 w-full"><Link href={loginHref}>Continue to sign in</Link></Button>}
 
