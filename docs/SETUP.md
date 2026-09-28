@@ -94,13 +94,13 @@ Configure the Supabase **Reset password** template to establish the recovery ses
 <h2>Reset your password</h2>
 <p>We received a request to reset your password. Follow the link below to choose a new one.</p>
 <p>
-  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password">
+  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next={{ .RedirectTo }}">
     Reset password
   </a>
 </p>
 ```
 
-After a successful password update, the application signs out the recovery session and requires a normal sign-in.
+`resetPasswordForEmail` supplies the original validated private destination as `.RedirectTo`. The confirmation route validates it again, establishes the recovery session, and then opens `/reset-password?next=...`. After a successful password update, the application signs out the recovery session and sends the user back through normal sign-in while preserving that safe destination.
 
 ### Google OAuth
 
@@ -120,7 +120,7 @@ Before release, verify on the deployed candidate SHA:
 - email/password signup;
 - confirmation email and resend;
 - invalid/expired confirmation behavior;
-- forgot/reset password and reused/expired recovery links;
+- forgot/reset password, preserved safe return path, and reused/expired recovery links;
 - logout and session refresh;
 - unauthenticated `/app` redirect plus safe `next` handling;
 - Account display-name update;
