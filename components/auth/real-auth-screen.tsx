@@ -12,15 +12,13 @@ import { Button } from "@/components/ui/button";
 import { productConfig } from "@/config/product";
 import {
   forgotPasswordAction,
-  initialAuthFormState,
   resendVerificationAction,
   resetPasswordAction,
   signInAction,
   signUpAction,
-  type AuthField,
-  type AuthFormState,
 } from "@/lib/auth/actions";
 import { safeReturnPath } from "@/lib/auth/redirects";
+import { initialAuthFormState, type AuthField, type AuthFormState } from "@/lib/auth/state";
 
 type Mode = "login" | "signup" | "verify-email" | "forgot-password" | "reset-password" | "error";
 
