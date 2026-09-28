@@ -40,6 +40,11 @@ const descriptions: Record<Mode, string> = {
   error: "We couldn’t complete that request. Try again or contact support for help.",
 };
 
+function authHref(path: string, next: string) {
+  const params = new URLSearchParams({ next });
+  return `${path}?${params.toString()}`;
+}
+
 function Field({ name, mode, error, defaultValue, disabled }: { name: AuthField; mode: Mode; error?: string; defaultValue?: string; disabled: boolean }) {
   const label = name === "confirm" ? "Confirm password" : name === "password" && mode === "reset-password" ? "New password" : name[0]!.toUpperCase() + name.slice(1);
   const type = name === "password" || name === "confirm" ? "password" : name === "email" ? "email" : "text";
@@ -58,6 +63,9 @@ function StateNotice({ state }: { state: AuthFormState }) {
 export function RealAuthScreen({ mode, supportEmail }: { mode: Mode; supportEmail: string }) {
   const search = useSearchParams();
   const destination = safeReturnPath(search.get("next"));
+  const loginHref = authHref("/login", destination);
+  const signupHref = authHref("/signup", destination);
+  const forgotHref = authHref("/forgot-password", destination);
   const verificationEmail = search.get("email")?.trim() ?? "";
   const formRef = useRef<HTMLFormElement>(null);
   const [editingRecovery, setEditingRecovery] = useState(false);
@@ -91,27 +99,31 @@ export function RealAuthScreen({ mode, supportEmail }: { mode: Mode; supportEmai
   const description = success ? "You can now sign in with your new password." : sent ? `We sent password reset instructions to ${forgotState.email}.` : invalidLink ? "Request a fresh link to continue. Recovery links can expire or be used only once." : descriptions[mode];
   const action = mode === "login" ? loginAction : mode === "signup" ? signupAction : mode === "forgot-password" ? forgotAction : resetAction;
   const submitLabel = pending ? "Please wait…" : mode === "login" ? "Sign in" : mode === "signup" ? "Create account" : mode === "forgot-password" ? "Send reset link" : "Update password";
+  const unverifiedHref = loginState.email
+    ? `/verify-email?email=${encodeURIComponent(loginState.email)}&next=${encodeURIComponent(destination)}`
+    : null;
 
-  return <AuthFrame signup={mode === "signup"} centered={centered} backHref={mode === "login" ? "/" : "/login"}>
-    {mode !== "signup" && !centered && <><Link href="/login" className="nav-link mb-9 inline-flex items-center gap-2"><ArrowLeft className="size-4" aria-hidden="true"/>Back</Link><div className="mb-7">{mode === "error" || invalidLink ? <CircleAlert className="size-8 text-warning" aria-hidden="true"/> : mode === "verify-email" || sent ? <Mail className="size-7" aria-hidden="true"/> : success ? <CircleCheck className="size-8 text-success" aria-hidden="true"/> : <KeyRound className="size-7" aria-hidden="true"/>}</div></>}
+  return <AuthFrame signup={mode === "signup"} centered={centered} backHref={mode === "login" ? "/" : loginHref} signInHref={loginHref}>
+    {mode !== "signup" && !centered && <><Link href={loginHref} className="nav-link mb-9 inline-flex items-center gap-2"><ArrowLeft className="size-4" aria-hidden="true"/>Back</Link><div className="mb-7">{mode === "error" || invalidLink ? <CircleAlert className="size-8 text-warning" aria-hidden="true"/> : mode === "verify-email" || sent ? <Mail className="size-7" aria-hidden="true"/> : success ? <CircleCheck className="size-8 text-success" aria-hidden="true"/> : <KeyRound className="size-7" aria-hidden="true"/>}</div></>}
     {(centered || mode === "signup") && <div className="mb-7 flex justify-center"><Image src="/icon.svg" width={32} height={32} alt={productConfig.name} unoptimized/></div>}
     <h1 className={`text-3xl leading-tight sm:text-4xl ${centered ? "text-center" : ""}`}>{heading}</h1>
     <p className={`mt-3 text-sm leading-7 text-muted-foreground ${centered ? "mb-6 text-center break-words" : ""}`}>{description}</p>
 
     {showGoogle && <div className="mt-8 space-y-5"><Button asChild variant="outline" className="w-full"><a href={`/auth/google?next=${encodeURIComponent(destination)}`}>Continue with Google</a></Button><div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t"/></div><div className="relative flex justify-center text-[11px] uppercase tracking-[.12em]"><span className="bg-background px-3 text-muted-foreground">or continue with email</span></div></div></div>}
 
-    {mode === "verify-email" && <div className="mt-7 space-y-5"><p className="break-words text-sm leading-7">{verificationEmail ? <>Verification instructions were sent to <strong>{verificationEmail}</strong>. Check your inbox and spam folder.</> : <>Open the verification email sent when you created your account.</>}</p>{verificationEmail && <form action={resendAction} className="space-y-4"><input type="hidden" name="email" value={verificationEmail}/><input type="hidden" name="next" value={destination}/><Button className="w-full" type="submit" disabled={resendPending}>{resendPending ? "Sending…" : "Resend verification email"}</Button></form>}<StateNotice state={resendState}/><Link className="text-link inline-block" href="/login">Back to sign in</Link></div>}
+    {mode === "verify-email" && <div className="mt-7 space-y-5"><p className="break-words text-sm leading-7">{verificationEmail ? <>Verification instructions were sent to <strong>{verificationEmail}</strong>. Check your inbox and spam folder.</> : <>Open the verification email sent when you created your account.</>}</p>{verificationEmail && <form action={resendAction} className="space-y-4"><input type="hidden" name="email" value={verificationEmail}/><input type="hidden" name="next" value={destination}/><Button className="w-full" type="submit" disabled={resendPending}>{resendPending ? "Sending…" : "Resend verification email"}</Button></form>}<StateNotice state={resendState}/><Link className="text-link inline-block" href={loginHref}>Back to sign in</Link></div>}
 
-    {showForm && <form ref={formRef} action={action} aria-busy={pending} className={mode === "signup" || centered ? "mt-8 space-y-5" : "space-y-5"}><input type="hidden" name="next" value={destination}/>{fields.map(field => <Field key={field} name={field} mode={mode} error={state.fieldErrors?.[field]} defaultValue={mode === "forgot-password" ? forgotState.email : undefined} disabled={pending}/>)}{mode === "login" && <div className="text-right"><Link href="/forgot-password" className="text-link">Forgot password?</Link></div>}<Button className="w-full" type="submit" disabled={pending}>{submitLabel}</Button>{pending && <p role="status" className="text-sm text-muted-foreground">Please wait…</p>}</form>}
+    {showForm && <form ref={formRef} action={action} aria-busy={pending} className={mode === "signup" || centered ? "mt-8 space-y-5" : "space-y-5"}><input type="hidden" name="next" value={destination}/>{fields.map(field => <Field key={field} name={field} mode={mode} error={state.fieldErrors?.[field]} defaultValue={mode === "forgot-password" ? forgotState.email : undefined} disabled={pending}/>)}{mode === "login" && <div className="text-right"><Link href={forgotHref} className="text-link">Forgot password?</Link></div>}<Button className="w-full" type="submit" disabled={pending}>{submitLabel}</Button>{pending && <p role="status" className="text-sm text-muted-foreground">Please wait…</p>}</form>}
 
     {mode !== "verify-email" && mode !== "error" && <StateNotice state={state}/>} 
+    {mode === "login" && loginState.code === "email_not_confirmed" && unverifiedHref && <Link className="text-link mt-4 inline-block" href={unverifiedHref}>Resend verification email</Link>}
     {sent && <div className="mt-8 text-center"><Button variant="ghost" onClick={() => setEditingRecovery(true)}>Use a different email</Button></div>}
-    {invalidLink && <Button asChild className="mt-6 w-full"><Link href="/forgot-password">Request a new reset link</Link></Button>}
-    {success && <Button asChild className="mt-6 w-full"><Link href="/login">Continue to sign in</Link></Button>}
+    {invalidLink && <Button asChild className="mt-6 w-full"><Link href={forgotHref}>Request a new reset link</Link></Button>}
+    {success && <Button asChild className="mt-6 w-full"><Link href={loginHref}>Continue to sign in</Link></Button>}
 
-    {mode === "error" && <div className="mt-7 space-y-5"><p className="text-xs text-muted-foreground">Support reference: AUTH-{search.get("code") ?? "ERROR"}</p><Button asChild className="w-full"><Link href="/login">Try again</Link></Button><a className="text-link block text-center" href={`mailto:${supportEmail}`}>Contact support</a></div>}
+    {mode === "error" && <div className="mt-7 space-y-5"><p className="text-xs text-muted-foreground">Support reference: AUTH-{search.get("code") ?? "ERROR"}</p><Button asChild className="w-full"><Link href={loginHref}>Try again</Link></Button><a className="text-link block text-center" href={`mailto:${supportEmail}`}>Contact support</a></div>}
     {mode === "signup" && <p className="mt-7 text-xs leading-6 text-muted-foreground">By creating an account, you agree to our <Link className="underline underline-offset-4" href="/terms">Terms of Service</Link> and <Link className="underline underline-offset-4" href="/privacy">Privacy Policy</Link>.</p>}
-    {mode !== "signup" && mode !== "forgot-password" && mode !== "verify-email" && mode !== "error" && <div className="mt-7 space-y-4 text-center text-sm text-muted-foreground">{mode === "login" ? <p>Don&apos;t have an account? <Link className="text-link text-foreground" href="/signup">Sign up</Link></p> : !success && <Link className="text-link" href="/login">Back to sign in</Link>}</div>}
+    {mode !== "signup" && mode !== "forgot-password" && mode !== "verify-email" && mode !== "error" && <div className="mt-7 space-y-4 text-center text-sm text-muted-foreground">{mode === "login" ? <p>Don&apos;t have an account? <Link className="text-link text-foreground" href={signupHref}>Sign up</Link></p> : !success && <Link className="text-link" href={loginHref}>Back to sign in</Link>}</div>}
   </AuthFrame>;
 }
 
@@ -119,8 +131,8 @@ function AuthBackLink({ href }: { href: string }) {
   return <nav aria-label="Back navigation" className="absolute left-6 top-7 z-10 sm:left-8 sm:top-8"><Link href={href} className="nav-link -ml-2 -mt-2 inline-flex min-h-10 items-center gap-2 rounded-md px-2"><ArrowLeft className="size-4" aria-hidden="true"/>Back</Link></nav>;
 }
 
-function AuthFrame({ signup, centered, backHref, children }: { signup: boolean; centered: boolean; backHref: string; children: ReactNode }) {
+function AuthFrame({ signup, centered, backHref, signInHref, children }: { signup: boolean; centered: boolean; backHref: string; signInHref: string; children: ReactNode }) {
   if (centered) return <div className="relative flex min-h-svh items-center justify-center px-6 py-24"><a className="skip-link" href="#main">Skip to content</a><AuthBackLink href={backHref}/><main id="main" className="w-full max-w-[400px]">{children}</main></div>;
-  if (signup) return <><a className="skip-link" href="#main">Skip to content</a><div className="relative grid min-h-svh md:grid-cols-2"><AuthBackLink href="/"/><AuthVisual/><div className="flex min-w-0 flex-col"><header className="flex min-h-20 flex-wrap items-center justify-end gap-x-2 gap-y-1 py-6 pl-28 pr-6 text-sm sm:pl-32 sm:pr-8 md:pl-6 lg:px-12"><span className="text-muted-foreground">Already have an account?</span><Link href="/login" className="text-link text-foreground">Sign in</Link></header><main id="main" className="flex flex-1 items-center px-6 pb-12 pt-8 sm:px-8 lg:px-12"><div className="mx-auto w-full max-w-[400px]">{children}</div></main></div></div></>;
+  if (signup) return <><a className="skip-link" href="#main">Skip to content</a><div className="relative grid min-h-svh md:grid-cols-2"><AuthBackLink href="/"/><AuthVisual/><div className="flex min-w-0 flex-col"><header className="flex min-h-20 flex-wrap items-center justify-end gap-x-2 gap-y-1 py-6 pl-28 pr-6 text-sm sm:pl-32 sm:pr-8 md:pl-6 lg:px-12"><span className="text-muted-foreground">Already have an account?</span><Link href={signInHref} className="text-link text-foreground">Sign in</Link></header><main id="main" className="flex flex-1 items-center px-6 pb-12 pt-8 sm:px-8 lg:px-12"><div className="mx-auto w-full max-w-[400px]">{children}</div></main></div></div></>;
   return <><a className="skip-link" href="#main">Skip to content</a><header className="site-container flex h-20 items-center justify-between"><Brand/><Link className="nav-link" href="/">Back to home</Link></header><main id="main" className="mx-auto w-full max-w-[440px] px-6 pb-20 pt-10 sm:pt-16">{children}</main></>;
 }
