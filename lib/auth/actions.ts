@@ -4,19 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { safeReturnPath } from "@/lib/auth/redirects";
+import type { AuthField, AuthFormState } from "@/lib/auth/state";
 import { getSiteConfig } from "@/config/site";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-
-export type AuthField = "name" | "email" | "password" | "confirm";
-export type AuthFormState = {
-  status: "idle" | "error" | "sent" | "success";
-  message?: string;
-  email?: string;
-  fieldErrors?: Partial<Record<AuthField, string>>;
-  code?: "invalid_credentials" | "email_not_confirmed" | "rate_limited" | "invalid_link" | "generic";
-};
-
-export const initialAuthFormState: AuthFormState = { status: "idle" };
 
 const email = z.string().trim().min(1, "Enter your email.").email("Enter a valid email address.");
 const password = z.string().min(8, "Use at least 8 characters.").max(128, "Use 128 characters or fewer.");
@@ -56,7 +46,7 @@ export async function signInAction(_previous: AuthFormState, formData: FormData)
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
-  if (error) return providerError(error);
+  if (error) return { ...providerError(error), email: parsed.data.email };
 
   revalidatePath("/", "layout");
   redirect(safeReturnPath(parsed.data.next));
@@ -96,7 +86,6 @@ export async function forgotPasswordAction(_previous: AuthFormState, formData: F
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: new URL("/reset-password", site.url).toString(),
   });
-  if (error && (error.code?.includes("rate_limit") || error.code?.includes("over_email_send_rate_limit"))) return providerError(error);
   if (error) return providerError(error);
 
   return { status: "sent", email: parsed.data.email, message: `We sent password reset instructions to ${parsed.data.email}.` };
