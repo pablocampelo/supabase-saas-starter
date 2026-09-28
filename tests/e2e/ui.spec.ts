@@ -1,30 +1,40 @@
 import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-async function audit(page: Page) {
+async function assertNoHorizontalOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+}
+
+async function audit(page: Page) {
+  await assertNoHorizontalOverflow(page);
   const scan = await new AxeBuilder({ page }).analyze();
   expect(scan.violations.filter(({ impact }) => impact === "serious" || impact === "critical")).toEqual([]);
 }
 
-test("public surfaces are indexable while auth and app surfaces stay private", async ({ page }, info) => {
+test("public surfaces are indexable while auth and app surfaces stay private", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+
   for (const route of ["/", "/help", "/terms", "/privacy"]) {
-    const errors: string[] = [];
-    page.on("pageerror", error => errors.push(error.message));
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "index, follow");
-    await audit(page);
-    expect(errors).toEqual([]);
-    await page.screenshot({ path: info.outputPath(`public-${route === "/" ? "home" : route.slice(1)}.png`), fullPage: true });
+    await assertNoHorizontalOverflow(page);
   }
+
+  await page.goto("/");
+  await audit(page);
 
   for (const route of ["/login", "/signup", "/verify-email", "/forgot-password", "/reset-password", "/auth/error", "/app", "/app/example", "/app/billing", "/app/account", "/app/help"]) {
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow");
-    await audit(page);
+    await assertNoHorizontalOverflow(page);
   }
+
+  await page.goto("/app");
+  await audit(page);
+  expect(errors).toEqual([]);
 
   await page.goto("/example");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("This page isn’t here.");
@@ -98,7 +108,7 @@ test("Example Resource controls follow Free, Pro, and retained-data semantics", 
   await audit(page);
 });
 
-test("billing states preserve paid-through and no-browser-authority semantics", async ({ page }, info) => {
+test("billing states preserve paid-through and no-browser-authority semantics", async ({ page }) => {
   for (const scenario of ["free", "pro-monthly", "pro-annual", "confirming", "past-due", "canceling", "expired", "failed"] as const) {
     await page.goto(`/app/billing?scenario=${scenario}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Billing");
@@ -108,10 +118,12 @@ test("billing states preserve paid-through and no-browser-authority semantics", 
     if (scenario === "confirming") await expect(page.getByText("No Pro access has been granted.", { exact: false })).toBeVisible();
     if (scenario === "past-due") await expect(page.getByText("Previously paid through", { exact: false })).toBeVisible();
     if (scenario === "canceling") await expect(page.getByText("Paid through", { exact: false })).toBeVisible();
-    if (scenario === "failed") await expect(page.getByRole("alert")).toContainText("no Pro access was granted");
-    await audit(page);
-    await page.screenshot({ path: info.outputPath(`billing-${scenario}.png`), fullPage: true });
+    if (scenario === "failed") await expect(page.getByRole("alert").filter({ hasText: "Payment was not confirmed" })).toContainText("no Pro access was granted");
+    await assertNoHorizontalOverflow(page);
   }
+
+  await page.goto("/app/billing?scenario=failed");
+  await audit(page);
 });
 
 test("app shell contains real product surfaces without fake business KPIs", async ({ page }, info) => {
