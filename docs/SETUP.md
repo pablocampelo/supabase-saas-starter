@@ -4,16 +4,65 @@
 
 ## Local foundation
 
-1. Use the Node and pnpm versions committed by the repository. The current baseline is Node 24.x and pnpm 11.19.0.
-2. Run `pnpm install --frozen-lockfile`.
-3. Copy `.env.example` to `.env.local`.
-4. Set the current required values:
-   - `NEXT_PUBLIC_SITE_URL`
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-   - `SUPPORT_EMAIL`
-5. Run `pnpm dev`.
-6. Run the current local checks:
+Local application development uses a local Supabase stack and Mailpit. It does **not** require Resend, DNS, a hosted Supabase project or a public domain.
+
+Prerequisites:
+
+- Node and pnpm versions committed by the repository (currently Node 24.x and pnpm 11.19.0);
+- Docker Desktop or another Docker-compatible runtime running locally.
+
+Install dependencies and start the pinned Supabase CLI stack:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm supabase:start
+pnpm supabase:status
+```
+
+The repository pins Supabase CLI `2.118.0` in the package scripts via `pnpm dlx`; it is not added to application runtime dependencies.
+
+`pnpm supabase:status` prints the local API URL and browser-safe publishable key. Copy `.env.example` to `.env.local` and use the local values:
+
+```text
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable key printed by pnpm supabase:status>
+SUPPORT_EMAIL=support@example.com
+```
+
+Then start Next.js:
+
+```sh
+pnpm dev
+```
+
+Local service defaults committed in `supabase/config.toml`:
+
+- Supabase API: `http://127.0.0.1:54321`;
+- Postgres: port `54322`;
+- Supabase Studio: `http://127.0.0.1:54323`;
+- Mailpit: `http://127.0.0.1:54324`.
+
+The local Auth configuration enables email confirmations and uses the committed `supabase/templates/confirmation.html` and `supabase/templates/recovery.html` templates. These use the same `TokenHash -> /auth/confirm -> verifyOtp()` SSR/PKCE path required by hosted Auth. `http://localhost:3000/**` is allowed only in the local configuration; do not copy that wildcard to production.
+
+To exercise the local email/password journey:
+
+1. Open `http://localhost:3000/signup` and create a user.
+2. Open Mailpit at `http://127.0.0.1:54324`.
+3. Open the confirmation email and follow its link; it should pass through `/auth/confirm` and land in the private app.
+4. Sign out.
+5. Request password recovery from the login/recovery UI.
+6. Open the recovery message in Mailpit and follow its link; it should pass through `/auth/confirm?type=recovery` and open `/reset-password` with a recovery session.
+7. Set a new password and sign in normally.
+8. Exercise resend verification with a fresh unconfirmed account if needed.
+
+No email leaves the machine in this workflow. Stop the stack with:
+
+```sh
+pnpm supabase:stop
+```
+
+Run the current application checks separately:
 
 ```sh
 pnpm lint
@@ -24,11 +73,11 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-The browser regression suite uses synthetic public configuration and an `E2E_AUTH_BYPASS` flag injected only by Playwright. The bypass is ignored in production and is not an application authentication mechanism. Local browser checks do not certify hosted Supabase Auth, SMTP, Google OAuth, Stripe or Vercel behavior.
+The browser regression suite uses synthetic public configuration and an `E2E_AUTH_BYPASS` flag injected only by Playwright. The bypass is ignored in production and is not an application authentication mechanism. Local browser checks and Mailpit flows do not certify hosted SMTP, Google OAuth, Stripe or Vercel behavior.
 
 ## Safe local build fixture
 
-For a build-only check without remote provider setup, tests may use synthetic values such as:
+For a build-only check without starting the local Supabase stack, tests may use synthetic values such as:
 
 ```text
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
@@ -74,12 +123,13 @@ Magic-link authentication is OUT.
 
 ### Redirect URLs
 
-Configure Supabase Auth so each environment allows the application origin and these server endpoints:
+Configure hosted Supabase Auth so each environment allows only the application URLs it actually needs. The application uses:
 
 - `/auth/callback` for Google OAuth PKCE exchange;
-- `/auth/confirm` for email confirmation and recovery token exchange.
+- `/auth/confirm` for email confirmation and recovery token exchange;
+- private `/app` destinations as validated post-auth return paths.
 
-Keep local, staging and production origins isolated. Do not add wildcard production redirects broader than the deployed application requires.
+Keep local, staging and production origins isolated. A broad `http://localhost:3000/**` wildcard is committed only for local development; use exact deployed URLs in production wherever practical.
 
 ### Auth email / SMTP
 
@@ -109,11 +159,11 @@ Configure these values in the Supabase project's **Authentication → Emails →
 
 For hosted projects, configure custom SMTP before relying on production email delivery or hosted email-template customization. Supabase's default email provider is for limited testing and may impose delivery/template restrictions.
 
-Local Supabase development should use the Supabase mail catcher rather than hosted SMTP credentials.
+Local Supabase development uses Mailpit instead of hosted SMTP credentials.
 
 ### Confirm signup template
 
-After custom SMTP is configured, set the Supabase **Confirm signup** template to send the token hash to the application confirmation route:
+The local template is committed at `supabase/templates/confirmation.html`. For hosted Supabase, configure the **Confirm signup** template with the same token-hash link:
 
 ```html
 <h2>Confirm your email address</h2>
@@ -129,7 +179,7 @@ The application validates the resulting return destination against the same-orig
 
 ### Password recovery template
 
-Set the Supabase **Reset password** template to establish the recovery session through `/auth/confirm` before rendering the password form:
+The local template is committed at `supabase/templates/recovery.html`. Configure the hosted Supabase **Reset password** template with the same recovery flow:
 
 ```html
 <h2>Reset your password</h2>
@@ -146,6 +196,8 @@ Set the Supabase **Reset password** template to establish the recovery session t
 ### Google OAuth
 
 Enable only Google for the supported OAuth surface. Configure the Google project, consent screen and Supabase callback values independently for staging and production. The application starts OAuth at `/auth/google` and exchanges the returned authorization code at `/auth/callback`.
+
+Google OAuth is not enabled in the committed local Supabase configuration because it requires deployer-owned OAuth credentials. Email/password Auth is fully testable locally without Google.
 
 ### Hosted Auth verification
 
