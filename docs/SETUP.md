@@ -48,6 +48,17 @@ Synthetic values are not operational credentials. A successful local build is no
 - Missing or invalid required configuration must fail safely without printing supplied secret values.
 - `E2E_AUTH_BYPASS` is test-only, is set by Playwright, and must never be treated as an operational setting.
 
+## Provider ownership
+
+DaysNotWeeks integrates external providers but does not proxy or resell them. Each deployed product owns and configures its own:
+
+- Supabase project;
+- Resend account and sending domain;
+- Stripe account;
+- provider credentials and DNS.
+
+Do not use a DaysNotWeeks-owned sending domain, SMTP credential or provider account in a customer deployment. This keeps deliverability, billing, abuse controls, secret ownership and operational recovery isolated to the deployed product.
+
 ## Supabase Auth
 
 The application implements exactly the Scope 2.0 authentication surface:
@@ -70,9 +81,39 @@ Configure Supabase Auth so each environment allows the application origin and th
 
 Keep local, staging and production origins isolated. Do not add wildcard production redirects broader than the deployed application requires.
 
+### Auth email / SMTP
+
+Hosted authentication email is sent by **Supabase Auth through the deployer's own Resend SMTP configuration**. The Next.js application does not use the Resend SDK merely to deliver Auth email, and Resend SMTP credentials do not belong in `.env.local` or any `NEXT_PUBLIC_*` variable.
+
+Recommended production boundary:
+
+- use a dedicated Auth sending domain such as `auth.example.com`;
+- use a sender such as `no-reply@auth.example.com`;
+- keep Auth email separate from marketing email reputation;
+- verify the sending domain in Resend with the DNS records Resend supplies;
+- disable click/open tracking for Auth email so provider link rewriting cannot interfere with verification/recovery links;
+- keep staging/test and production sending identities isolated when practical.
+
+Resend SMTP settings for Supabase:
+
+```text
+Host: smtp.resend.com
+Port: 465
+Username: resend
+Password: <customer-owned Resend API key>
+Sender email: no-reply@auth.example.com
+Sender name: <product name>
+```
+
+Configure these values in the Supabase project's **Authentication → Emails → SMTP Settings** (or equivalent current Auth SMTP configuration). The SMTP password is provider configuration owned by Supabase/Resend, not an application runtime secret.
+
+For hosted projects, configure custom SMTP before relying on production email delivery or hosted email-template customization. Supabase's default email provider is for limited testing and may impose delivery/template restrictions.
+
+Local Supabase development should use the Supabase mail catcher rather than hosted SMTP credentials.
+
 ### Confirm signup template
 
-For SSR email confirmation, configure the Supabase **Confirm signup** template to send the token hash to the application confirmation route:
+After custom SMTP is configured, set the Supabase **Confirm signup** template to send the token hash to the application confirmation route:
 
 ```html
 <h2>Confirm your email address</h2>
@@ -88,7 +129,7 @@ The application validates the resulting return destination against the same-orig
 
 ### Password recovery template
 
-Configure the Supabase **Reset password** template to establish the recovery session through `/auth/confirm` before rendering the password form:
+Set the Supabase **Reset password** template to establish the recovery session through `/auth/confirm` before rendering the password form:
 
 ```html
 <h2>Reset your password</h2>
@@ -106,12 +147,6 @@ Configure the Supabase **Reset password** template to establish the recovery ses
 
 Enable only Google for the supported OAuth surface. Configure the Google project, consent screen and Supabase callback values independently for staging and production. The application starts OAuth at `/auth/google` and exchanges the returned authorization code at `/auth/callback`.
 
-### Auth email / SMTP
-
-Hosted authentication email is sent by **Supabase Auth through Resend SMTP**. Configure a verified Resend domain/sender, SPF/DKIM and Supabase custom SMTP settings. SMTP credentials live in Supabase/provider configuration, not in the Next.js browser bundle. The application does not use the Resend SDK merely to deliver Auth email.
-
-Local Supabase development should use the Supabase mail catcher rather than a hosted SMTP credential.
-
 ### Hosted Auth verification
 
 Before release, verify on the deployed candidate SHA:
@@ -125,6 +160,8 @@ Before release, verify on the deployed candidate SHA:
 - unauthenticated `/app` redirect plus safe `next` handling;
 - Account display-name update;
 - support behavior for sensitive account changes.
+
+Hosted release evidence belongs to the deployer's provider configuration. Do not hard-code a DaysNotWeeks domain or SMTP account into the starter merely to make these checks pass.
 
 ## Current billing-config gap
 
