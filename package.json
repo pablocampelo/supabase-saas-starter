@@ -13,7 +13,10 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "supabase:start": "pnpm dlx supabase@2.118.0 start",
+    "supabase:stop": "pnpm dlx supabase@2.118.0 stop",
+    "supabase:status": "pnpm dlx supabase@2.118.0 status"
   },
   "dependencies": {
     "@fontsource-variable/funnel-sans": "5.3.0",
