@@ -88,11 +88,21 @@ select ok(
   'authenticated users cannot write financial state'
 );
 
+select ok(
+  not has_function_privilege('anon', 'public.has_pro()', 'EXECUTE'),
+  'anonymous cannot call the entitlement API'
+);
+
+select ok(
+  has_function_privilege('authenticated', 'public.has_pro()', 'EXECUTE'),
+  'authenticated users can call the current-user entitlement API'
+);
+
 -- Free user A: retained own data is readable/deletable, premium writes are denied.
 set local role authenticated;
 set local request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
 
-select is(private.has_pro(), false, 'Free user has no Pro entitlement');
+select is(public.has_pro(), false, 'Free user has no Pro entitlement');
 select is((select count(*) from public.example_resources), 1::bigint, 'A can only read A resources');
 select is((select title from public.example_resources limit 1), 'Free retained', 'A sees the retained own resource');
 
@@ -121,7 +131,7 @@ reset role;
 set local role authenticated;
 set local request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
 
-select is(private.has_pro(), true, 'Paid-through user has Pro entitlement');
+select is(public.has_pro(), true, 'Paid-through user has Pro entitlement');
 select is((select count(*) from public.example_resources), 1::bigint, 'B can only read B resources before creating');
 
 select results_eq(
@@ -155,7 +165,7 @@ reset role;
 set local role authenticated;
 set local request.jwt.claim.sub = '33333333-3333-4333-8333-333333333333';
 
-select is(private.has_pro(), false, 'Expired paid-through revokes Pro entitlement');
+select is(public.has_pro(), false, 'Expired paid-through revokes Pro entitlement');
 select is((select count(*) from public.example_resources), 1::bigint, 'Revoked user can still read retained own data');
 select is((select title from public.example_resources limit 1), 'Revoked retained', 'Revoked user sees retained own resource');
 
