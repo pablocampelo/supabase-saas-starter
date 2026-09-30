@@ -6,22 +6,33 @@ The canonical product contract is [`docs/product/SCOPE.md`](docs/product/SCOPE.m
 
 ## Current repository state
 
-The repository currently contains the Phase 0 foundation only: App Router, strict TypeScript, Tailwind, product/env/catalog foundations, unprivileged Supabase clients, and local unit/browser verification. Auth flows, database schema/RLS, billing, Dashboard/Example, Account/Help, CI, hosted verification, and billing recovery are not yet implemented.
+The repository currently contains the permanent Scope 2.0 UI/design-system foundation plus real Supabase Auth integration: Google OAuth entry/callback, email/password signup and sign-in, email verification/resend surfaces, password recovery/reset, SSR cookie sessions, logout, protected `/app` routing, safe internal redirects, and Account display-name updates.
+
+Local Supabase Auth is configured in-repo with Mailpit and token-hash confirmation/recovery templates. Hosted provider configuration is still required for Google OAuth and production Auth email delivery. Database schema/RLS, real Example persistence/entitlements, Stripe billing, CI/release automation, and final hosted release evidence are not yet complete.
 
 Do not infer implemented behavior from the product Scope; see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the current implementation boundary.
 
 ## Local start
 
-Use the versions committed by the repository (`package.json`, lockfile and `.node-version`). At the current baseline this is Node 24 and pnpm 11.19.0.
+Use the versions committed by the repository (`package.json`, lockfile and `.node-version`). At the current baseline this is Node 24 and pnpm 11.19.0. Docker must be running for the local Supabase stack.
 
 ```sh
 pnpm install --frozen-lockfile
+pnpm supabase:start
+pnpm supabase:status
 ```
 
-Copy `.env.example` to `.env.local`, provide the current required public Supabase configuration and support email, then:
+Copy `.env.example` to `.env.local`, set `NEXT_PUBLIC_SITE_URL=http://localhost:3000`, use the local Supabase URL/publishable key printed by `pnpm supabase:status`, and set a local support email. Then:
 
 ```sh
 pnpm dev
+```
+
+Local Auth email is captured by Mailpit at `http://127.0.0.1:54324`; no Resend account, DNS or public domain is required for local signup/confirmation/recovery testing.
+
+Run the application checks separately:
+
+```sh
 pnpm lint
 pnpm typecheck
 pnpm test
@@ -30,7 +41,15 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-These local checks do not certify hosted Google OAuth, Resend SMTP, real RLS, Stripe, or Vercel behavior.
+Stop local Supabase with `pnpm supabase:stop`.
+
+These local checks do not certify hosted Google OAuth, customer-owned Resend SMTP, real RLS, Stripe, or Vercel behavior.
+
+## Provider ownership
+
+The starter integrates with external providers but does not proxy or resell them. Each deployed product uses its own Supabase project, Resend account/sending domain and Stripe account. Provider credentials and DNS remain owned by the deployer and are never shared with DaysNotWeeks.
+
+For Auth email, Supabase Auth sends through the deployer's Resend SMTP configuration. The Next.js application does not need Resend SDK credentials merely to deliver Supabase Auth email.
 
 ## Documentation
 

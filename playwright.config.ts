@@ -14,7 +14,7 @@ export default defineConfig({
     command: "pnpm dev --hostname 127.0.0.1 --port 3100",
     url: "http://127.0.0.1:3100",
     reuseExistingServer: false,
-    env: { ...foundationEnv, NEXT_PUBLIC_SITE_URL: "http://127.0.0.1:3100" },
+    env: { ...foundationEnv, NEXT_PUBLIC_SITE_URL: "http://127.0.0.1:3100", E2E_AUTH_BYPASS: "1" },
     timeout: 120_000,
   },
 });

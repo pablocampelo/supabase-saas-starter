@@ -1,25 +1,18 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useActionState } from "react";
 import Link from "next/link";
 import { useAppUi } from "./app-shell";
 import { Badge, PageHeader, Panel, Notice } from "@/components/shared/patterns";
-import { PreviewButton } from "@/components/shared/preview-button";
 import { Button } from "@/components/ui/button";
-import { previewAction } from "@/lib/ui/actions";
+import { updateDisplayNameAction } from "@/lib/auth/actions";
+import { initialAuthFormState } from "@/lib/auth/state";
 
 export function Account() {
   const { app, supportEmail } = useAppUi();
-  const [name, setName] = useState(app.user.name);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
-  async function save(event: FormEvent) {
-    event.preventDefault();
-    setMessage("");
-    if (!name.trim()) { setError("Enter your name."); return; }
-    setError("");
-    setMessage((await previewAction("save-profile")).message);
-  }
+  const [state, action, pending] = useActionState(updateDisplayNameAction, initialAuthFormState);
+  const nameError = state.fieldErrors?.name;
+  const accountNext = encodeURIComponent("/app/account");
 
-  return <><PageHeader title="Account" description="Manage your identity, profile, and account access."/><div className="max-w-3xl space-y-6"><Panel title="Profile"><form noValidate onSubmit={save} className="space-y-5"><label htmlFor="profile-name" className="field"><span id="profile-name-label">Name</span><input aria-labelledby="profile-name-label" id="profile-name" autoComplete="name" maxLength={100} value={name} onChange={event => setName(event.target.value)} aria-invalid={!!error} aria-describedby={error ? "name-error" : undefined}/>{error && <span id="name-error" className="field-error" role="alert">{error}</span>}</label><Button type="submit">Save changes</Button>{message && <Notice>{message}</Notice>}</form></Panel><Panel title="Email"><label className="field" htmlFor="account-email">Email address<input id="account-email" type="email" value={app.user.email} readOnly/></label><div className="my-4"><Badge tone={app.user.emailVerified ? "success" : "warning"}>{app.user.emailVerified ? "Verified" : "Unverified"}</Badge></div>{!app.user.emailVerified && <Link className="text-link" href="/verify-email">Verify your email</Link>}<p className="mt-3 text-sm leading-7 text-muted-foreground">Email changes affect account access. Contact support to request a sensitive change.</p></Panel><Panel title="Security"><p className="mb-5 text-sm leading-7 text-muted-foreground">Request a recovery link to choose a new password.</p><PreviewButton action="reset">Send password reset link</PreviewButton><Link className="text-link mt-4 inline-block" href="/forgot-password">Password recovery</Link></Panel><Panel title="Sensitive changes"><p className="mb-5 text-sm leading-7 text-muted-foreground">Advanced email changes and automated account deletion are outside the supported self-service surface. Contact support for sensitive account questions. Never share your password, card details, or secret keys.</p><Button asChild variant="outline"><a href={`mailto:${supportEmail}`}>Contact support</a></Button></Panel></div></>;
+  return <><PageHeader title="Account" description="Manage your identity, profile, and account access."/><div className="max-w-3xl space-y-6"><Panel title="Profile"><form action={action} className="space-y-5"><label htmlFor="profile-name" className="field"><span id="profile-name-label">Name</span><input aria-labelledby="profile-name-label" id="profile-name" name="name" autoComplete="name" maxLength={100} defaultValue={app.user.name} disabled={pending} aria-invalid={!!nameError} aria-describedby={nameError ? "name-error" : undefined}/>{nameError && <span id="name-error" className="field-error" role="alert">{nameError}</span>}</label><Button type="submit" disabled={pending}>{pending ? "Saving…" : "Save changes"}</Button>{state.message && <Notice tone={state.status === "success" ? "success" : "danger"}>{state.message}</Notice>}</form></Panel><Panel title="Email"><label className="field" htmlFor="account-email">Email address<input id="account-email" type="email" value={app.user.email} readOnly/></label><div className="my-4"><Badge tone={app.user.emailVerified ? "success" : "warning"}>{app.user.emailVerified ? "Verified" : "Unverified"}</Badge></div>{!app.user.emailVerified && <Link className="text-link" href={`/verify-email?email=${encodeURIComponent(app.user.email)}&next=${accountNext}`}>Verify your email</Link>}<p className="mt-3 text-sm leading-7 text-muted-foreground">Email changes affect account access. Contact support to request a sensitive change.</p></Panel><Panel title="Security"><p className="mb-5 text-sm leading-7 text-muted-foreground">Use password recovery to choose a new password through a verified email link.</p><Button asChild variant="outline"><Link href={`/forgot-password?next=${accountNext}`}>Password recovery</Link></Button></Panel><Panel title="Sensitive changes"><p className="mb-5 text-sm leading-7 text-muted-foreground">Advanced email changes and automated account deletion are outside the supported self-service surface. Contact support for sensitive account questions. Never share your password, card details, or secret keys.</p><Button asChild variant="outline"><a href={`mailto:${supportEmail}`}>Contact support</a></Button></Panel></div></>;
 }
