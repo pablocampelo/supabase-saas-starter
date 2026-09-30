@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isE2EAuthBypassEnabled } from "@/lib/auth/e2e";
 import { safeReturnPath } from "@/lib/auth/redirects";
 import { getPublicEnv } from "@/lib/env/public";
+import type { Database } from "@/lib/supabase/database.types";
 
 function privateResponse(response: NextResponse) {
   response.headers.set("Cache-Control", "private, no-store");
@@ -26,7 +27,7 @@ export async function updateSession(request: NextRequest) {
   const env = getPublicEnv();
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(
+  const supabase = createServerClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     {
