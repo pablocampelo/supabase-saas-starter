@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, FileText, Plus, Trash2 } from "lucide-react";
 import { useAppUi } from "./app-shell";
@@ -22,11 +22,7 @@ function DeleteExample({ example }: { example: ExampleResourceViewModel }) {
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(deleteExampleAction, initialExampleActionState);
 
-  useEffect(() => {
-    if (state.status === "preview") setOpen(false);
-  }, [state]);
-
-  return <><Button variant="ghost" size="sm" aria-label={`Delete ${example.title}`} onClick={() => setOpen(true)}><Trash2 aria-hidden="true"/><span className="hidden sm:inline">Delete</span></Button><Dialog open={open} onClose={() => setOpen(false)} title="Delete resource?" description="This action cannot be undone."><p className="mb-5 break-words text-sm text-muted-foreground">“{example.title}” will be permanently deleted.</p><div className="flex flex-wrap justify-end gap-3"><Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>Cancel</Button><form action={action}><input type="hidden" name="id" value={example.id}/><Button variant="destructive" type="submit" disabled={pending}>{pending ? "Deleting…" : "Delete resource"}</Button></form></div>{state.status === "error" && state.message && <div className="mt-4"><Notice tone="danger">{state.message}</Notice></div>}</Dialog>{!open && state.message && <div className="basis-full"><Notice tone={actionTone(state)}>{state.message}</Notice></div>}</>;
+  return <><Button variant="ghost" size="sm" aria-label={`Delete ${example.title}`} onClick={() => setOpen(true)}><Trash2 aria-hidden="true"/><span className="hidden sm:inline">Delete</span></Button><Dialog open={open} onClose={() => setOpen(false)} title="Delete resource?" description="This action cannot be undone."><p className="mb-5 break-words text-sm text-muted-foreground">“{example.title}” will be permanently deleted.</p><div className="flex flex-wrap justify-end gap-3"><Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>Cancel</Button><form action={action} onSubmit={() => setOpen(false)}><input type="hidden" name="id" value={example.id}/><Button variant="destructive" type="submit" disabled={pending}>{pending ? "Deleting…" : "Delete resource"}</Button></form></div>{state.status === "error" && state.message && <div className="mt-4"><Notice tone="danger">{state.message}</Notice></div>}</Dialog>{!open && state.message && <div className="basis-full"><Notice tone={actionTone(state)}>{state.message}</Notice></div>}</>;
 }
 
 export function ExampleList() {
