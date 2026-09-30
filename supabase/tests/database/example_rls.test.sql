@@ -103,30 +103,15 @@ select throws_ok(
   'Free cannot create Example resources'
 );
 
-select is(
-  (
-    with changed as (
-      update public.example_resources
-      set title = 'Denied free update'
-      where title = 'Free retained'
-      returning 1
-    )
-    select count(*) from changed
-  ),
-  0::bigint,
+select results_eq(
+  $$update public.example_resources set title = 'Denied free update' where title = 'Free retained' returning 1$$,
+  $$select 1 where false$$,
   'Free cannot edit retained resources'
 );
 
-select is(
-  (
-    with deleted as (
-      delete from public.example_resources
-      where title = 'Free retained'
-      returning 1
-    )
-    select count(*) from deleted
-  ),
-  1::bigint,
+select results_eq(
+  $$delete from public.example_resources where title = 'Free retained' returning 1$$,
+  $$values (1)$$,
   'Free can delete retained own resources'
 );
 
@@ -145,17 +130,9 @@ select results_eq(
   'Pro can create and owner defaults to the authenticated identity'
 );
 
-select is(
-  (
-    with changed as (
-      update public.example_resources
-      set title = 'Pro updated'
-      where title = 'Pro created'
-      returning 1
-    )
-    select count(*) from changed
-  ),
-  1::bigint,
+select results_eq(
+  $$update public.example_resources set title = 'Pro updated' where title = 'Pro created' returning 1$$,
+  $$values (1)$$,
   'Pro can edit own resources'
 );
 
@@ -166,16 +143,9 @@ select throws_ok(
   'Authenticated client cannot transfer Example ownership'
 );
 
-select is(
-  (
-    with deleted as (
-      delete from public.example_resources
-      where title = 'Pro updated'
-      returning 1
-    )
-    select count(*) from deleted
-  ),
-  1::bigint,
+select results_eq(
+  $$delete from public.example_resources where title = 'Pro updated' returning 1$$,
+  $$values (1)$$,
   'Pro can delete own resources'
 );
 
@@ -196,30 +166,15 @@ select throws_ok(
   'Revoked Pro cannot create Example resources'
 );
 
-select is(
-  (
-    with changed as (
-      update public.example_resources
-      set title = 'Denied revoked update'
-      where title = 'Revoked retained'
-      returning 1
-    )
-    select count(*) from changed
-  ),
-  0::bigint,
+select results_eq(
+  $$update public.example_resources set title = 'Denied revoked update' where title = 'Revoked retained' returning 1$$,
+  $$select 1 where false$$,
   'Revoked Pro cannot edit retained resources'
 );
 
-select is(
-  (
-    with deleted as (
-      delete from public.example_resources
-      where title = 'Revoked retained'
-      returning 1
-    )
-    select count(*) from deleted
-  ),
-  1::bigint,
+select results_eq(
+  $$delete from public.example_resources where title = 'Revoked retained' returning 1$$,
+  $$values (1)$$,
   'Revoked Pro can delete retained own resources'
 );
 
