@@ -321,7 +321,6 @@ export async function processStripeEvent(event: Stripe.Event) {
     const { error: finishError } = await admin.rpc("finish_billing_event", {
       p_event_id: event.id,
       p_status: result === "ignored" ? "ignored" : "processed",
-      p_failure_code: null,
     });
     if (finishError) throw new Error("BILLING_EVENT_FINISH_FAILED");
     return result;
