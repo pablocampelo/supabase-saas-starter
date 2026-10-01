@@ -1,6 +1,10 @@
 alter table public.billing_projection
   add column cancel_at_period_end boolean not null default false;
 
+create unique index billing_checkout_attempts_one_open_per_user
+  on public.billing_checkout_attempts (user_id)
+  where status = 'created';
+
 create or replace function public.claim_billing_event(
   p_event_id text,
   p_event_type text,
