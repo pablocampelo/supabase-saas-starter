@@ -5,35 +5,35 @@ import { foundationEnv } from "../fixtures/env";
 
 const valid = {
   currency: "usd",
-  monthly: { priceId: "price_monthly", amount: 1200, interval: "month", active: true },
-  annual: { priceId: "price_annual", amount: 12000, interval: "year", active: true },
+  monthly: { priceId: "price_monthly", interval: "month" },
+  annual: { priceId: "price_annual", interval: "year" },
 };
 
 describe("server-owned catalog foundation", () => {
-  it("preserves the two supported intervals and amounts", () => {
+  it("preserves exactly the two supported Stripe Price IDs and intervals", () => {
     expect(parsePurchasableCatalog(valid)).toEqual(valid);
   });
+
   it.each([
     { ...valid, monthly: { ...valid.monthly, priceId: undefined } },
     { ...valid, annual: { ...valid.annual, priceId: valid.monthly.priceId } },
     { ...valid, annual: { ...valid.annual, interval: "month" } },
-    { ...valid, monthly: { ...valid.monthly, amount: 0 } },
-    { ...valid, monthly: { ...valid.monthly, active: false } },
     { ...valid, currency: "" },
-  ])("fails closed for incomplete or incoherent catalogs", (catalog) => {
+  ])("fails closed for incomplete or incoherent catalog configuration", (catalog) => {
     expect(() => parsePurchasableCatalog(catalog)).toThrow("Invalid billing catalog");
   });
-  it("does not replace missing price configuration with fictitious prices", () => {
+
+  it("does not invent missing Price IDs", () => {
     vi.stubEnv("SUPPORT_EMAIL", foundationEnv.SUPPORT_EMAIL);
-    for (const key of ["STRIPE_PRO_MONTHLY_PRICE_ID", "STRIPE_PRO_ANNUAL_PRICE_ID", "PRO_MONTHLY_AMOUNT", "PRO_ANNUAL_AMOUNT"]) vi.stubEnv(key, "");
+    vi.stubEnv("STRIPE_PRO_MONTHLY_PRICE_ID", "");
+    vi.stubEnv("STRIPE_PRO_ANNUAL_PRICE_ID", "");
     expect(() => getPurchasableCatalog()).toThrow("Invalid billing catalog");
   });
-  it("resolves configured IDs and amounts only from server environment", () => {
+
+  it("resolves configured IDs only from server environment", () => {
     vi.stubEnv("SUPPORT_EMAIL", foundationEnv.SUPPORT_EMAIL);
     vi.stubEnv("STRIPE_PRO_MONTHLY_PRICE_ID", "price_monthly");
     vi.stubEnv("STRIPE_PRO_ANNUAL_PRICE_ID", "price_annual");
-    vi.stubEnv("PRO_MONTHLY_AMOUNT", "1200");
-    vi.stubEnv("PRO_ANNUAL_AMOUNT", "12000");
     expect(getPurchasableCatalog()).toEqual(valid);
   });
 });
