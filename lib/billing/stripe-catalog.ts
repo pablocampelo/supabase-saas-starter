@@ -6,7 +6,9 @@ import { getStripe } from "@/lib/billing/stripe";
 
 function toFact(price: Stripe.Price): StripePriceFact {
   const interval = price.recurring?.interval;
-  const recurringInterval: BillingInterval | null = interval === "month" || interval === "year" ? interval : null;
+  let recurringInterval: BillingInterval | null = null;
+  if (interval === "month") recurringInterval = "month";
+  if (interval === "year") recurringInterval = "year";
 
   return {
     id: price.id,
