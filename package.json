@@ -19,7 +19,7 @@
     "supabase:status": "pnpm dlx supabase@2.118.0 status",
     "supabase:db:reset": "pnpm dlx supabase@2.118.0 db reset",
     "supabase:test:db": "pnpm dlx supabase@2.118.0 test db",
-    "supabase:types": "pnpm dlx supabase@2.118.0 gen types typescript --local > lib/supabase/database.types.ts"
+    "supabase:types": "node scripts/generate-supabase-types.mjs"
   },
   "dependencies": {
     "@fontsource-variable/funnel-sans": "5.3.0",
