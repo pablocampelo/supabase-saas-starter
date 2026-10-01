@@ -16,7 +16,6 @@ export type ProjectionState = {
 };
 
 export type ProjectionDecision =
-  | { kind: "ignore_stale_event" }
   | { kind: "ignore_non_advancing_invoice" }
   | {
       kind: "advance_paid_through";
@@ -28,16 +27,12 @@ export function applyPaidInvoiceFact(current: ProjectionState, fact: PaidInvoice
     throw new Error("Invalid paid invoice period");
   }
 
-  if (
-    current.lastStripeEventCreatedAt &&
-    fact.stripeEventCreatedAt < current.lastStripeEventCreatedAt
-  ) {
-    return { kind: "ignore_stale_event" };
-  }
-
   if (current.paidThrough && fact.periodEnd <= current.paidThrough) {
     return { kind: "ignore_non_advancing_invoice" };
   }
+
+  const eventAdvancesMarker =
+    !current.lastStripeEventCreatedAt || fact.stripeEventCreatedAt >= current.lastStripeEventCreatedAt;
 
   return {
     kind: "advance_paid_through",
@@ -46,8 +41,10 @@ export function applyPaidInvoiceFact(current: ProjectionState, fact: PaidInvoice
       lastPaidInvoiceId: fact.invoiceId,
       lastPaidPeriodStart: fact.periodStart,
       lastPaidPeriodEnd: fact.periodEnd,
-      lastStripeEventId: fact.stripeEventId,
-      lastStripeEventCreatedAt: fact.stripeEventCreatedAt,
+      lastStripeEventId: eventAdvancesMarker ? fact.stripeEventId : current.lastStripeEventId,
+      lastStripeEventCreatedAt: eventAdvancesMarker
+        ? fact.stripeEventCreatedAt
+        : current.lastStripeEventCreatedAt,
     },
   };
 }
