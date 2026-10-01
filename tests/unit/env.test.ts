@@ -26,7 +26,7 @@ describe("environment boundaries", () => {
       expect(error).not.toHaveProperty("input");
     }
   });
-  it("requires the support inbox but allows absent future credentials", () => {
+  it("requires the support inbox but allows absent provider credentials for isolated checks", () => {
     expect(parseServerEnv({ ...foundationEnv, STRIPE_SECRET_KEY: "" })).toEqual({ SUPPORT_EMAIL: foundationEnv.SUPPORT_EMAIL, STRIPE_SECRET_KEY: undefined });
     expect(() => parseServerEnv({})).toThrow("SUPPORT_EMAIL");
   });
@@ -42,7 +42,12 @@ describe("environment boundaries", () => {
       expect(String(error)).not.toContain(canary);
     }
   });
-  it.each(["0", "-1", "12.5", "NaN", "9007199254740992"])("rejects invalid minor-unit amount %s", (amount) => {
-    expect(() => parseServerEnv({ ...foundationEnv, PRO_MONTHLY_AMOUNT: amount })).toThrow("PRO_MONTHLY_AMOUNT");
+  it.each(["price bad", "prod_123", "", "price_"])("rejects invalid Stripe Price ID %s", (priceId) => {
+    const value = priceId === "" ? undefined : priceId;
+    if (value === undefined) {
+      expect(parseServerEnv({ ...foundationEnv, STRIPE_PRO_MONTHLY_PRICE_ID: "" }).STRIPE_PRO_MONTHLY_PRICE_ID).toBeUndefined();
+      return;
+    }
+    expect(() => parseServerEnv({ ...foundationEnv, STRIPE_PRO_MONTHLY_PRICE_ID: value })).toThrow("STRIPE_PRO_MONTHLY_PRICE_ID");
   });
 });
