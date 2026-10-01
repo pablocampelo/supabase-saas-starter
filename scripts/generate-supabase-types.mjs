@@ -9,7 +9,7 @@ const repoRoot = resolve(scriptDir, "..");
 const targetFile = resolve(repoRoot, "lib/supabase/database.types.ts");
 const tempDir = mkdtempSync(join(tmpdir(), "daysnotweeks-supabase-types-"));
 const tempFile = join(tempDir, "database.types.ts");
-const pnpm = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+const pnpm = "pnpm";
 
 try {
   const generation = process.platform === "win32"
@@ -23,14 +23,9 @@ try {
     .replace(/\r/g, "\n");
   writeFileSync(tempFile, generated, "utf8");
 
-  const formatting = spawnSync(
-    pnpm,
-    ["dlx", "oxfmt@0.71.0", "--write", tempFile],
-    {
-      cwd: repoRoot,
-      stdio: "inherit",
-    },
-  );
+  const formatting = process.platform === "win32"
+    ? runFormattingOnWindows(tempFile)
+    : runFormattingOnUnix(tempFile);
   assertSuccess(formatting);
 
   const formatted = readFileSync(tempFile, "utf8")
@@ -78,6 +73,37 @@ function runGenerationOnUnix(tempFile) {
   } finally {
     closeSync(output);
   }
+}
+
+function runFormattingOnWindows(tempFile) {
+  return spawnSync(
+    "powershell.exe",
+    [
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      "pnpm dlx oxfmt@0.71.0 --write $env:DNW_TYPES_TMP",
+    ],
+    {
+      cwd: repoRoot,
+      env: {
+        ...process.env,
+        DNW_TYPES_TMP: tempFile,
+      },
+      stdio: "inherit",
+    },
+  );
+}
+
+function runFormattingOnUnix(tempFile) {
+  return spawnSync(
+    pnpm,
+    ["dlx", "oxfmt@0.71.0", "--write", tempFile],
+    {
+      cwd: repoRoot,
+      stdio: "inherit",
+    },
+  );
 }
 
 function assertSuccess(result) {
