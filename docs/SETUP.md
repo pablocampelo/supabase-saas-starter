@@ -1,6 +1,6 @@
 # Current setup
 
-`docs/product/SCOPE.md` defines the final supported product. This document describes the setup required by the repository as it exists now and calls out provider setup that still requires hosted verification.
+`docs/product/SCOPE.md` defines the final supported product. This document describes the setup required by the repository as it exists now and calls out provider setup that remains deployment-owned.
 
 ## Local foundation
 
@@ -43,6 +43,8 @@ Local service defaults committed in `supabase/config.toml`:
 - Supabase Studio: `http://127.0.0.1:54323`;
 - Mailpit: `http://127.0.0.1:54324`.
 
+Machine-specific port workarounds may be used locally when an operating system reserves those defaults, but they are not starter requirements and must not replace the committed canonical ports.
+
 The local Auth configuration enables email confirmations and uses the committed `supabase/templates/confirmation.html` and `supabase/templates/recovery.html` templates. These use the same `TokenHash -> /auth/confirm -> verifyOtp()` SSR/PKCE path required by hosted Auth. `http://localhost:3000/**` is allowed only in the local configuration; do not copy that wildcard to production.
 
 To exercise the local email/password journey:
@@ -62,7 +64,44 @@ No email leaves the machine in this workflow. Stop the stack with:
 pnpm supabase:stop
 ```
 
-Run the current application checks separately:
+## Database, RLS and generated types
+
+The committed SQL migrations are the schema authority. They currently create:
+
+- `public.billing_projection`, a server-owned reconstructible billing projection;
+- the current-user Pro entitlement boundary (`private.has_pro()` plus the authenticated RPC wrapper);
+- `public.example_resources`, including ownership defaults, constraints, immutable-owner enforcement, indexes and RLS.
+
+The Example policies implement the product contract directly in Postgres:
+
+- anonymous access denied;
+- authenticated users can read/delete only their own resources;
+- create/update require ownership plus a current Pro entitlement;
+- owner transfer is rejected;
+- authenticated clients have no direct read/write grants on the billing projection.
+
+Rebuild and verify the local database with:
+
+```sh
+pnpm supabase:db:reset
+pnpm supabase:test:db
+```
+
+`pnpm supabase:db:reset` is destructive to the **local** database: it recreates the database from committed migrations. Do not run it against a hosted project and do not use it when local data must be preserved.
+
+The pgTAP suite under `supabase/tests/database/` exercises two authenticated identities, anonymous denial, ownership isolation, immutable owner, financial-write denial, Free/Pro/revoked transitions, premium-write gating and retained read/delete semantics.
+
+Regenerate TypeScript types from the local schema with:
+
+```sh
+pnpm supabase:types
+```
+
+The generator writes `lib/supabase/database.types.ts` explicitly as UTF-8 so generation is stable across shells, including Windows PowerShell. Generated types are derived artifacts; migrations remain the authority.
+
+## Application checks
+
+Run the application checks separately:
 
 ```sh
 pnpm lint
@@ -73,7 +112,7 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-The browser regression suite uses synthetic public configuration and an `E2E_AUTH_BYPASS` flag injected only by Playwright. The bypass is ignored in production and is not an application authentication mechanism. Local browser checks and Mailpit flows do not certify hosted SMTP, Google OAuth, Stripe or Vercel behavior.
+The browser regression suite uses synthetic public configuration and an `E2E_AUTH_BYPASS` flag injected only by Playwright. The bypass is ignored in production and is not an application authentication mechanism. Local browser checks, Mailpit flows and local RLS tests do not certify deployer-owned hosted SMTP, Google OAuth, Stripe or Vercel configuration.
 
 ## Safe local build fixture
 
@@ -213,19 +252,13 @@ Before release, verify on the deployed candidate SHA:
 - Account display-name update;
 - support behavior for sensitive account changes.
 
-Hosted release evidence belongs to the deployer's provider configuration. Do not hard-code a DaysNotWeeks domain or SMTP account into the starter merely to make these checks pass.
+Hosted Auth was exercised during starter implementation, but release evidence remains environment-specific. Do not hard-code a DaysNotWeeks domain or SMTP account into the starter merely to make these checks pass.
 
 ## Current billing-config gap
 
 `.env.example` currently contains `PRO_MONTHLY_AMOUNT` and `PRO_ANNUAL_AMOUNT` from the Phase 0 catalog foundation. They are not the final Scope 2.0 authority for price amounts.
 
 When billing is implemented, Stripe Price must become authoritative for amount, currency and recurrence, while configured Price IDs identify the supported monthly/annual options. Do not extend new behavior around the legacy amount variables.
-
-## Database setup — required by Scope 2.0, not implemented yet
-
-The final product must use versioned SQL migrations as schema authority, generated TypeScript database types, explicit grants and RLS. Local/CI verification must exercise A/B/anonymous and Free/Pro/revoked behavior against a real Supabase/Postgres test environment.
-
-Do not invent DB types before the migrations exist.
 
 ## Stripe setup — required by Scope 2.0, not implemented yet
 
