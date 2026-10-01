@@ -6,9 +6,13 @@ The canonical product contract is [`docs/product/SCOPE.md`](docs/product/SCOPE.m
 
 ## Current repository state
 
-The repository currently contains the permanent Scope 2.0 UI/design-system foundation plus real Supabase Auth integration: Google OAuth entry/callback, email/password signup and sign-in, email verification/resend surfaces, password recovery/reset, SSR cookie sessions, logout, protected `/app` routing, safe internal redirects, and Account display-name updates.
+The repository currently contains the permanent Scope 2.0 UI/design-system foundation plus real Supabase Auth, Postgres/RLS, generated database types, and the replaceable Example Resource.
 
-Local Supabase Auth is configured in-repo with Mailpit and token-hash confirmation/recovery templates. Hosted provider configuration is still required for Google OAuth and production Auth email delivery. Database schema/RLS, real Example persistence/entitlements, Stripe billing, CI/release automation, and final hosted release evidence are not yet complete.
+Auth includes Google OAuth entry/callback, email/password signup and sign-in, email verification/resend, password recovery/reset, SSR cookie sessions, logout, protected `/app` routing, safe internal redirects, and Account display-name updates.
+
+The database layer uses versioned SQL migrations, explicit grants, RLS, immutable ownership, a server-owned billing projection, a current-user `has_pro()` entitlement boundary, pgTAP coverage, and generated TypeScript database types. The Example Resource is persisted in Postgres and proves Auth → ownership → RLS → entitlement → CRUD: Free/revoked users retain read/delete access to owned resources, while current Pro entitlement is required for create/edit.
+
+Stripe billing, CI/release automation, and final hosted release evidence are not yet complete. Hosted provider configuration remains deployment-owned and must be verified for each deployed environment.
 
 Do not infer implemented behavior from the product Scope; see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the current implementation boundary.
 
@@ -30,6 +34,16 @@ pnpm dev
 
 Local Auth email is captured by Mailpit at `http://127.0.0.1:54324`; no Resend account, DNS or public domain is required for local signup/confirmation/recovery testing.
 
+Database verification uses the local Supabase/Postgres stack:
+
+```sh
+pnpm supabase:db:reset
+pnpm supabase:test:db
+pnpm supabase:types
+```
+
+`supabase:db:reset` is destructive to the local database and rebuilds it from committed migrations. `supabase:test:db` exercises ownership, RLS, immutable owner, anonymous denial, Free/Pro/revoked entitlement behavior, and retained read/delete semantics. `supabase:types` regenerates `lib/supabase/database.types.ts` as UTF-8.
+
 Run the application checks separately:
 
 ```sh
@@ -43,7 +57,7 @@ pnpm test:e2e
 
 Stop local Supabase with `pnpm supabase:stop`.
 
-These local checks do not certify hosted Google OAuth, customer-owned Resend SMTP, real RLS, Stripe, or Vercel behavior.
+These local checks do not certify deployer-owned hosted Google OAuth, Resend SMTP, Stripe, or Vercel configuration.
 
 ## Provider ownership
 
