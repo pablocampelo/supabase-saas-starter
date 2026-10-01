@@ -8,6 +8,6 @@ export const metadata = publicMetadata(
   "/",
 );
 
-export default function Home() {
-  return <Landing pricing={getPricingView()}/>;
+export default async function Home() {
+  return <Landing pricing={await getPricingView()}/>;
 }
