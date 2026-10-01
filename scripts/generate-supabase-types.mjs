@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { closeSync, mkdtempSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,33 +17,8 @@ const tempFile = join(tempDir, "database.types.ts");
 
 try {
   const command = process.platform === "win32"
-    ? spawnSync(
-        "powershell.exe",
-        [
-          "-NoProfile",
-          "-NonInteractive",
-          "-Command",
-          "& $env:DNW_NODE $env:DNW_PNPM_CLI dlx supabase@2.118.0 gen types typescript --local > $env:DNW_TYPES_TMP",
-        ],
-        {
-          cwd: repoRoot,
-          env: {
-            ...process.env,
-            DNW_NODE: process.execPath,
-            DNW_PNPM_CLI: pnpmCli,
-            DNW_TYPES_TMP: tempFile,
-          },
-          stdio: "inherit",
-        },
-      )
-    : spawnSync(
-        process.execPath,
-        [pnpmCli, "dlx", "supabase@2.118.0", "gen", "types", "typescript", "--local"],
-        {
-          cwd: repoRoot,
-          stdio: ["inherit", writeFileDescriptor(tempFile), "inherit"],
-        },
-      );
+    ? runOnWindows(tempFile)
+    : runOnUnix(tempFile);
 
   if (command.error) throw command.error;
   if (command.status !== 0) process.exit(command.status ?? 1);
@@ -57,17 +32,43 @@ try {
   rmSync(tempDir, { recursive: true, force: true });
 }
 
-function writeFileDescriptor(path) {
-  const { openSync } = requireFs();
-  return openSync(path, "w");
+function runOnWindows(tempFile) {
+  return spawnSync(
+    "powershell.exe",
+    [
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      "& $env:DNW_NODE $env:DNW_PNPM_CLI dlx supabase@2.118.0 gen types typescript --local > $env:DNW_TYPES_TMP",
+    ],
+    {
+      cwd: repoRoot,
+      env: {
+        ...process.env,
+        DNW_NODE: process.execPath,
+        DNW_PNPM_CLI: pnpmCli,
+        DNW_TYPES_TMP: tempFile,
+      },
+      stdio: "inherit",
+    },
+  );
 }
 
-function requireFs() {
-  return { openSync: (awaitImportFs()).openSync };
-}
+function runOnUnix(tempFile) {
+  const output = openSync(tempFile, "w");
 
-function awaitImportFs() {
-  throw new Error("Unreachable on Windows");
+  try {
+    return spawnSync(
+      process.execPath,
+      [pnpmCli, "dlx", "supabase@2.118.0", "gen", "types", "typescript", "--local"],
+      {
+        cwd: repoRoot,
+        stdio: ["inherit", output, "inherit"],
+      },
+    );
+  } finally {
+    closeSync(output);
+  }
 }
 
 function decodeText(buffer) {
