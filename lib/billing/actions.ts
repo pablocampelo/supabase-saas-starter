@@ -17,6 +17,53 @@ async function requireUser() {
   return user;
 }
 
+async function clearOrReuseOpenCheckout(
+  userId: string,
+  priceId: string,
+) {
+  const admin = createSupabaseAdminClient();
+  const { data: openAttempt, error } = await admin
+    .from("billing_checkout_attempts")
+    .select("id,stripe_checkout_session_id,stripe_price_id,created_at")
+    .eq("user_id", userId)
+    .eq("status", "created")
+    .maybeSingle();
+  if (error) throw new Error("BILLING_OPEN_CHECKOUT_READ_FAILED");
+  if (!openAttempt) return;
+
+  if (!openAttempt.stripe_checkout_session_id) {
+    const ageMs = Date.now() - new Date(openAttempt.created_at).getTime();
+    if (ageMs < 120_000) redirect("/app/billing?billing=checkout-preparing");
+
+    const { error: expireError } = await admin
+      .from("billing_checkout_attempts")
+      .update({ status: "expired" })
+      .eq("id", openAttempt.id)
+      .eq("status", "created");
+    if (expireError) throw new Error("BILLING_OPEN_CHECKOUT_EXPIRE_FAILED");
+    return;
+  }
+
+  const stripe = getStripe();
+  const session = await stripe.checkout.sessions.retrieve(openAttempt.stripe_checkout_session_id);
+  if (session.status === "complete") redirect("/app/billing?billing=confirming");
+
+  if (session.status === "open" && openAttempt.stripe_price_id === priceId && session.url) {
+    redirect(session.url);
+  }
+
+  if (session.status === "open") {
+    await stripe.checkout.sessions.expire(session.id);
+  }
+
+  const { error: expireError } = await admin
+    .from("billing_checkout_attempts")
+    .update({ status: "expired" })
+    .eq("id", openAttempt.id)
+    .eq("status", "created");
+  if (expireError) throw new Error("BILLING_OPEN_CHECKOUT_EXPIRE_FAILED");
+}
+
 export async function createCheckoutAction(formData: FormData) {
   const parsed = intervalSchema.safeParse(String(formData.get("interval") ?? ""));
   if (!parsed.success) redirect("/app/billing?billing=invalid-interval");
@@ -38,6 +85,8 @@ export async function createCheckoutAction(formData: FormData) {
     projection?.stripe_subscription_id && currentStatus !== "canceled" && currentStatus !== "incomplete_expired",
   );
   if (hasCurrentSubscription) redirect("/app/billing?billing=already-subscribed");
+
+  await clearOrReuseOpenCheckout(user.id, option.priceId);
 
   const { data: attempt, error: attemptError } = await admin
     .from("billing_checkout_attempts")
