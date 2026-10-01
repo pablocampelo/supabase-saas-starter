@@ -12,11 +12,15 @@
 | `app/auth/` | Google OAuth start/callback and email/recovery PKCE token exchange |
 | `proxy.ts`, `lib/supabase/proxy.ts` | Request-scoped session refresh and `/app` protection using validated Supabase claims |
 | `app/app/`, `components/app/` | Permanent private app shell, Dashboard, Account, Billing and replaceable Example UI surfaces |
+| `lib/example/` | Real Example Resource reads, Server Actions, validation and action state |
+| `supabase/migrations/` | SQL schema authority for the billing projection, entitlement boundary and Example Resource |
+| `supabase/tests/database/` | Real Postgres/RLS tests for A/B/anonymous and Free/Pro/revoked behavior |
+| `lib/supabase/database.types.ts` | Generated TypeScript representation of the local database schema |
 | `components/ui/`, `components/shared/` | Small owned primitive/pattern layer used by public, Auth and private surfaces |
 | `config/product.ts`, `config/site.ts`, `config/metadata.ts` | Product identity, navigation, environment-backed site configuration and public metadata |
 | `lib/env/` | Public/server environment validation with secret-safe errors |
 | `lib/auth/` | Safe internal redirects, Auth Server Actions, action state and non-production E2E boundary |
-| `lib/supabase/` | Browser/server Supabase clients plus SSR session refresh adapter |
+| `lib/supabase/` | Typed browser/server Supabase clients plus SSR session refresh adapter |
 | `tests/unit/` | Env, catalog, Supabase SSR adapter and Auth-boundary tests |
 | `tests/e2e/` | Playwright + axe regression coverage for the validated visual/product surface |
 
@@ -30,15 +34,27 @@ Supabase Auth is the identity authority. The supported application flows are Goo
 
 All post-auth return destinations pass through the central `/app` allowlist. OAuth and email confirmation use PKCE exchanges in Route Handlers. Authenticated responses are non-cacheable. The Playwright-only `E2E_AUTH_BYPASS` exists solely to exercise deterministic visual states without a hosted provider; it is ignored in production and is not an authentication mechanism.
 
-Account display name is currently stored in Supabase Auth `user_metadata`. This intentionally avoids introducing a profile table before the database/RLS phase.
+Account display name remains stored in Supabase Auth `user_metadata`; the starter does not introduce a profile table without a product need for one.
+
+## Database and authorization boundary
+
+SQL migrations are the database-schema authority. Generated TypeScript types are derived from the local schema and are wired into all Supabase clients.
+
+`public.example_resources` is a private, replaceable example domain. Ownership defaults to `auth.uid()` in Postgres; callers do not choose arbitrary owners. RLS allows authenticated users to read/delete only their own rows. Create/update additionally require the current-user Pro entitlement. A trigger prevents owner transfer even if an update attempts to modify `user_id`.
+
+`public.billing_projection` is server-owned and has no direct authenticated-user grants. Its `paid_through` value is the authorization input used by the canonical `private.has_pro()` function. The public RPC wrapper accepts no `user_id` argument, so an authenticated caller can only ask about the current identity.
+
+Free and revoked users retain read/delete access to existing owned Example resources. Current Pro entitlement enables create/edit. Server Actions provide the intended UI mutation boundary, but Postgres RLS remains the final authority for Data API access.
+
+The database test suite exercises two authenticated users, anonymous access, immutable ownership, financial-write denial, Free/Pro/revoked transitions, and retained read/delete behavior against a real local Postgres instance.
 
 ## Trust boundaries
 
 Public env reads use explicit `NEXT_PUBLIC_*` references. Secrets remain server-only. Supabase browser/server clients use the publishable key and never confer authorization by themselves.
 
-Private product data must be protected by Postgres RLS when the Example Resource is connected. Financial facts must remain server-owned, and a browser return from Stripe must never grant Pro.
+Ordinary private product data is protected by Postgres RLS. Financial projection rows remain server-owned. A browser return from Stripe must never grant Pro.
 
-The current private UI composes real Auth identity with deterministic Billing/Example sample state until those implementation phases land. The sample state is explicitly labeled and must not become an authority for persistence or entitlements.
+The current private UI composes real Auth identity, real Example persistence and real database-backed entitlement checks with deterministic Billing sample state. Billing sample state is explicitly labeled and must not become an authority for persistence or entitlements.
 
 ## Module boundaries from Scope 2.0
 
@@ -56,14 +72,13 @@ Preserve these boundaries as implementation proceeds:
 
 The following are intentionally not represented as complete today:
 
-- hosted Google OAuth configuration and smoke verification;
-- Supabase Auth → Resend SMTP configuration and hosted verification/recovery smoke tests;
-- Postgres migrations, generated DB types and real RLS policies/tests;
-- real Example persistence and Free/Pro entitlement enforcement;
-- Stripe SDK integration, Checkout, Portal, webhook signature verification and paid-through projection;
+- Stripe SDK integration, Checkout, Portal, webhook signature verification and paid-through projection writes;
 - durable Checkout-attempt handling, event deduplication, concurrency protection and billing reconciliation;
+- app ↔ Billing ↔ RLS integration driven by real Stripe lifecycle events;
 - GitHub Actions CI and hosted release gates;
-- billing/recovery runbooks and Vercel deployment evidence.
+- billing/recovery runbooks and final Vercel deployment evidence.
+
+Hosted Auth behavior has been validated during implementation, but every deployment still owns and must verify its own Google OAuth, Supabase Auth and Resend SMTP configuration. Provider QA evidence is not embedded as a starter credential or deployment dependency.
 
 The catalog/env foundation still carries transitional amount configuration (`PRO_MONTHLY_AMOUNT` / `PRO_ANNUAL_AMOUNT`). Scope 2.0 instead makes Stripe Price the authority for amount, currency and recurrence. Treat those fields as an implementation gap to remove during Billing; do not build new product behavior around them.
 
