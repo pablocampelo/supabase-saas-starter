@@ -43,20 +43,28 @@ describe("paid-through projection policy", () => {
     })).toEqual({ kind: "ignore_non_advancing_invoice" });
   });
 
-  it("rejects an event older than the last accepted Stripe event", () => {
+  it("accepts a later paid period even when its Stripe event arrives out of order", () => {
     const current: ProjectionState = {
       ...empty,
       paidThrough: new Date("2026-11-01T00:00:00Z"),
+      lastStripeEventId: "evt_newer_marker",
       lastStripeEventCreatedAt: new Date("2026-10-10T00:00:00Z"),
     };
 
-    expect(applyPaidInvoiceFact(current, {
-      invoiceId: "in_stale",
+    const result = applyPaidInvoiceFact(current, {
+      invoiceId: "in_late_delivery",
       periodStart: new Date("2026-11-01T00:00:00Z"),
       periodEnd: new Date("2026-12-01T00:00:00Z"),
-      stripeEventId: "evt_stale",
+      stripeEventId: "evt_older_but_paid",
       stripeEventCreatedAt: new Date("2026-10-09T23:59:59Z"),
-    })).toEqual({ kind: "ignore_stale_event" });
+    });
+
+    expect(result.kind).toBe("advance_paid_through");
+    if (result.kind === "advance_paid_through") {
+      expect(result.next.paidThrough?.toISOString()).toBe("2026-12-01T00:00:00.000Z");
+      expect(result.next.lastStripeEventId).toBe("evt_newer_marker");
+      expect(result.next.lastStripeEventCreatedAt?.toISOString()).toBe("2026-10-10T00:00:00.000Z");
+    }
   });
 
   it("fails closed for an invalid invoice period", () => {
