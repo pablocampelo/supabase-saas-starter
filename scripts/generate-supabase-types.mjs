@@ -6,27 +6,44 @@ import { fileURLToPath } from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
+const targetFile = resolve(repoRoot, "lib/supabase/database.types.ts");
 const tempDir = mkdtempSync(join(tmpdir(), "daysnotweeks-supabase-types-"));
 const tempFile = join(tempDir, "database.types.ts");
+const pnpm = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 
 try {
-  const command = process.platform === "win32"
-    ? runOnWindows(tempFile)
-    : runOnUnix(tempFile);
+  const generation = process.platform === "win32"
+    ? runGenerationOnWindows(tempFile)
+    : runGenerationOnUnix(tempFile);
 
-  if (command.error) throw command.error;
-  if (command.status !== 0) process.exit(command.status ?? 1);
+  assertSuccess(generation);
 
-  const raw = readFileSync(tempFile);
-  const generated = decodeText(raw).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const generated = decodeText(readFileSync(tempFile))
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n");
+  writeFileSync(tempFile, generated, "utf8");
 
-  writeFileSync(resolve(repoRoot, "lib/supabase/database.types.ts"), generated, "utf8");
-  console.log("Generated lib/supabase/database.types.ts as UTF-8 with LF line endings.");
+  const formatting = spawnSync(
+    pnpm,
+    ["dlx", "oxfmt@0.71.0", "--write", tempFile],
+    {
+      cwd: repoRoot,
+      stdio: "inherit",
+    },
+  );
+  assertSuccess(formatting);
+
+  const formatted = readFileSync(tempFile, "utf8")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n");
+
+  writeFileSync(targetFile, formatted, "utf8");
+  console.log("Generated and formatted lib/supabase/database.types.ts as UTF-8 with LF line endings.");
 } finally {
   rmSync(tempDir, { recursive: true, force: true });
 }
 
-function runOnWindows(tempFile) {
+function runGenerationOnWindows(tempFile) {
   return spawnSync(
     "powershell.exe",
     [
@@ -46,12 +63,12 @@ function runOnWindows(tempFile) {
   );
 }
 
-function runOnUnix(tempFile) {
+function runGenerationOnUnix(tempFile) {
   const output = openSync(tempFile, "w");
 
   try {
     return spawnSync(
-      "pnpm",
+      pnpm,
       ["dlx", "supabase@2.118.0", "gen", "types", "typescript", "--local"],
       {
         cwd: repoRoot,
@@ -61,6 +78,11 @@ function runOnUnix(tempFile) {
   } finally {
     closeSync(output);
   }
+}
+
+function assertSuccess(result) {
+  if (result.error) throw result.error;
+  if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
 function decodeText(buffer) {
