@@ -23,6 +23,78 @@ export type Database = {
   }
   "public": {
     Tables: {
+      "billing_checkout_attempts": {
+        Row: {
+          "billing_interval": string
+          "completed_at": string | null
+          "created_at": string
+          "id": string
+          "status": string
+          "stripe_checkout_session_id": string | null
+          "stripe_customer_id": string | null
+          "stripe_price_id": string
+          "stripe_subscription_id": string | null
+          "updated_at": string
+          "user_id": string
+        }
+        Insert: {
+          "billing_interval": string
+          "completed_at"?: string | null
+          "created_at"?: string
+          "id"?: string
+          "status"?: string
+          "stripe_checkout_session_id"?: string | null
+          "stripe_customer_id"?: string | null
+          "stripe_price_id": string
+          "stripe_subscription_id"?: string | null
+          "updated_at"?: string
+          "user_id": string
+        }
+        Update: {
+          "billing_interval"?: string
+          "completed_at"?: string | null
+          "created_at"?: string
+          "id"?: string
+          "status"?: string
+          "stripe_checkout_session_id"?: string | null
+          "stripe_customer_id"?: string | null
+          "stripe_price_id"?: string
+          "stripe_subscription_id"?: string | null
+          "updated_at"?: string
+          "user_id"?: string
+        }
+        Relationships: []
+      }
+      "billing_event_receipts": {
+        Row: {
+          "failure_code": string | null
+          "processed_at": string | null
+          "received_at": string
+          "status": string
+          "stripe_created_at": string
+          "stripe_event_id": string
+          "stripe_event_type": string
+        }
+        Insert: {
+          "failure_code"?: string | null
+          "processed_at"?: string | null
+          "received_at"?: string
+          "status"?: string
+          "stripe_created_at": string
+          "stripe_event_id": string
+          "stripe_event_type": string
+        }
+        Update: {
+          "failure_code"?: string | null
+          "processed_at"?: string | null
+          "received_at"?: string
+          "status"?: string
+          "stripe_created_at"?: string
+          "stripe_event_id"?: string
+          "stripe_event_type"?: string
+        }
+        Relationships: []
+      }
       "billing_projection": {
         Row: {
           "billing_interval": string | null
@@ -30,6 +102,8 @@ export type Database = {
           "last_paid_invoice_id": string | null
           "last_paid_period_end": string | null
           "last_paid_period_start": string | null
+          "last_stripe_event_created_at": string | null
+          "last_stripe_event_id": string | null
           "paid_through": string | null
           "projection_version": number
           "stripe_customer_id": string | null
@@ -46,6 +120,8 @@ export type Database = {
           "last_paid_invoice_id"?: string | null
           "last_paid_period_end"?: string | null
           "last_paid_period_start"?: string | null
+          "last_stripe_event_created_at"?: string | null
+          "last_stripe_event_id"?: string | null
           "paid_through"?: string | null
           "projection_version"?: number
           "stripe_customer_id"?: string | null
@@ -62,6 +138,8 @@ export type Database = {
           "last_paid_invoice_id"?: string | null
           "last_paid_period_end"?: string | null
           "last_paid_period_start"?: string | null
+          "last_stripe_event_created_at"?: string | null
+          "last_stripe_event_id"?: string | null
           "paid_through"?: string | null
           "projection_version"?: number
           "stripe_customer_id"?: string | null
