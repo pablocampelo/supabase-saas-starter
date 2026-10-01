@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { LiveAppShell } from "@/components/app/live-app-shell";
+import { toAccountPlanViewModel, type CurrentBillingPlan } from "@/lib/billing/view";
 import { toExampleResourceViewModel } from "@/lib/example/data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPreview } from "@/lib/ui/fixtures";
@@ -17,15 +18,16 @@ export async function AuthenticatedAppShell({ children, pricing, supportEmail }:
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user?.email) redirect("/login");
 
-  const [entitlement, examples] = await Promise.all([
+  const [entitlement, billingPlan, examples] = await Promise.all([
     supabase.rpc("has_pro"),
+    supabase.rpc("current_billing_plan").maybeSingle(),
     supabase
       .from("example_resources")
       .select("id,title,content,created_at,updated_at")
       .order("updated_at", { ascending: false })
       .limit(50),
   ]);
-  if (entitlement.error || examples.error) throw new Error("APP_DATA_LOAD_FAILED");
+  if (entitlement.error || billingPlan.error || examples.error) throw new Error("APP_DATA_LOAD_FAILED");
 
   const name = displayName(user);
   const base = getPreview("free");
@@ -39,6 +41,7 @@ export async function AuthenticatedAppShell({ children, pricing, supportEmail }:
       email: user.email,
       emailVerified: Boolean(user.email_confirmed_at),
     },
+    plan: toAccountPlanViewModel(billingPlan.data as CurrentBillingPlan | null, canWriteExample),
     entitlements: {
       canCreateExample: canWriteExample,
       canEditExample: canWriteExample,
