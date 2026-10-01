@@ -6,12 +6,6 @@ import { fileURLToPath } from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
-const pnpmCli = process.env.npm_execpath;
-
-if (!pnpmCli) {
-  throw new Error("Run this generator through pnpm: pnpm supabase:types");
-}
-
 const tempDir = mkdtempSync(join(tmpdir(), "daysnotweeks-supabase-types-"));
 const tempFile = join(tempDir, "database.types.ts");
 
@@ -39,14 +33,12 @@ function runOnWindows(tempFile) {
       "-NoProfile",
       "-NonInteractive",
       "-Command",
-      "& $env:DNW_NODE $env:DNW_PNPM_CLI dlx supabase@2.118.0 gen types typescript --local > $env:DNW_TYPES_TMP",
+      "pnpm dlx supabase@2.118.0 gen types typescript --local > $env:DNW_TYPES_TMP",
     ],
     {
       cwd: repoRoot,
       env: {
         ...process.env,
-        DNW_NODE: process.execPath,
-        DNW_PNPM_CLI: pnpmCli,
         DNW_TYPES_TMP: tempFile,
       },
       stdio: "inherit",
@@ -59,8 +51,8 @@ function runOnUnix(tempFile) {
 
   try {
     return spawnSync(
-      process.execPath,
-      [pnpmCli, "dlx", "supabase@2.118.0", "gen", "types", "typescript", "--local"],
+      "pnpm",
+      ["dlx", "supabase@2.118.0", "gen", "types", "typescript", "--local"],
       {
         cwd: repoRoot,
         stdio: ["inherit", output, "inherit"],
