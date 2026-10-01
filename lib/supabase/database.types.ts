@@ -98,6 +98,7 @@ export type Database = {
       billing_projection: {
         Row: {
           billing_interval: string | null;
+          cancel_at_period_end: boolean;
           created_at: string;
           last_paid_invoice_id: string | null;
           last_paid_period_end: string | null;
@@ -116,6 +117,7 @@ export type Database = {
         };
         Insert: {
           billing_interval?: string | null;
+          cancel_at_period_end?: boolean;
           created_at?: string;
           last_paid_invoice_id?: string | null;
           last_paid_period_end?: string | null;
@@ -134,6 +136,7 @@ export type Database = {
         };
         Update: {
           billing_interval?: string | null;
+          cancel_at_period_end?: boolean;
           created_at?: string;
           last_paid_invoice_id?: string | null;
           last_paid_period_end?: string | null;
@@ -184,6 +187,49 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      apply_billing_subscription_state: {
+        Args: {
+          p_billing_interval: string;
+          p_cancel_at_period_end: boolean;
+          p_customer_id: string;
+          p_event_created_at: string;
+          p_event_id: string;
+          p_price_id: string;
+          p_subscription_id: string;
+          p_subscription_status: string;
+          p_user_id: string;
+        };
+        Returns: boolean;
+      };
+      apply_paid_invoice_fact: {
+        Args: {
+          p_event_created_at: string;
+          p_event_id: string;
+          p_invoice_id: string;
+          p_period_end: string;
+          p_period_start: string;
+          p_user_id: string;
+        };
+        Returns: boolean;
+      };
+      claim_billing_event: {
+        Args: { p_event_created_at: string; p_event_id: string; p_event_type: string };
+        Returns: string;
+      };
+      current_billing_plan: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          billing_interval: string;
+          cancel_at_period_end: boolean;
+          has_current_subscription: boolean;
+          paid_through: string;
+          subscription_status: string;
+        }[];
+      };
+      finish_billing_event: {
+        Args: { p_event_id: string; p_failure_code?: string; p_status: string };
+        Returns: undefined;
+      };
       has_pro: { Args: Record<PropertyKey, never>; Returns: boolean };
     };
     Enums: {
