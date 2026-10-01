@@ -9,8 +9,8 @@ import { isE2EAuthBypassEnabled } from "@/lib/auth/e2e";
 export const metadata = { title: "App", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  const pricing = getPricingView();
+export default async function Layout({ children }: { children: React.ReactNode }) {
+  const pricing = await getPricingView();
   const supportEmail = getSiteConfig().supportEmail;
   const shell = isE2EAuthBypassEnabled()
     ? <PreviewAppShell pricing={pricing} supportEmail={supportEmail}>{children}</PreviewAppShell>
