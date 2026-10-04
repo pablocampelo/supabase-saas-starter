@@ -4,10 +4,12 @@ import { getPurchasableCatalog } from "@/config/catalog";
 import { validateHistoricalStripePrice } from "@/lib/billing/catalog";
 import {
   assertPositivePaidInvoiceEvidence,
+  assertStripeEventMode,
   assertSupportedPaidSubscriptionState,
   selectSupportedPaidPeriod,
 } from "@/lib/billing/evidence";
 import { productConfig } from "@/config/product";
+import { getServerEnv } from "@/lib/env/server";
 import { hasScheduledCancellation } from "@/lib/billing/projection";
 import { getStripe } from "@/lib/billing/stripe";
 import { toStripePriceFact } from "@/lib/billing/stripe-catalog";
@@ -303,6 +305,10 @@ async function dispatchEvent(admin: AdminClient, event: Stripe.Event) {
 }
 
 export async function processStripeEvent(event: Stripe.Event) {
+  const stripeSecretKey = getServerEnv().STRIPE_SECRET_KEY;
+  if (!stripeSecretKey) throw new Error("BILLING_STRIPE_NOT_CONFIGURED");
+  assertStripeEventMode(event.livemode, stripeSecretKey);
+
   const admin = createSupabaseAdminClient();
   const { data: claim, error: claimError } = await admin.rpc("claim_billing_event", {
     p_event_id: event.id,
