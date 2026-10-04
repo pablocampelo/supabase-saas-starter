@@ -13,6 +13,8 @@
 | `proxy.ts`, `lib/supabase/proxy.ts` | Request-scoped session refresh and `/app` protection using validated Supabase claims |
 | `app/app/`, `components/app/` | Permanent private app shell, Dashboard, Account, Billing and replaceable Example UI surfaces |
 | `lib/example/` | Real Example Resource reads, Server Actions, validation and action state |
+| `lib/billing/`, `app/api/stripe/webhook/route.ts` | Stripe catalog validation, Checkout/Portal actions, signed webhook processing, paid-through projection and repair semantics |
+| `scripts/reconcile-billing.mjs` | Server-only Stripe/Supabase reconciliation for missed or interrupted billing events |
 | `supabase/migrations/` | SQL schema authority for the billing projection, entitlement boundary and Example Resource |
 | `supabase/tests/database/` | Real Postgres/RLS tests for A/B/anonymous and Free/Pro/revoked behavior |
 | `lib/supabase/database.types.ts` | Generated TypeScript representation of the local database schema |
@@ -54,7 +56,7 @@ Public env reads use explicit `NEXT_PUBLIC_*` references. Secrets remain server-
 
 Ordinary private product data is protected by Postgres RLS. Financial projection rows remain server-owned. A browser return from Stripe must never grant Pro.
 
-The current private UI composes real Auth identity, real Example persistence and real database-backed entitlement checks with deterministic Billing sample state. Billing sample state is explicitly labeled and must not become an authority for persistence or entitlements.
+The private UI composes real Auth identity, real Example persistence and real database-backed entitlement checks with Stripe-backed Billing state. Checkout/browser redirects are presentation signals only; Pro is granted from server-verified positive paid-invoice evidence projected into `paid_through`.
 
 ## Module boundaries from Scope 2.0
 
@@ -70,17 +72,15 @@ Preserve these boundaries as implementation proceeds:
 
 ## Known gaps against Scope 2.0
 
-The following are intentionally not represented as complete today:
+Stripe Billing is implemented, including server-selected Price IDs, Checkout, Customer Portal, signed webhooks, durable Checkout/event ledgers, monotonic paid-through projection, duplicate/reordered event safety, crash-reclaimable processing leases and a server-only reconciliation command.
 
-- Stripe SDK integration, Checkout, Portal, webhook signature verification and paid-through projection writes;
-- durable Checkout-attempt handling, event deduplication, concurrency protection and billing reconciliation;
-- app ↔ Billing ↔ RLS integration driven by real Stripe lifecycle events;
+The remaining release gaps are deployment/operations rather than missing billing product logic:
+
 - GitHub Actions CI and hosted release gates;
-- billing/recovery runbooks and final Vercel deployment evidence.
+- final Vercel deployment evidence on the release candidate SHA;
+- environment-specific verification of hosted Supabase, Google OAuth, Resend SMTP and Stripe webhook destinations/credentials.
 
-Hosted Auth behavior has been validated during implementation, but every deployment still owns and must verify its own Google OAuth, Supabase Auth and Resend SMTP configuration. Provider QA evidence is not embedded as a starter credential or deployment dependency.
-
-The catalog/env foundation still carries transitional amount configuration (`PRO_MONTHLY_AMOUNT` / `PRO_ANNUAL_AMOUNT`). Scope 2.0 instead makes Stripe Price the authority for amount, currency and recurrence. Treat those fields as an implementation gap to remove during Billing; do not build new product behavior around them.
+Hosted Auth and Stripe test flows have been exercised during implementation, but every deployment still owns and must verify its own provider configuration. Provider QA credentials are not embedded as starter dependencies.
 
 The owned button currently uses Radix Slot. Scope 2.0 permits a selective shadcn-style/Base UI foundation, but no migration should be performed merely for fashion; primitives should change only when an implemented surface needs it and the resulting family remains coherent.
 
