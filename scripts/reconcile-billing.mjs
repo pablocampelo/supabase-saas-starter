@@ -1,15 +1,12 @@
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import {
-  validateHistoricalStripePrice,
-  validateStripePrice,
-} from "../lib/billing/catalog.ts";
-import {
   assertPositivePaidInvoiceEvidence,
   assertSupportedPaidSubscriptionState,
+  hasScheduledCancellation,
   selectSupportedPaidPeriod,
-} from "../lib/billing/evidence.ts";
-import { hasScheduledCancellation } from "../lib/billing/projection.ts";
+  validateStripePriceFacts,
+} from "../lib/billing/policy.js";
 
 const requiredNames = [
   "NEXT_PUBLIC_SUPABASE_URL",
@@ -51,15 +48,17 @@ const [monthlyPrice, annualPrice] = await Promise.all([
 ]);
 
 const currency = monthlyPrice.currency;
-validateStripePrice(
+validateStripePriceFacts(
   { priceId: process.env.STRIPE_PRO_MONTHLY_PRICE_ID, interval: "month" },
   toPriceFact(monthlyPrice),
   currency,
+  { requireActive: true },
 );
-validateStripePrice(
+validateStripePriceFacts(
   { priceId: process.env.STRIPE_PRO_ANNUAL_PRICE_ID, interval: "year" },
   toPriceFact(annualPrice),
   currency,
+  { requireActive: true },
 );
 
 let attemptsQuery = admin
@@ -304,10 +303,11 @@ function validateSubscription(subscription, attempt, expectedCustomerId) {
     throw new Error("BILLING_RECONCILE_PRICE_UNSUPPORTED");
   }
 
-  validateHistoricalStripePrice(
+  validateStripePriceFacts(
     { priceId: attempt.stripe_price_id, interval },
     toPriceFact(price),
     currency,
+    { requireActive: false },
   );
 
   return {
