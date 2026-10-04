@@ -1,9 +1,12 @@
 import "server-only";
 import type Stripe from "stripe";
 import { getPurchasableCatalog } from "@/config/catalog";
+import { validateStripePrice } from "@/lib/billing/catalog";
+import { assertPositiveInvoiceLineAmount, assertPositivePaidInvoiceEvidence } from "@/lib/billing/evidence";
 import { productConfig } from "@/config/product";
 import { hasScheduledCancellation } from "@/lib/billing/projection";
 import { getStripe } from "@/lib/billing/stripe";
+import { toStripePriceFact } from "@/lib/billing/stripe-catalog";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 type AdminClient = ReturnType<typeof createSupabaseAdminClient>;
@@ -143,9 +146,11 @@ async function resolveSupportedSubscription(
   }
   if (!interval) throw new Error("BILLING_SUBSCRIPTION_PRICE_UNSUPPORTED");
 
-  const recurringInterval = price.recurring?.interval;
-  if (recurringInterval !== interval) throw new Error("BILLING_SUBSCRIPTION_INTERVAL_MISMATCH");
-  if (price.currency !== productConfig.billing.currency) throw new Error("BILLING_SUBSCRIPTION_CURRENCY_MISMATCH");
+  validateStripePrice(
+    { priceId, interval },
+    toStripePriceFact(price),
+    productConfig.billing.currency,
+  );
 
   return {
     userId: attempt.user_id,
@@ -239,7 +244,7 @@ async function handleCheckoutExpired(admin: AdminClient, session: Stripe.Checkou
 }
 
 async function handleInvoicePaid(admin: AdminClient, invoice: Stripe.Invoice, event: Stripe.Event) {
-  if (invoice.status !== "paid") throw new Error("BILLING_INVOICE_NOT_PAID");
+  assertPositivePaidInvoiceEvidence(invoice.status, invoice.amount_paid);
   if (invoice.currency !== productConfig.billing.currency) throw new Error("BILLING_INVOICE_CURRENCY_MISMATCH");
   if (invoice.lines.has_more) throw new Error("BILLING_INVOICE_LINES_PAGINATION_UNSUPPORTED");
 
@@ -264,6 +269,7 @@ async function handleInvoicePaid(admin: AdminClient, invoice: Stripe.Invoice, ev
     });
   const line = candidates[0];
   if (!line) throw new Error("BILLING_SUPPORTED_INVOICE_LINE_MISSING");
+  assertPositiveInvoiceLineAmount((line as unknown as InvoiceLineShape).amount);
   const period = linePeriod(line);
 
   const { error } = await admin.rpc("apply_paid_invoice_fact", {
