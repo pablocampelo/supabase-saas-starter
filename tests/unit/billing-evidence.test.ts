@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   assertPositiveInvoiceLineAmount,
   assertPositivePaidInvoiceEvidence,
+  assertStripeEventMode,
   assertSupportedPaidSubscriptionState,
   selectSupportedPaidPeriod,
 } from "@/lib/billing/evidence";
@@ -75,5 +76,14 @@ describe("supported paid-period selection", () => {
     expect(() => selectSupportedPaidPeriod([
       { ...baseLine, periodEnd: baseLine.periodStart },
     ], "price_month", "sub_123")).toThrow("BILLING_INVALID_INVOICE_PERIOD");
+  });
+});
+
+describe("Stripe environment policy", () => {
+  it("accepts events only from the mode selected by the server key", () => {
+    expect(() => assertStripeEventMode(false, "sk_test_example")).not.toThrow();
+    expect(() => assertStripeEventMode(true, "sk_live_example")).not.toThrow();
+    expect(() => assertStripeEventMode(true, "sk_test_example")).toThrow("BILLING_STRIPE_MODE_MISMATCH");
+    expect(() => assertStripeEventMode(false, "sk_live_example")).toThrow("BILLING_STRIPE_MODE_MISMATCH");
   });
 });
