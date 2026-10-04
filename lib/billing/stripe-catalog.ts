@@ -4,7 +4,7 @@ import { getPurchasableCatalog } from "@/config/catalog";
 import { validateStripePrice, type BillingInterval, type StripePriceFact } from "@/lib/billing/catalog";
 import { getStripe } from "@/lib/billing/stripe";
 
-function toFact(price: Stripe.Price): StripePriceFact {
+export function toStripePriceFact(price: Stripe.Price): StripePriceFact {
   const interval = price.recurring?.interval;
   let recurringInterval: BillingInterval | null = null;
   if (interval === "month") recurringInterval = "month";
@@ -30,7 +30,7 @@ export async function getValidatedBillingCatalog() {
 
   return {
     currency: configured.currency,
-    monthly: validateStripePrice(configured.monthly, toFact(monthlyPrice), configured.currency),
-    annual: validateStripePrice(configured.annual, toFact(annualPrice), configured.currency),
+    monthly: validateStripePrice(configured.monthly, toStripePriceFact(monthlyPrice), configured.currency),
+    annual: validateStripePrice(configured.annual, toStripePriceFact(annualPrice), configured.currency),
   };
 }
