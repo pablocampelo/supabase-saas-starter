@@ -1,7 +1,7 @@
 import "server-only";
 import type Stripe from "stripe";
 import { getPurchasableCatalog } from "@/config/catalog";
-import { validateStripePrice } from "@/lib/billing/catalog";
+import { validateHistoricalStripePrice } from "@/lib/billing/catalog";
 import {
   assertPositiveInvoiceLineAmount,
   assertPositivePaidInvoiceEvidence,
@@ -150,7 +150,7 @@ async function resolveSupportedSubscription(
   }
   if (!interval) throw new Error("BILLING_SUBSCRIPTION_PRICE_UNSUPPORTED");
 
-  validateStripePrice(
+  validateHistoricalStripePrice(
     { priceId, interval },
     toStripePriceFact(price),
     productConfig.billing.currency,
@@ -310,7 +310,7 @@ async function dispatchEvent(admin: AdminClient, event: Stripe.Event) {
     case "customer.subscription.created":
     case "customer.subscription.updated":
     case "customer.subscription.deleted":
-      await syncSubscription(admin, event.data.object, event);
+      await retrieveAndSyncSubscription(admin, event.data.object.id, event);
       return "processed" as const;
     default:
       return "ignored" as const;
