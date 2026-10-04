@@ -1,3 +1,5 @@
+import { validateStripePriceFacts } from "./policy.js";
+
 export type BillingInterval = "month" | "year";
 
 export type SupportedBillingOption = {
@@ -24,21 +26,7 @@ export function validateStripePrice(
   fact: StripePriceFact,
   expectedCurrency: string,
 ): ValidatedPrice {
-  if (fact.id !== option.priceId) throw new Error("Stripe Price ID mismatch");
-  if (!fact.active) throw new Error("Stripe Price is not active for new purchases");
-  if (fact.currency !== expectedCurrency) throw new Error("Stripe Price currency mismatch");
-  if (fact.unitAmount === null || !Number.isSafeInteger(fact.unitAmount) || fact.unitAmount <= 0) {
-    throw new Error("Stripe Price amount is unsupported");
-  }
-  if (fact.recurringInterval !== option.interval || fact.recurringIntervalCount !== 1) {
-    throw new Error("Stripe Price recurrence mismatch");
-  }
-
-  return {
-    ...option,
-    amount: fact.unitAmount,
-    currency: fact.currency,
-  };
+  return validateStripePriceFacts(option, fact, expectedCurrency, { requireActive: true });
 }
 
 export function validateHistoricalStripePrice(
@@ -46,18 +34,5 @@ export function validateHistoricalStripePrice(
   fact: StripePriceFact,
   expectedCurrency: string,
 ): ValidatedPrice {
-  if (fact.id !== option.priceId) throw new Error("Stripe Price ID mismatch");
-  if (fact.currency !== expectedCurrency) throw new Error("Stripe Price currency mismatch");
-  if (fact.unitAmount === null || !Number.isSafeInteger(fact.unitAmount) || fact.unitAmount <= 0) {
-    throw new Error("Stripe Price amount is unsupported");
-  }
-  if (fact.recurringInterval !== option.interval || fact.recurringIntervalCount !== 1) {
-    throw new Error("Stripe Price recurrence mismatch");
-  }
-
-  return {
-    ...option,
-    amount: fact.unitAmount,
-    currency: fact.currency,
-  };
+  return validateStripePriceFacts(option, fact, expectedCurrency, { requireActive: false });
 }
