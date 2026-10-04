@@ -289,7 +289,7 @@ Copy the listener's current `whsec_...` value into `STRIPE_WEBHOOK_SECRET` and r
 The supported entitlement semantics are deliberately narrow:
 
 - Checkout completion and browser success redirects never grant Pro.
-- A supported, positive `invoice.paid` fact advances `paid_through`; the paid subscription Price must still match the configured product facts.
+- A supported, positive `invoice.paid` fact advances `paid_through`; the Price must match the server-owned subscription mapping and expected currency/recurrence/positive amount. An archived Price remains valid for a legitimate historical subscription.
 - Payment failure does not grant a new period. Previously confirmed access remains only until the existing `paid_through`.
 - Cancellation at period end keeps Pro through the already-paid period and projects a canceling state.
 - Unsupported Price, currency, recurrence, identity or non-positive payment evidence fails closed.
