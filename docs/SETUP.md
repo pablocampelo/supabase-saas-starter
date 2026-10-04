@@ -297,15 +297,22 @@ The supported entitlement semantics are deliberately narrow:
 
 ### Billing reconciliation / repair
 
-The billing projection is reconstructible from Stripe plus the server-owned Checkout-attempt ledger. If webhook delivery was missed or a worker failed, run:
+The billing projection is reconstructible from Stripe plus the server-owned Checkout-attempt ledger. Inspect the repair first without writing:
+
+```sh
+pnpm billing:reconcile -- --dry-run
+```
+
+Then apply the repair:
 
 ```sh
 pnpm billing:reconcile
 ```
 
-To limit repair to one authenticated account:
+To limit either mode to one authenticated account:
 
 ```sh
+pnpm billing:reconcile -- --dry-run --user <supabase-user-uuid>
 pnpm billing:reconcile -- --user <supabase-user-uuid>
 ```
 
