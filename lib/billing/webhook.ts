@@ -299,6 +299,11 @@ async function dispatchEvent(admin: AdminClient, event: Stripe.Event) {
     case "customer.subscription.deleted":
       await retrieveAndSyncSubscription(admin, event.data.object.id, event);
       return "processed" as const;
+    case "charge.refunded":
+    case "charge.dispute.created":
+    case "charge.dispute.updated":
+    case "charge.dispute.closed":
+      return "ignored" as const;
     default:
       return "ignored" as const;
   }
