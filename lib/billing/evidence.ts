@@ -10,3 +10,11 @@ export function assertPositiveInvoiceLineAmount(amount: number | null | undefine
     throw new Error("BILLING_INVOICE_LINE_AMOUNT_NOT_POSITIVE");
   }
 }
+
+const paidSubscriptionStates = new Set(["active", "past_due", "unpaid", "canceled"]);
+
+export function assertSupportedPaidSubscriptionState(status: string) {
+  if (!paidSubscriptionStates.has(status)) {
+    throw new Error("BILLING_SUBSCRIPTION_STATE_UNSUPPORTED_FOR_PAID_ACCESS");
+  }
+}
