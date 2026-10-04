@@ -27,8 +27,11 @@ The repository pins Supabase CLI `2.118.0` in the package scripts via `pnpm dlx`
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable key printed by pnpm supabase:status>
+SUPABASE_SECRET_KEY=<local service-role JWT printed by pnpm supabase:status>
 SUPPORT_EMAIL=support@example.com
 ```
+
+For local billing writes, `SUPABASE_SECRET_KEY` must be the local legacy service-role JWT printed by the CLI. Hosted projects should instead use their server-only `sb_secret_` key. Never place either privileged key in a `NEXT_PUBLIC_*` variable.
 
 Then start Next.js:
 
@@ -254,19 +257,74 @@ Before release, verify on the deployed candidate SHA:
 
 Hosted Auth was exercised during starter implementation, but release evidence remains environment-specific. Do not hard-code a DaysNotWeeks domain or SMTP account into the starter merely to make these checks pass.
 
-## Current billing-config gap
+## Stripe Billing
 
-`.env.example` currently contains `PRO_MONTHLY_AMOUNT` and `PRO_ANNUAL_AMOUNT` from the Phase 0 catalog foundation. They are not the final Scope 2.0 authority for price amounts.
+The supported billing path is implemented as Stripe Checkout + Customer Portal + signed webhooks + a server-owned reconstructible Pro projection.
 
-When billing is implemented, Stripe Price must become authoritative for amount, currency and recurrence, while configured Price IDs identify the supported monthly/annual options. Do not extend new behavior around the legacy amount variables.
+Stripe is the financial source of truth. The application stores only the supported monthly/annual Price IDs; Stripe Price remains authoritative for amount, currency, active state and recurrence. The browser cannot supply arbitrary Price, customer, subscription or entitlement identifiers.
 
-## Stripe setup — required by Scope 2.0, not implemented yet
+Required server-only variables:
 
-The final supported billing path is Stripe Checkout + Customer Portal + signed webhooks + a local reconstructible Pro projection.
+```text
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_PRO_MONTHLY_PRICE_ID=
+STRIPE_PRO_ANNUAL_PRICE_ID=
+```
 
-Staging/test and production/live must be configured separately. The implementation must verify the configured monthly/annual Price IDs server-side, derive monetary facts from Stripe, and never grant Pro from the browser success redirect.
+Keep test/sandbox and live values strictly separated. A test Price ID must never be combined with a live secret key, and the inverse must also fail closed.
 
-Billing setup is incomplete until webhook behavior, paid-through semantics, durable Checkout attempts, concurrency handling and reconciliation are implemented and tested.
+### Local Stripe verification
+
+Run the application and Stripe listener in separate terminals. With the application on port 3000:
+
+```powershell
+stripe listen `
+  --events "checkout.session.completed,checkout.session.expired,invoice.paid,invoice.payment_failed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted" `
+  --forward-to "http://127.0.0.1:3000/api/stripe/webhook"
+```
+
+Copy the listener's current `whsec_...` value into `STRIPE_WEBHOOK_SECRET` and restart Next.js after changing it. Keep the listener open while exercising Checkout or the Customer Portal.
+
+The supported entitlement semantics are deliberately narrow:
+
+- Checkout completion and browser success redirects never grant Pro.
+- A supported, positive `invoice.paid` fact advances `paid_through`; the paid subscription Price must still match the configured product facts.
+- Payment failure does not grant a new period. Previously confirmed access remains only until the existing `paid_through`.
+- Cancellation at period end keeps Pro through the already-paid period and projects a canceling state.
+- Unsupported Price, currency, recurrence, identity or non-positive payment evidence fails closed.
+- Webhook event IDs are idempotent. Failed events are retryable, and a processing lease older than five minutes can be reclaimed after a worker crash.
+
+### Billing reconciliation / repair
+
+The billing projection is reconstructible from Stripe plus the server-owned Checkout-attempt ledger. If webhook delivery was missed or a worker failed, run:
+
+```sh
+pnpm billing:reconcile
+```
+
+To limit repair to one authenticated account:
+
+```sh
+pnpm billing:reconcile -- --user <supabase-user-uuid>
+```
+
+The reconciliation command uses only server credentials and Stripe-confirmed Checkout, subscription, Price and positive paid-invoice facts. It does not accept an entitlement or paid-through value from the operator, and it cannot grant Pro without matching provider evidence. It also repairs a completed Checkout attempt that remained locally in `created` state because the completion webhook was missed.
+
+Run reconciliation with the same environment isolation rules as the application. Never point a local/test repair run at live Stripe or an unrelated hosted Supabase project.
+
+### Hosted Stripe release verification
+
+Before release, verify on the deployed candidate SHA:
+
+- monthly and annual Checkout using the intended Stripe environment;
+- signed webhook delivery for Checkout, paid invoice, payment failure and subscription lifecycle events;
+- Customer Portal creation and return flow;
+- cancellation-at-period-end while retaining access through `paid_through`;
+- duplicate/reordered webhook delivery and repair/reconciliation behavior;
+- strict separation between test/sandbox and live credentials.
+
+Do not apply starter billing migrations blindly to an unrelated or pre-existing hosted schema. Review the target database and migrate it through the deployment's controlled process.
 
 ## Deployment
 
