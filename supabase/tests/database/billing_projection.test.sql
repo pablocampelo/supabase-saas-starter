@@ -49,6 +49,16 @@ select is(
   'concurrent duplicate does not process while the first delivery is active'
 );
 
+update public.billing_event_receipts
+set received_at = now() - interval '6 minutes'
+where stripe_event_id = 'evt_test_billing';
+
+select is(
+  public.claim_billing_event('evt_test_billing', 'invoice.paid', now()),
+  'claimed',
+  'stale processing lease is reclaimable after a worker crash'
+);
+
 select public.finish_billing_event('evt_test_billing', 'processed', null);
 
 select is(
@@ -56,6 +66,22 @@ select is(
   'duplicate',
   'processed webhook delivery is idempotent'
 );
+
+select is(
+  public.claim_billing_event('evt_test_failed', 'invoice.paid', now()),
+  'claimed',
+  'new event can be claimed before a processing failure'
+);
+
+select public.finish_billing_event('evt_test_failed', 'failed', 'TEST_FAILURE');
+
+select is(
+  public.claim_billing_event('evt_test_failed', 'invoice.paid', now()),
+  'claimed',
+  'failed webhook delivery is retryable'
+);
+
+select public.finish_billing_event('evt_test_failed', 'ignored', null);
 
 select is(
   public.apply_billing_subscription_state(
