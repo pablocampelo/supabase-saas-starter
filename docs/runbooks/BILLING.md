@@ -129,7 +129,7 @@ Immediate/terminal cancellation does not itself grant access. Any retained acces
 
 ## Refunds and disputes
 
-Refunds and disputes do not create new access. Their selected Stripe webhook events are retained in the event receipt ledger as reviewed/ignored financial events; they do not extend or automatically shorten `paid_through`.
+Refunds and disputes do not create new access. Their selected Stripe webhook events are retained in the event receipt ledger as ignored financial events; they do not extend or automatically shorten `paid_through`.
 
 The starter does not impose a universal automatic revocation policy for every refund/dispute case. If the business policy requires revocation:
 
