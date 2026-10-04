@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   assertPositiveInvoiceLineAmount,
   assertPositivePaidInvoiceEvidence,
+  assertSupportedPaidSubscriptionState,
 } from "@/lib/billing/evidence";
 
 describe("paid invoice evidence", () => {
@@ -22,4 +23,22 @@ describe("paid invoice evidence", () => {
     expect(() => assertPositiveInvoiceLineAmount(0)).toThrow("BILLING_INVOICE_LINE_AMOUNT_NOT_POSITIVE");
     expect(() => assertPositiveInvoiceLineAmount(undefined)).toThrow("BILLING_INVOICE_LINE_AMOUNT_NOT_POSITIVE");
   });
+});
+
+describe("paid subscription state evidence", () => {
+  it.each(["active", "past_due", "unpaid", "canceled"] as const)(
+    "accepts a state that can retain confirmed paid access: %s",
+    (status) => {
+      expect(() => assertSupportedPaidSubscriptionState(status)).not.toThrow();
+    },
+  );
+
+  it.each(["trialing", "paused", "incomplete", "incomplete_expired"] as const)(
+    "rejects a state that cannot establish paid access: %s",
+    (status) => {
+      expect(() => assertSupportedPaidSubscriptionState(status)).toThrow(
+        "BILLING_SUBSCRIPTION_STATE_UNSUPPORTED_FOR_PAID_ACCESS",
+      );
+    },
+  );
 });
