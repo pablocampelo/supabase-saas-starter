@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { applyPaidInvoiceFact, type ProjectionState } from "@/lib/billing/projection";
+import {
+  applyPaidInvoiceFact,
+  hasScheduledCancellation,
+  type ProjectionState,
+} from "@/lib/billing/projection";
 
 const empty: ProjectionState = {
   paidThrough: null,
@@ -75,5 +79,14 @@ describe("paid-through projection policy", () => {
       stripeEventId: "evt_invalid",
       stripeEventCreatedAt: new Date("2026-11-01T00:00:00Z"),
     })).toThrow("Invalid paid invoice period");
+  });
+});
+
+
+describe("subscription cancellation projection", () => {
+  it("recognizes both Stripe scheduling representations", () => {
+    expect(hasScheduledCancellation(true, null)).toBe(true);
+    expect(hasScheduledCancellation(false, 1822671900)).toBe(true);
+    expect(hasScheduledCancellation(false, null)).toBe(false);
   });
 });
