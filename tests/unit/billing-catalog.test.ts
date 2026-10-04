@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateStripePrice } from "@/lib/billing/catalog";
+import { validateHistoricalStripePrice, validateStripePrice } from "@/lib/billing/catalog";
 
 const option = { interval: "month" as const, priceId: "price_monthly" };
 const fact = {
@@ -30,5 +30,27 @@ describe("Stripe Price catalog validation", () => {
     [{ ...fact, recurringIntervalCount: 2 }, "Stripe Price recurrence mismatch"],
   ])("fails closed for unsupported provider facts", (candidate, message) => {
     expect(() => validateStripePrice(option, candidate, "usd")).toThrow(message);
+  });
+});
+
+describe("historical Stripe Price validation", () => {
+  it("keeps an archived Price valid for an already-mapped subscription", () => {
+    expect(validateHistoricalStripePrice(option, { ...fact, active: false }, "usd")).toEqual({
+      ...option,
+      amount: 1200,
+      currency: "usd",
+    });
+  });
+
+  it("still rejects unsupported historical financial facts", () => {
+    expect(() => validateHistoricalStripePrice(option, { ...fact, currency: "eur" }, "usd")).toThrow(
+      "Stripe Price currency mismatch",
+    );
+    expect(() => validateHistoricalStripePrice(option, { ...fact, unitAmount: 0 }, "usd")).toThrow(
+      "Stripe Price amount is unsupported",
+    );
+    expect(() => validateHistoricalStripePrice(option, { ...fact, recurringIntervalCount: 2 }, "usd")).toThrow(
+      "Stripe Price recurrence mismatch",
+    );
   });
 });
