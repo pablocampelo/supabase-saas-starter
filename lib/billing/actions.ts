@@ -97,6 +97,10 @@ export async function createCheckoutAction(formData: FormData) {
     })
     .select("id")
     .single();
+  if (attemptError?.code === "23505") {
+    await clearOrReuseOpenCheckout(user.id, option.priceId);
+    redirect("/app/billing?billing=checkout-preparing");
+  }
   if (attemptError || !attempt) throw new Error("BILLING_CHECKOUT_ATTEMPT_CREATE_FAILED");
 
   const metadata = {
