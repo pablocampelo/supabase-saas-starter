@@ -48,8 +48,7 @@ validatePrice(annualPrice, {
 });
 
 const supported = {
-  month: { id: monthlyPrice.id, interval: "month", currency: monthlyPrice.currency },
-  year: { id: annualPrice.id, interval: "year", currency: monthlyPrice.currency },
+  currency: monthlyPrice.currency,
 };
 
 let attemptsQuery = admin
@@ -195,12 +194,15 @@ function validateSubscription(subscription, attempt, options, expectedCustomerId
     throw new Error("BILLING_RECONCILE_INTERVAL_UNSUPPORTED");
   }
 
-  const expected = options[interval];
   const price = subscription.items.data[0]?.price;
-  if (!price || attempt.stripe_price_id !== expected.id || price.id !== expected.id) {
+  if (!price || price.id !== attempt.stripe_price_id) {
     throw new Error("BILLING_RECONCILE_PRICE_UNSUPPORTED");
   }
-  validatePrice(price, expected);
+  validatePrice(price, {
+    id: attempt.stripe_price_id,
+    interval,
+    currency: options.currency,
+  });
 
   return {
     customerId,
@@ -223,9 +225,11 @@ async function findLatestPositivePaidPeriod(subscription, fact) {
       || invoice.currency !== supported[fact.interval].currency
       || !Number.isSafeInteger(invoice.amount_paid)
       || invoice.amount_paid <= 0
-      || invoice.lines.has_more
     ) {
       continue;
+    }
+    if (invoice.lines.has_more) {
+      throw new Error("BILLING_RECONCILE_INVOICE_LINES_PAGINATION_UNSUPPORTED");
     }
 
     for (const line of invoice.lines.data) {
@@ -273,7 +277,7 @@ function validatePrice(price, expected) {
 }
 
 function linePriceId(line) {
-  return idOf(line.pricing?.price_details?.price) ?? line.pricing?.price_details?.price ?? idOf(line.price);
+  return idOf(line.pricing?.price_details?.price) ?? idOf(line.price);
 }
 
 function lineSubscriptionId(line) {
@@ -290,7 +294,7 @@ function readUserArg(args) {
   const index = args.indexOf("--user");
   if (index === -1) return null;
   const value = args[index + 1];
-  if (!value || !/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(value)) {
+  if (!value || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) {
     throw new Error("--user requires a Supabase user UUID");
   }
   return value;
