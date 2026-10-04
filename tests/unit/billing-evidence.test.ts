@@ -13,7 +13,7 @@ describe("paid invoice evidence", () => {
     ["open", 1200, "BILLING_INVOICE_NOT_PAID"],
     ["paid", 0, "BILLING_INVOICE_PAYMENT_NOT_POSITIVE"],
     ["paid", -1, "BILLING_INVOICE_PAYMENT_NOT_POSITIVE"],
-  ])("fails closed for unsupported invoice evidence", (status, amountPaid, message) => {
+  ] as const)("fails closed for unsupported invoice evidence", (status, amountPaid, message) => {
     expect(() => assertPositivePaidInvoiceEvidence(status, amountPaid)).toThrow(message);
   });
 
