@@ -280,7 +280,7 @@ Run the application and Stripe listener in separate terminals. With the applicat
 
 ```powershell
 stripe listen `
-  --events "checkout.session.completed,checkout.session.expired,invoice.paid,invoice.payment_failed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted" `
+  --events "checkout.session.completed,checkout.session.expired,invoice.paid,invoice.payment_failed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,charge.refunded,charge.dispute.created,charge.dispute.updated,charge.dispute.closed" `
   --forward-to "http://127.0.0.1:3000/api/stripe/webhook"
 ```
 
