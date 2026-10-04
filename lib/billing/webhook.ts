@@ -3,9 +3,9 @@ import type Stripe from "stripe";
 import { getPurchasableCatalog } from "@/config/catalog";
 import { validateHistoricalStripePrice } from "@/lib/billing/catalog";
 import {
-  assertPositiveInvoiceLineAmount,
   assertPositivePaidInvoiceEvidence,
   assertSupportedPaidSubscriptionState,
+  selectSupportedPaidPeriod,
 } from "@/lib/billing/evidence";
 import { productConfig } from "@/config/product";
 import { hasScheduledCancellation } from "@/lib/billing/projection";
@@ -80,21 +80,6 @@ function linePriceId(line: Stripe.InvoiceLineItem) {
 function lineSubscriptionId(line: Stripe.InvoiceLineItem) {
   const shape = line as unknown as InvoiceLineShape;
   return idOf(shape.parent?.subscription_item_details?.subscription);
-}
-
-function lineIsProration(line: Stripe.InvoiceLineItem) {
-  const shape = line as unknown as InvoiceLineShape;
-  return shape.parent?.subscription_item_details?.proration === true;
-}
-
-function linePeriod(line: Stripe.InvoiceLineItem) {
-  const shape = line as unknown as InvoiceLineShape;
-  const start = shape.period?.start;
-  const end = shape.period?.end;
-  if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || !start || !end || end <= start) {
-    throw new Error("BILLING_INVALID_INVOICE_PERIOD");
-  }
-  return { start, end };
 }
 
 async function loadAttempt(admin: AdminClient, attemptId: string) {
@@ -261,21 +246,21 @@ async function handleInvoicePaid(admin: AdminClient, invoice: Stripe.Invoice, ev
   const invoiceCustomerId = idOf(invoice.customer);
   if (!invoiceCustomerId || invoiceCustomerId !== fact.customerId) throw new Error("BILLING_INVOICE_CUSTOMER_MISMATCH");
 
-  const candidates = invoice.lines.data
-    .filter((line) => linePriceId(line) === fact.priceId)
-    .filter((line) => {
-      const lineSubscription = lineSubscriptionId(line);
-      return !lineSubscription || lineSubscription === fact.subscriptionId;
-    })
-    .sort((a, b) => {
-      const prorationOrder = Number(lineIsProration(a)) - Number(lineIsProration(b));
-      if (prorationOrder !== 0) return prorationOrder;
-      return linePeriod(b).end - linePeriod(a).end;
-    });
-  const line = candidates[0];
-  if (!line) throw new Error("BILLING_SUPPORTED_INVOICE_LINE_MISSING");
-  assertPositiveInvoiceLineAmount((line as unknown as InvoiceLineShape).amount);
-  const period = linePeriod(line);
+  const period = selectSupportedPaidPeriod(
+    invoice.lines.data.map((line) => {
+      const shape = line as unknown as InvoiceLineShape;
+      return {
+        priceId: linePriceId(line),
+        subscriptionId: lineSubscriptionId(line),
+        amount: shape.amount,
+        periodStart: shape.period?.start,
+        periodEnd: shape.period?.end,
+        proration: shape.parent?.subscription_item_details?.proration === true,
+      };
+    }),
+    fact.priceId,
+    fact.subscriptionId,
+  );
 
   const { error } = await admin.rpc("apply_paid_invoice_fact", {
     p_user_id: fact.userId,
