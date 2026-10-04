@@ -67,14 +67,14 @@ const failures = [];
 
 for (const attempt of attempts ?? []) {
   try {
-    const subscriptionId = await resolveAttemptSubscription(attempt);
-    if (!subscriptionId) {
+    const resolved = await resolveAttemptSubscription(attempt);
+    if (!resolved) {
       skipped += 1;
       continue;
     }
 
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    const fact = validateSubscription(subscription, attempt, supported);
+    const subscription = await stripe.subscriptions.retrieve(resolved.subscriptionId);
+    const fact = validateSubscription(subscription, attempt, supported, resolved.customerId);
     const reconciliationTime = new Date().toISOString();
 
     const { error: stateError } = await admin.rpc("apply_billing_subscription_state", {
@@ -154,17 +154,20 @@ async function resolveAttemptSubscription(attempt) {
       .eq("user_id", attempt.user_id);
     if (error) throw new Error("BILLING_RECONCILE_ATTEMPT_WRITE_FAILED");
 
-    return subscriptionId;
+    return { subscriptionId, customerId };
   }
 
   if (attempt.status === "completed" && attempt.stripe_subscription_id) {
-    return attempt.stripe_subscription_id;
+    return {
+      subscriptionId: attempt.stripe_subscription_id,
+      customerId: attempt.stripe_customer_id,
+    };
   }
 
   return null;
 }
 
-function validateSubscription(subscription, attempt, options) {
+function validateSubscription(subscription, attempt, options, expectedCustomerId) {
   if (
     subscription.metadata?.dnw_checkout_attempt_id !== attempt.id
     || subscription.metadata?.dnw_user_id !== attempt.user_id
@@ -174,6 +177,9 @@ function validateSubscription(subscription, attempt, options) {
 
   const customerId = idOf(subscription.customer);
   if (!customerId) throw new Error("BILLING_RECONCILE_CUSTOMER_MISSING");
+  if (expectedCustomerId && customerId !== expectedCustomerId) {
+    throw new Error("BILLING_RECONCILE_CUSTOMER_MISMATCH");
+  }
   if (subscription.items.data.length !== 1) {
     throw new Error("BILLING_RECONCILE_SUBSCRIPTION_ITEMS_UNSUPPORTED");
   }
