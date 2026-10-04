@@ -1,6 +1,7 @@
 export {
   assertPositiveInvoiceLineAmount,
   assertPositivePaidInvoiceEvidence,
+  assertStripeEventMode,
   assertSupportedPaidSubscriptionState,
   selectSupportedPaidPeriod,
 } from "./policy.js";
