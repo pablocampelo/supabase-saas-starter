@@ -297,26 +297,26 @@ The supported entitlement semantics are deliberately narrow:
 
 ### Billing reconciliation / repair
 
-The billing projection is reconstructible from Stripe plus the server-owned Checkout-attempt ledger. Inspect the repair first without writing:
-
-```sh
-pnpm billing:reconcile -- --dry-run
-```
-
-Then apply the repair:
+The billing projection is reconstructible from Stripe plus the server-owned Checkout-attempt ledger. Reconciliation is a dry-run by default:
 
 ```sh
 pnpm billing:reconcile
 ```
 
+Apply the reported repair explicitly:
+
+```sh
+pnpm billing:reconcile -- --apply
+```
+
 To limit either mode to one authenticated account:
 
 ```sh
-pnpm billing:reconcile -- --dry-run --user <supabase-user-uuid>
 pnpm billing:reconcile -- --user <supabase-user-uuid>
+pnpm billing:reconcile -- --user <supabase-user-uuid> --apply
 ```
 
-The reconciliation command uses only server credentials and Stripe-confirmed Checkout, subscription, Price and positive paid-invoice facts. It does not accept an entitlement or paid-through value from the operator, and it cannot grant Pro without matching provider evidence. It also repairs a completed Checkout attempt that remained locally in `created` state because the completion webhook was missed.
+The reconciliation command uses the same paid-period, supported-state and historical-Price policy as webhook processing. It compares current Stripe facts with the local projection, reports drift without secrets, and writes only with `--apply`. It does not accept an entitlement or paid-through value from the operator, and it cannot grant Pro without matching provider evidence. It also repairs a completed Checkout attempt that remained locally in `created` state because the completion webhook was missed.
 
 Run reconciliation with the same environment isolation rules as the application. Never point a local/test repair run at live Stripe or an unrelated hosted Supabase project.
 
