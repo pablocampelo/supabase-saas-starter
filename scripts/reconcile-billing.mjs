@@ -94,6 +94,7 @@ for (const attempt of attempts ?? []) {
     }
 
     const paidFact = await findLatestPositivePaidPeriod(subscription, fact);
+    if (paidFact) assertSupportedPaidSubscriptionState(subscription.status);
     if (paidFact && !dryRun) {
       const { error: paidError } = await admin.rpc("apply_paid_invoice_fact", {
         p_user_id: attempt.user_id,
@@ -259,6 +260,12 @@ async function findLatestPositivePaidPeriod(subscription, fact) {
   });
 
   return candidates[0] ?? null;
+}
+
+function assertSupportedPaidSubscriptionState(status) {
+  if (!["active", "past_due", "unpaid", "canceled"].includes(status)) {
+    throw new Error("BILLING_RECONCILE_SUBSCRIPTION_STATE_UNSUPPORTED_FOR_PAID_ACCESS");
+  }
 }
 
 function validatePrice(price, expected) {
