@@ -37,6 +37,68 @@ select ok(
 
 set local role service_role;
 
+insert into public.billing_checkout_attempts (
+  user_id,
+  stripe_price_id,
+  billing_interval
+) values (
+  '44444444-4444-4444-8444-444444444444',
+  'price_checkout_first',
+  'month'
+);
+
+create or replace function pg_temp.competing_checkout_is_rejected()
+returns boolean
+language plpgsql
+as $
+begin
+  insert into public.billing_checkout_attempts (
+    user_id,
+    stripe_price_id,
+    billing_interval
+  ) values (
+    '44444444-4444-4444-8444-444444444444',
+    'price_checkout_competing',
+    'year'
+  );
+  return false;
+exception
+  when unique_violation then
+    return true;
+end;
+$;
+
+select ok(
+  pg_temp.competing_checkout_is_rejected(),
+  'database rejects competing open Checkout attempts for one user'
+);
+
+update public.billing_checkout_attempts
+set status = 'expired'
+where user_id = '44444444-4444-4444-8444-444444444444'
+  and status = 'created';
+
+insert into public.billing_checkout_attempts (
+  user_id,
+  stripe_price_id,
+  billing_interval
+) values (
+  '44444444-4444-4444-8444-444444444444',
+  'price_checkout_after_expiry',
+  'year'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.billing_checkout_attempts
+    where user_id = '44444444-4444-4444-8444-444444444444'
+      and status = 'created'
+  ),
+  1,
+  'a new Checkout attempt is allowed after the prior attempt expires'
+);
+
 select is(
   public.claim_billing_event('evt_test_billing', 'invoice.paid', now()),
   'claimed',
