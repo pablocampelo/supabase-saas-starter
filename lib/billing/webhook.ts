@@ -2,6 +2,7 @@ import "server-only";
 import type Stripe from "stripe";
 import { getPurchasableCatalog } from "@/config/catalog";
 import { productConfig } from "@/config/product";
+import { hasScheduledCancellation } from "@/lib/billing/projection";
 import { getStripe } from "@/lib/billing/stripe";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -153,7 +154,7 @@ async function resolveSupportedSubscription(
     priceId,
     interval,
     status: subscription.status,
-    cancelAtPeriodEnd: subscription.cancel_at_period_end,
+    cancelAtPeriodEnd: hasScheduledCancellation(subscription.cancel_at_period_end, subscription.cancel_at),
   };
 }
 
