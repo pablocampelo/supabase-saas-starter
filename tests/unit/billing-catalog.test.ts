@@ -25,6 +25,7 @@ describe("Stripe Price catalog validation", () => {
     [{ ...fact, active: false }, "Stripe Price is not active for new purchases"],
     [{ ...fact, currency: "eur" }, "Stripe Price currency mismatch"],
     [{ ...fact, unitAmount: null }, "Stripe Price amount is unsupported"],
+    [{ ...fact, unitAmount: 0 }, "Stripe Price amount is unsupported"],
     [{ ...fact, recurringInterval: "year" as const }, "Stripe Price recurrence mismatch"],
     [{ ...fact, recurringIntervalCount: 2 }, "Stripe Price recurrence mismatch"],
   ])("fails closed for unsupported provider facts", (candidate, message) => {
