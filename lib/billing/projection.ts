@@ -22,6 +22,13 @@ export type ProjectionDecision =
       next: ProjectionState;
     };
 
+export function hasScheduledCancellation(
+  cancelAtPeriodEnd: boolean,
+  cancelAt: number | null | undefined,
+) {
+  return cancelAtPeriodEnd || (typeof cancelAt === "number" && cancelAt > 0);
+}
+
 export function applyPaidInvoiceFact(current: ProjectionState, fact: PaidInvoiceFact): ProjectionDecision {
   if (fact.periodEnd <= fact.periodStart) {
     throw new Error("Invalid paid invoice period");
