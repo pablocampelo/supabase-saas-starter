@@ -15,7 +15,9 @@ for (const name of requiredNames) {
   }
 }
 
-const targetUserId = readUserArg(process.argv.slice(2));
+const args = process.argv.slice(2);
+const targetUserId = readUserArg(args);
+const dryRun = args.includes("--dry-run");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const admin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -77,21 +79,23 @@ for (const attempt of attempts ?? []) {
     const fact = validateSubscription(subscription, attempt, supported, resolved.customerId);
     const reconciliationTime = new Date().toISOString();
 
-    const { error: stateError } = await admin.rpc("apply_billing_subscription_state", {
-      p_user_id: attempt.user_id,
-      p_customer_id: fact.customerId,
-      p_subscription_id: subscription.id,
-      p_price_id: fact.priceId,
-      p_billing_interval: fact.interval,
-      p_subscription_status: subscription.status,
-      p_cancel_at_period_end: Boolean(subscription.cancel_at_period_end || subscription.cancel_at),
-      p_event_id: `reconcile:${subscription.id}`,
-      p_event_created_at: reconciliationTime,
-    });
-    if (stateError) throw new Error("BILLING_RECONCILE_SUBSCRIPTION_WRITE_FAILED");
+    if (!dryRun) {
+      const { error: stateError } = await admin.rpc("apply_billing_subscription_state", {
+        p_user_id: attempt.user_id,
+        p_customer_id: fact.customerId,
+        p_subscription_id: subscription.id,
+        p_price_id: fact.priceId,
+        p_billing_interval: fact.interval,
+        p_subscription_status: subscription.status,
+        p_cancel_at_period_end: Boolean(subscription.cancel_at_period_end || subscription.cancel_at),
+        p_event_id: `reconcile:${subscription.id}`,
+        p_event_created_at: reconciliationTime,
+      });
+      if (stateError) throw new Error("BILLING_RECONCILE_SUBSCRIPTION_WRITE_FAILED");
+    }
 
     const paidFact = await findLatestPositivePaidPeriod(subscription, fact);
-    if (paidFact) {
+    if (paidFact && !dryRun) {
       const { error: paidError } = await admin.rpc("apply_paid_invoice_fact", {
         p_user_id: attempt.user_id,
         p_invoice_id: paidFact.invoiceId,
@@ -112,7 +116,7 @@ for (const attempt of attempts ?? []) {
   }
 }
 
-console.log(`Billing reconciliation complete: reconciled=${reconciled} skipped=${skipped} failed=${failures.length}`);
+console.log(`Billing reconciliation complete: mode=${dryRun ? "dry-run" : "write"} reconciled=${reconciled} skipped=${skipped} failed=${failures.length}`);
 for (const failure of failures) {
   console.error(`- attempt ${failure.attemptId}: ${failure.message}`);
 }
@@ -142,17 +146,19 @@ async function resolveAttemptSubscription(attempt) {
       throw new Error("BILLING_RECONCILE_CHECKOUT_REFERENCES_MISSING");
     }
 
-    const { error } = await admin
-      .from("billing_checkout_attempts")
-      .update({
-        status: "completed",
-        stripe_customer_id: customerId,
-        stripe_subscription_id: subscriptionId,
-        completed_at: new Date().toISOString(),
-      })
-      .eq("id", attempt.id)
-      .eq("user_id", attempt.user_id);
-    if (error) throw new Error("BILLING_RECONCILE_ATTEMPT_WRITE_FAILED");
+    if (!dryRun) {
+      const { error } = await admin
+        .from("billing_checkout_attempts")
+        .update({
+          status: "completed",
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscriptionId,
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", attempt.id)
+        .eq("user_id", attempt.user_id);
+      if (error) throw new Error("BILLING_RECONCILE_ATTEMPT_WRITE_FAILED");
+    }
 
     return { subscriptionId, customerId };
   }
