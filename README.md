@@ -70,4 +70,5 @@ For Auth email, Supabase Auth sends through the deployer's Resend SMTP configura
 - [Product Scope](docs/product/SCOPE.md) — sole product authority.
 - [Architecture](docs/ARCHITECTURE.md) — what the repository implements now and known gaps.
 - [Setup](docs/SETUP.md) — current local/provider setup boundary.
+- [Billing runbook](docs/runbooks/BILLING.md) — webhook, reconciliation and recovery operations.
 - [Historical material](docs/archive/README.md) — traceability only.
