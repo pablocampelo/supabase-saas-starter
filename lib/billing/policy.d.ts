@@ -56,3 +56,8 @@ export function hasScheduledCancellation(
   cancelAtPeriodEnd: boolean,
   cancelAt: number | null | undefined,
 ): boolean;
+
+export function assertStripeEventMode(
+  livemode: boolean,
+  secretKey: string,
+): void;
