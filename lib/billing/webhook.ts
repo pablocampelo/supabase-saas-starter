@@ -2,7 +2,11 @@ import "server-only";
 import type Stripe from "stripe";
 import { getPurchasableCatalog } from "@/config/catalog";
 import { validateStripePrice } from "@/lib/billing/catalog";
-import { assertPositiveInvoiceLineAmount, assertPositivePaidInvoiceEvidence } from "@/lib/billing/evidence";
+import {
+  assertPositiveInvoiceLineAmount,
+  assertPositivePaidInvoiceEvidence,
+  assertSupportedPaidSubscriptionState,
+} from "@/lib/billing/evidence";
 import { productConfig } from "@/config/product";
 import { hasScheduledCancellation } from "@/lib/billing/projection";
 import { getStripe } from "@/lib/billing/stripe";
@@ -252,6 +256,7 @@ async function handleInvoicePaid(admin: AdminClient, invoice: Stripe.Invoice, ev
   if (!subscriptionId) return "ignored" as const;
   const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
   const fact = await syncSubscription(admin, subscription, event);
+  assertSupportedPaidSubscriptionState(fact.status);
 
   const invoiceCustomerId = idOf(invoice.customer);
   if (!invoiceCustomerId || invoiceCustomerId !== fact.customerId) throw new Error("BILLING_INVOICE_CUSTOMER_MISMATCH");
