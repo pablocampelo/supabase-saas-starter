@@ -40,3 +40,24 @@ export function validateStripePrice(
     currency: fact.currency,
   };
 }
+
+export function validateHistoricalStripePrice(
+  option: SupportedBillingOption,
+  fact: StripePriceFact,
+  expectedCurrency: string,
+): ValidatedPrice {
+  if (fact.id !== option.priceId) throw new Error("Stripe Price ID mismatch");
+  if (fact.currency !== expectedCurrency) throw new Error("Stripe Price currency mismatch");
+  if (fact.unitAmount === null || !Number.isSafeInteger(fact.unitAmount) || fact.unitAmount <= 0) {
+    throw new Error("Stripe Price amount is unsupported");
+  }
+  if (fact.recurringInterval !== option.interval || fact.recurringIntervalCount !== 1) {
+    throw new Error("Stripe Price recurrence mismatch");
+  }
+
+  return {
+    ...option,
+    amount: fact.unitAmount,
+    currency: fact.currency,
+  };
+}
