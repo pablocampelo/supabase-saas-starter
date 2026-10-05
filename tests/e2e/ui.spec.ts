@@ -84,7 +84,7 @@ test("Example Resource controls follow Free, Pro, and retained-data semantics", 
 
   await page.goto("/app/example?scenario=retained");
   await expect(page.getByRole("link", { name: "New resource" })).toHaveCount(0);
-  await page.getByRole("heading", { name: "Make this space your own" }).click();
+  await page.getByRole("link", { name: /Make this space your own/ }).click();
   await expect(page.getByRole("heading", { name: "Read resource" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Save resource" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Upgrade to edit" })).toBeVisible();
