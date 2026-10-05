@@ -16,12 +16,19 @@ Stripe billing is implemented with server-selected Checkout, Customer Portal, si
 
 Do not infer implemented behavior from the product Scope; see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the current implementation boundary.
 
-## Local start
+## Clone and first run
+
+Clone the repository into the product you are building, then install from the committed lockfile:
+
+```sh
+git clone <repository-url> my-saas
+cd my-saas
+pnpm install --frozen-lockfile
+```
 
 Use the versions committed by the repository (`package.json`, lockfile and `.node-version`). At the current baseline this is Node 24 and pnpm 11.19.0. Docker must be running for the local Supabase stack.
 
 ```sh
-pnpm install --frozen-lockfile
 pnpm supabase:start
 pnpm supabase:status
 ```
