@@ -128,7 +128,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_local_test_fixture
 SUPPORT_EMAIL=support@example.com
 ```
 
-Synthetic values are not operational credentials. A successful local build is not release evidence for external providers.
+Synthetic values are not operational credentials. A successful local build does not validate external-provider configuration.
 
 ## Environment rules
 
@@ -243,7 +243,7 @@ Google OAuth is not enabled in the committed local Supabase configuration becaus
 
 ### Hosted Auth verification
 
-Before release, verify on the deployed candidate SHA:
+Before promoting any buyer-owned environment to production, verify on that deployed SHA:
 
 - Google signup/sign-in and callback;
 - email/password signup;
@@ -255,7 +255,7 @@ Before release, verify on the deployed candidate SHA:
 - Account display-name update;
 - support behavior for sensitive account changes.
 
-Hosted Auth was exercised during starter implementation, but release evidence remains environment-specific. Do not hard-code a DaysNotWeeks domain or SMTP account into the starter merely to make these checks pass.
+The starter's Auth implementation is release-tested, but provider configuration remains environment-specific. Do not hard-code a DaysNotWeeks domain or SMTP account into the starter; each deployment must verify its own provider settings.
 
 ## Stripe Billing
 
@@ -320,9 +320,9 @@ The reconciliation command uses the same paid-period, supported-state and histor
 
 Run reconciliation with the same environment isolation rules as the application. Never point a local/test repair run at live Stripe or an unrelated hosted Supabase project.
 
-### Hosted Stripe release verification
+### Hosted Stripe deployment verification
 
-Before release, verify on the deployed candidate SHA:
+Before promoting any buyer-owned environment to production, verify on that deployed SHA:
 
 - monthly and annual Checkout using the intended Stripe environment;
 - signed webhook delivery for Checkout, paid invoice, payment failure and subscription lifecycle events;
@@ -337,6 +337,6 @@ Do not apply starter billing migrations blindly to an unrelated or pre-existing 
 
 Vercel is the only supported deployment target.
 
-The final release path must keep local, staging and production isolated; apply database migrations through a controlled process rather than every preview deploy; and verify hosted Google OAuth, SMTP, Stripe webhook behavior and the deployed SHA before release.
+Each deployment must keep local, staging and production isolated; apply database migrations through a controlled process rather than every preview deploy; and verify hosted Google OAuth, SMTP, Stripe webhook behavior and the deployed SHA before production promotion.
 
-Until all release gates are verified, do not describe the starter as fully production-ready.
+DaysNotWeeks release certification covers the distributable repository and its executable gates. It does not certify a buyer's provider credentials, DNS, OAuth consent screen, email deliverability, webhook destination or Vercel project; those remain deployment-owned.
