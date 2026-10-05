@@ -4,7 +4,7 @@ import { getPricingView } from "@/config/pricing";
 
 export const metadata = publicMetadata(
   "The SaaS foundation",
-  "Explore the DaysNotWeeks UI: account flows, the replaceable Example Resource, and subscription states.",
+  "Explore the DaysNotWeeks foundation: account flows, the replaceable Example Resource, private data, and subscription states.",
   "/",
 );
 
