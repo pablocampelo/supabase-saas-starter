@@ -25,7 +25,7 @@ test("public surfaces are indexable while auth and app surfaces stay private", a
   await page.goto("/");
   await audit(page);
 
-  for (const route of ["/login", "/signup", "/verify-email", "/forgot-password", "/reset-password", "/auth/error", "/app", "/app/example", "/app/billing", "/app/account", "/app/help"]) {
+  for (const route of ["/login", "/signup", "/verify-email", "/forgot-password", "/reset-password", "/auth/error", "/app", "/app/projects", "/app/billing", "/app/account", "/app/help"]) {
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow");
@@ -77,34 +77,34 @@ test("supported auth choices and redirect boundaries are explicit", async ({ pag
   await audit(page);
 });
 
-test("Example Resource controls follow Free, Pro, and retained-data semantics", async ({ page }) => {
-  await page.goto("/app/example");
-  await expect(page.getByRole("link", { name: "New resource" })).toHaveCount(0);
+test("Projects controls follow Free, Pro, and retained-data semantics", async ({ page }) => {
+  await page.goto("/app/projects");
+  await expect(page.getByRole("link", { name: "New project" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "View Pro" })).toBeVisible();
 
-  await page.goto("/app/example?scenario=retained");
-  await expect(page.getByRole("link", { name: "New resource" })).toHaveCount(0);
-  await page.getByRole("heading", { name: "Make this space your own" }).click();
-  await expect(page.getByRole("heading", { name: "Read resource" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Save resource" })).toHaveCount(0);
+  await page.goto("/app/projects?scenario=retained");
+  await expect(page.getByRole("link", { name: "New project" })).toHaveCount(0);
+  await page.getByRole("heading", { name: "Launch workspace" }).click();
+  await expect(page.getByRole("heading", { name: "Read project" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Save project" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Upgrade to edit" })).toBeVisible();
 
-  const deleteTrigger = page.getByRole("button", { name: "Delete Make this space your own" });
+  const deleteTrigger = page.getByRole("button", { name: "Delete Launch workspace" });
   await deleteTrigger.click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(deleteTrigger).toBeFocused();
   await deleteTrigger.click();
-  await page.getByRole("button", { name: "Delete resource", exact: true }).click();
+  await page.getByRole("button", { name: "Delete project", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("was not deleted");
 
-  await page.goto("/app/example/first-example?scenario=pro-monthly");
-  await expect(page.getByRole("heading", { name: "Edit resource" })).toBeVisible();
-  await page.getByLabel("Title", { exact: true }).fill("Unsaved local draft");
-  await page.getByRole("button", { name: "Save resource" }).click();
+  await page.goto("/app/projects/first-project?scenario=pro-monthly");
+  await expect(page.getByRole("heading", { name: "Edit project" })).toBeVisible();
+  await page.getByLabel("Title", { exact: true }).fill("Unsaved project draft");
+  await page.getByRole("button", { name: "Save project" }).click();
   await expect(page.getByRole("status")).toContainText("not saved");
   await page.reload();
-  await expect(page.getByLabel("Title", { exact: true })).toHaveValue("Make this space your own");
+  await expect(page.getByLabel("Title", { exact: true })).toHaveValue("Launch workspace");
   await audit(page);
 });
 
@@ -152,7 +152,7 @@ test("app shell contains real product surfaces without fake business KPIs", asyn
 test("200 percent zoom reflow retains core controls", async ({ page }) => {
   const viewport = page.viewportSize()!;
   await page.setViewportSize({ width: Math.floor(viewport.width / 2), height: Math.floor(viewport.height / 2) });
-  for (const route of ["/", "/login", "/app/example?scenario=pro-monthly", "/app/billing", "/app/account"]) {
+  for (const route of ["/", "/login", "/app/projects?scenario=pro-monthly", "/app/billing", "/app/account"]) {
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     const overflow = await page.evaluate(() => Array.from(document.querySelectorAll("body *")).filter(element => { const rect = element.getBoundingClientRect(); return rect.width > 0 && rect.right > innerWidth + 1; }).slice(0, 15).map(element => ({ tag: element.tagName, class: element.className, text: element.textContent?.slice(0, 50) })));
