@@ -1,4 +1,4 @@
-name: Temporary R6 release gate
+name: Temporary final release gate
 
 on:
   push:
@@ -21,10 +21,10 @@ jobs:
       SUPPORT_EMAIL: support@example.com
 
     steps:
-      - name: Checkout R6 adaptation branch
+      - name: Checkout final product branch
         uses: actions/checkout@v4
         with:
-          ref: qa-r6-projects-adaptation
+          ref: build/stripe-billing
 
       - uses: pnpm/action-setup@v4
         with:
