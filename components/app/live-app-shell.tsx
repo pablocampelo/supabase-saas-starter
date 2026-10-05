@@ -8,5 +8,5 @@ import { signOutAction } from "@/lib/auth/actions";
 import type { AppViewModel, PricingViewModel } from "@/lib/ui/models";
 
 export function LiveAppShell({ children, app, pricing, supportEmail }: { children: ReactNode; app: AppViewModel; pricing: PricingViewModel; supportEmail: string }) {
-  return <AppShell app={app} href={path => path} pricing={pricing} supportEmail={supportEmail} environmentNotice={<PreviewNotice>Authentication, account identity, and Example persistence are live. Billing remains deterministic sample state until its implementation phase.</PreviewNotice>} accountMenuFooter={<form action={signOutAction}><Button type="submit" variant="ghost" size="sm">Sign out</Button></form>}>{children}</AppShell>;
+  return <AppShell app={app} href={path => path} pricing={pricing} supportEmail={supportEmail} billingLive environmentNotice={<PreviewNotice>Authentication, account identity, Billing, and Example persistence are live.</PreviewNotice>} accountMenuFooter={<form action={signOutAction}><Button type="submit" variant="ghost" size="sm">Sign out</Button></form>}>{children}</AppShell>;
 }

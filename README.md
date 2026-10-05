@@ -12,21 +12,28 @@ Auth includes Google OAuth entry/callback, email/password signup and sign-in, em
 
 The database layer uses versioned SQL migrations, explicit grants, RLS, immutable ownership, a server-owned billing projection, a current-user `has_pro()` entitlement boundary, pgTAP coverage, and generated TypeScript database types. The Example Resource is persisted in Postgres and proves Auth → ownership → RLS → entitlement → CRUD: Free/revoked users retain read/delete access to owned resources, while current Pro entitlement is required for create/edit.
 
-Stripe billing, CI/release automation, and final hosted release evidence are not yet complete. Hosted provider configuration remains deployment-owned and must be verified for each deployed environment.
+Stripe billing is implemented with server-selected Checkout, Customer Portal, signed webhooks, durable event/Checkout ledgers, paid-through entitlement projection, crash-recoverable event processing and a server-only reconciliation command. DaysNotWeeks is distributed as a repository rather than operated as a hosted SaaS. Each buyer-owned deployment must configure and verify its own hosted Supabase, Google OAuth, SMTP, Stripe and Vercel environment.
 
 Do not infer implemented behavior from the product Scope; see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the current implementation boundary.
 
-## Local start
+## Clone and first run
+
+Clone the repository into the product you are building, then install from the committed lockfile:
+
+```sh
+git clone <repository-url> my-saas
+cd my-saas
+pnpm install --frozen-lockfile
+```
 
 Use the versions committed by the repository (`package.json`, lockfile and `.node-version`). At the current baseline this is Node 24 and pnpm 11.19.0. Docker must be running for the local Supabase stack.
 
 ```sh
-pnpm install --frozen-lockfile
 pnpm supabase:start
 pnpm supabase:status
 ```
 
-Copy `.env.example` to `.env.local`, set `NEXT_PUBLIC_SITE_URL=http://localhost:3000`, use the local Supabase URL/publishable key printed by `pnpm supabase:status`, and set a local support email. Then:
+Copy `.env.example` to `.env.local`, set `NEXT_PUBLIC_SITE_URL=http://localhost:3000`, use the local Supabase URL/publishable key printed by `pnpm supabase:status`, use the local service-role JWT for `SUPABASE_SECRET_KEY` when exercising billing writes, and set a local support email. Stripe billing additionally requires test-mode Stripe credentials and the configured monthly/annual Price IDs. Then:
 
 ```sh
 pnpm dev
@@ -68,6 +75,7 @@ For Auth email, Supabase Auth sends through the deployer's Resend SMTP configura
 ## Documentation
 
 - [Product Scope](docs/product/SCOPE.md) — sole product authority.
-- [Architecture](docs/ARCHITECTURE.md) — what the repository implements now and known gaps.
+- [Architecture](docs/ARCHITECTURE.md) — implementation structure and trust boundaries.
 - [Setup](docs/SETUP.md) — current local/provider setup boundary.
+- [Billing runbook](docs/runbooks/BILLING.md) — webhook, reconciliation and recovery operations.
 - [Historical material](docs/archive/README.md) — traceability only.

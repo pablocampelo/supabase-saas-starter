@@ -27,8 +27,11 @@ The repository pins Supabase CLI `2.118.0` in the package scripts via `pnpm dlx`
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable key printed by pnpm supabase:status>
+SUPABASE_SECRET_KEY=<local service-role JWT printed by pnpm supabase:status>
 SUPPORT_EMAIL=support@example.com
 ```
+
+For local billing writes, `SUPABASE_SECRET_KEY` must be the local legacy service-role JWT printed by the CLI. Hosted projects should instead use their server-only `sb_secret_` key. Never place either privileged key in a `NEXT_PUBLIC_*` variable.
 
 Then start Next.js:
 
@@ -125,7 +128,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_local_test_fixture
 SUPPORT_EMAIL=support@example.com
 ```
 
-Synthetic values are not operational credentials. A successful local build is not release evidence for external providers.
+Synthetic values are not operational credentials. A successful local build does not validate external-provider configuration.
 
 ## Environment rules
 
@@ -240,7 +243,7 @@ Google OAuth is not enabled in the committed local Supabase configuration becaus
 
 ### Hosted Auth verification
 
-Before release, verify on the deployed candidate SHA:
+Before promoting any buyer-owned environment to production, verify on that deployed SHA:
 
 - Google signup/sign-in and callback;
 - email/password signup;
@@ -252,26 +255,88 @@ Before release, verify on the deployed candidate SHA:
 - Account display-name update;
 - support behavior for sensitive account changes.
 
-Hosted Auth was exercised during starter implementation, but release evidence remains environment-specific. Do not hard-code a DaysNotWeeks domain or SMTP account into the starter merely to make these checks pass.
+The starter's Auth implementation is release-tested, but provider configuration remains environment-specific. Do not hard-code a DaysNotWeeks domain or SMTP account into the starter; each deployment must verify its own provider settings.
 
-## Current billing-config gap
+## Stripe Billing
 
-`.env.example` currently contains `PRO_MONTHLY_AMOUNT` and `PRO_ANNUAL_AMOUNT` from the Phase 0 catalog foundation. They are not the final Scope 2.0 authority for price amounts.
+The supported billing path is implemented as Stripe Checkout + Customer Portal + signed webhooks + a server-owned reconstructible Pro projection.
 
-When billing is implemented, Stripe Price must become authoritative for amount, currency and recurrence, while configured Price IDs identify the supported monthly/annual options. Do not extend new behavior around the legacy amount variables.
+Stripe is the financial source of truth. The application stores only the supported monthly/annual Price IDs; Stripe Price remains authoritative for amount, currency, active state and recurrence. The browser cannot supply arbitrary Price, customer, subscription or entitlement identifiers.
 
-## Stripe setup — required by Scope 2.0, not implemented yet
+Required server-only variables:
 
-The final supported billing path is Stripe Checkout + Customer Portal + signed webhooks + a local reconstructible Pro projection.
+```text
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_PRO_MONTHLY_PRICE_ID=
+STRIPE_PRO_ANNUAL_PRICE_ID=
+```
 
-Staging/test and production/live must be configured separately. The implementation must verify the configured monthly/annual Price IDs server-side, derive monetary facts from Stripe, and never grant Pro from the browser success redirect.
+Keep test/sandbox and live values strictly separated. A test Price ID must never be combined with a live secret key, and the inverse must also fail closed.
 
-Billing setup is incomplete until webhook behavior, paid-through semantics, durable Checkout attempts, concurrency handling and reconciliation are implemented and tested.
+### Local Stripe verification
+
+Run the application and Stripe listener in separate terminals. With the application on port 3000:
+
+```powershell
+stripe listen `
+  --events "checkout.session.completed,checkout.session.expired,invoice.paid,invoice.payment_failed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,charge.refunded,charge.dispute.created,charge.dispute.updated,charge.dispute.closed" `
+  --forward-to "http://127.0.0.1:3000/api/stripe/webhook"
+```
+
+Copy the listener's current `whsec_...` value into `STRIPE_WEBHOOK_SECRET` and restart Next.js after changing it. Keep the listener open while exercising Checkout or the Customer Portal.
+
+The supported entitlement semantics are deliberately narrow:
+
+- Checkout completion and browser success redirects never grant Pro.
+- A supported, positive `invoice.paid` fact advances `paid_through`; the Price must match the server-owned subscription mapping and expected currency/recurrence/positive amount. An archived Price remains valid for a legitimate historical subscription.
+- Payment failure does not grant a new period. Previously confirmed access remains only until the existing `paid_through`.
+- Cancellation at period end keeps Pro through the already-paid period and projects a canceling state.
+- Unsupported Price, currency, recurrence, identity or non-positive payment evidence fails closed.
+- Webhook event IDs are idempotent. Failed events are retryable, and a processing lease older than five minutes can be reclaimed after a worker crash.
+
+### Billing reconciliation / repair
+
+The billing projection is reconstructible from Stripe plus the server-owned Checkout-attempt ledger. Reconciliation is a dry-run by default:
+
+```sh
+pnpm billing:reconcile
+```
+
+Apply the reported repair explicitly:
+
+```sh
+pnpm billing:reconcile -- --apply
+```
+
+To limit either mode to one authenticated account:
+
+```sh
+pnpm billing:reconcile -- --user <supabase-user-uuid>
+pnpm billing:reconcile -- --user <supabase-user-uuid> --apply
+```
+
+The reconciliation command uses the same paid-period, supported-state and historical-Price policy as webhook processing. It compares current Stripe facts with the local projection, reports drift without secrets, and writes only with `--apply`. It does not accept an entitlement or paid-through value from the operator, and it cannot grant Pro without matching provider evidence. It also repairs a completed Checkout attempt that remained locally in `created` state because the completion webhook was missed.
+
+Run reconciliation with the same environment isolation rules as the application. Never point a local/test repair run at live Stripe or an unrelated hosted Supabase project.
+
+### Hosted Stripe deployment verification
+
+Before promoting any buyer-owned environment to production, verify on that deployed SHA:
+
+- monthly and annual Checkout using the intended Stripe environment;
+- signed webhook delivery for Checkout, paid invoice, payment failure and subscription lifecycle events;
+- Customer Portal creation and return flow;
+- cancellation-at-period-end while retaining access through `paid_through`;
+- duplicate/reordered webhook delivery and repair/reconciliation behavior;
+- strict separation between test/sandbox and live credentials.
+
+Do not apply starter billing migrations blindly to an unrelated or pre-existing hosted schema. Review the target database and migrate it through the deployment's controlled process.
 
 ## Deployment
 
 Vercel is the only supported deployment target.
 
-The final release path must keep local, staging and production isolated; apply database migrations through a controlled process rather than every preview deploy; and verify hosted Google OAuth, SMTP, Stripe webhook behavior and the deployed SHA before release.
+Each deployment must keep local, staging and production isolated; apply database migrations through a controlled process rather than every preview deploy; and verify hosted Google OAuth, SMTP, Stripe webhook behavior and the deployed SHA before production promotion.
 
-Until all release gates are verified, do not describe the starter as fully production-ready.
+DaysNotWeeks release certification covers the distributable repository and its executable gates. It does not certify a buyer's provider credentials, DNS, OAuth consent screen, email deliverability, webhook destination or Vercel project; those remain deployment-owned.

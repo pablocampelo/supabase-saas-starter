@@ -13,6 +13,8 @@
 | `proxy.ts`, `lib/supabase/proxy.ts` | Request-scoped session refresh and `/app` protection using validated Supabase claims |
 | `app/app/`, `components/app/` | Permanent private app shell, Dashboard, Account, Billing and replaceable Example UI surfaces |
 | `lib/example/` | Real Example Resource reads, Server Actions, validation and action state |
+| `lib/billing/`, `app/api/stripe/webhook/route.ts` | Stripe catalog validation, Checkout/Portal actions, signed webhook processing, paid-through projection and repair semantics |
+| `scripts/reconcile-billing.mjs` | Server-only Stripe/Supabase reconciliation for missed or interrupted billing events |
 | `supabase/migrations/` | SQL schema authority for the billing projection, entitlement boundary and Example Resource |
 | `supabase/tests/database/` | Real Postgres/RLS tests for A/B/anonymous and Free/Pro/revoked behavior |
 | `lib/supabase/database.types.ts` | Generated TypeScript representation of the local database schema |
@@ -54,7 +56,7 @@ Public env reads use explicit `NEXT_PUBLIC_*` references. Secrets remain server-
 
 Ordinary private product data is protected by Postgres RLS. Financial projection rows remain server-owned. A browser return from Stripe must never grant Pro.
 
-The current private UI composes real Auth identity, real Example persistence and real database-backed entitlement checks with deterministic Billing sample state. Billing sample state is explicitly labeled and must not become an authority for persistence or entitlements.
+The private UI composes real Auth identity, real Example persistence and real database-backed entitlement checks with Stripe-backed Billing state. Checkout/browser redirects are presentation signals only; Pro is granted from server-verified positive paid-invoice evidence projected into `paid_through`.
 
 ## Module boundaries from Scope 2.0
 
@@ -68,19 +70,27 @@ Preserve these boundaries as implementation proceeds:
 - The Example Resource owns only its CRUD/domain behavior and must be replaceable without editing Auth, Billing, Account, configuration or the app shell.
 - SQL migrations are the database-schema authority; generated TypeScript types are derived artifacts.
 
-## Known gaps against Scope 2.0
+## Replacing the Example Resource
 
-The following are intentionally not represented as complete today:
+The Example Resource is deliberately the replaceable product boundary. A buyer can replace it without changing Auth or Billing:
 
-- Stripe SDK integration, Checkout, Portal, webhook signature verification and paid-through projection writes;
-- durable Checkout-attempt handling, event deduplication, concurrency protection and billing reconciliation;
-- app ↔ Billing ↔ RLS integration driven by real Stripe lifecycle events;
-- GitHub Actions CI and hosted release gates;
-- billing/recovery runbooks and final Vercel deployment evidence.
+1. add a versioned migration that creates or renames the product table and preserves `user_id` ownership;
+2. keep ownership server-derived from `auth.uid()` and immutable;
+3. keep own-row read/delete policies and gate create/update with the canonical current-user Pro entitlement;
+4. regenerate `lib/supabase/database.types.ts`;
+5. replace `lib/example/`, the Example routes and Example presentation models with the real domain;
+6. update navigation/fixtures/tests for that domain;
+7. run the database and application gates before removing the old Example surface.
 
-Hosted Auth behavior has been validated during implementation, but every deployment still owns and must verify its own Google OAuth, Supabase Auth and Resend SMTP configuration. Provider QA evidence is not embedded as a starter credential or deployment dependency.
+Do not move product-domain logic into Auth or Billing to make the replacement work. The billing projection, entitlement source, Auth flows and account shell are foundation boundaries and should remain independently usable.
 
-The catalog/env foundation still carries transitional amount configuration (`PRO_MONTHLY_AMOUNT` / `PRO_ANNUAL_AMOUNT`). Scope 2.0 instead makes Stripe Price the authority for amount, currency and recurrence. Treat those fields as an implementation gap to remove during Billing; do not build new product behavior around them.
+## Release and deployment boundary
+
+Stripe Billing is implemented, including server-selected Price IDs, Checkout, Customer Portal, signed webhooks, durable Checkout/event ledgers, monotonic paid-through projection, duplicate/reordered event safety, crash-reclaimable processing leases and a server-only reconciliation command.
+
+DaysNotWeeks is distributed as a versioned repository. It is not operated as a shared hosted SaaS and does not require a permanent DaysNotWeeks staging or production environment. Release certification may use disposable provider environments to prove clean setup, migrations, authorization and billing behavior.
+
+Hosted Auth and Stripe test flows have been exercised during implementation, but every buyer-owned deployment still owns and must verify its own Supabase, Google OAuth, Resend SMTP, Stripe and Vercel configuration. Provider QA credentials are not embedded as starter dependencies.
 
 The owned button currently uses Radix Slot. Scope 2.0 permits a selective shadcn-style/Base UI foundation, but no migration should be performed merely for fashion; primitives should change only when an implemented surface needs it and the resulting family remains coherent.
 
