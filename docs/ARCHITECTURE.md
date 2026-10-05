@@ -70,6 +70,20 @@ Preserve these boundaries as implementation proceeds:
 - The Example Resource owns only its CRUD/domain behavior and must be replaceable without editing Auth, Billing, Account, configuration or the app shell.
 - SQL migrations are the database-schema authority; generated TypeScript types are derived artifacts.
 
+## Replacing the Example Resource
+
+The Example Resource is deliberately the replaceable product boundary. A buyer can replace it without changing Auth or Billing:
+
+1. add a versioned migration that creates or renames the product table and preserves `user_id` ownership;
+2. keep ownership server-derived from `auth.uid()` and immutable;
+3. keep own-row read/delete policies and gate create/update with the canonical current-user Pro entitlement;
+4. regenerate `lib/supabase/database.types.ts`;
+5. replace `lib/example/`, the Example routes and Example presentation models with the real domain;
+6. update navigation/fixtures/tests for that domain;
+7. run the database and application gates before removing the old Example surface.
+
+Do not move product-domain logic into Auth or Billing to make the replacement work. The billing projection, entitlement source, Auth flows and account shell are foundation boundaries and should remain independently usable.
+
 ## Release and deployment boundary
 
 Stripe Billing is implemented, including server-selected Price IDs, Checkout, Customer Portal, signed webhooks, durable Checkout/event ledgers, monotonic paid-through projection, duplicate/reordered event safety, crash-reclaimable processing leases and a server-only reconciliation command.
