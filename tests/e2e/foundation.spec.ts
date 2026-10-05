@@ -8,8 +8,8 @@ test("foundation is accessible, responsive, and honest about its current integra
   await page.goto("/");
 
   const heading = page.getByRole("heading", { level: 1 });
-  await expect(heading).toContainText("Ship your SaaS.");
-  await expect(heading).toContainText("Skip the infrastructure.");
+  await expect(heading).toContainText("Build your SaaS.");
+  await expect(heading).toContainText("Start from the foundation.");
 
   const getStarted = page.getByRole("link", { name: "Get started" }).first();
   await expect(getStarted).toHaveAttribute("href", "/signup");
