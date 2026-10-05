@@ -50,7 +50,7 @@ insert into public.billing_checkout_attempts (
 create or replace function pg_temp.competing_checkout_is_rejected()
 returns boolean
 language plpgsql
-as $
+as $$
 begin
   insert into public.billing_checkout_attempts (
     user_id,
@@ -66,7 +66,7 @@ exception
   when unique_violation then
     return true;
 end;
-$;
+$$;
 
 select ok(
   pg_temp.competing_checkout_is_rejected(),
