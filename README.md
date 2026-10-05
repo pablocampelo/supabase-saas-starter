@@ -12,7 +12,7 @@ Auth includes Google OAuth entry/callback, email/password signup and sign-in, em
 
 The database layer uses versioned SQL migrations, explicit grants, RLS, immutable ownership, a server-owned billing projection, a current-user `has_pro()` entitlement boundary, pgTAP coverage, and generated TypeScript database types. The Example Resource is persisted in Postgres and proves Auth → ownership → RLS → entitlement → CRUD: Free/revoked users retain read/delete access to owned resources, while current Pro entitlement is required for create/edit.
 
-Stripe billing is implemented with server-selected Checkout, Customer Portal, signed webhooks, durable event/Checkout ledgers, paid-through entitlement projection, crash-recoverable event processing and a server-only reconciliation command. CI/release automation and final hosted release evidence remain deployment work. Hosted provider configuration must be verified for each deployed environment.
+Stripe billing is implemented with server-selected Checkout, Customer Portal, signed webhooks, durable event/Checkout ledgers, paid-through entitlement projection, crash-recoverable event processing and a server-only reconciliation command. DaysNotWeeks is distributed as a repository rather than operated as a hosted SaaS. Each buyer-owned deployment must configure and verify its own hosted Supabase, Google OAuth, SMTP, Stripe and Vercel environment.
 
 Do not infer implemented behavior from the product Scope; see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the current implementation boundary.
 
