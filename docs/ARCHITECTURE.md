@@ -70,17 +70,13 @@ Preserve these boundaries as implementation proceeds:
 - The Example Resource owns only its CRUD/domain behavior and must be replaceable without editing Auth, Billing, Account, configuration or the app shell.
 - SQL migrations are the database-schema authority; generated TypeScript types are derived artifacts.
 
-## Known gaps against Scope 2.0
+## Release and deployment boundary
 
 Stripe Billing is implemented, including server-selected Price IDs, Checkout, Customer Portal, signed webhooks, durable Checkout/event ledgers, monotonic paid-through projection, duplicate/reordered event safety, crash-reclaimable processing leases and a server-only reconciliation command.
 
-The remaining release gaps are deployment/operations rather than missing billing product logic:
+DaysNotWeeks is distributed as a versioned repository. It is not operated as a shared hosted SaaS and does not require a permanent DaysNotWeeks staging or production environment. Release certification may use disposable provider environments to prove clean setup, migrations, authorization and billing behavior.
 
-- GitHub Actions CI and hosted release gates;
-- final Vercel deployment evidence on the release candidate SHA;
-- environment-specific verification of hosted Supabase, Google OAuth, Resend SMTP and Stripe webhook destinations/credentials.
-
-Hosted Auth and Stripe test flows have been exercised during implementation, but every deployment still owns and must verify its own provider configuration. Provider QA credentials are not embedded as starter dependencies.
+Hosted Auth and Stripe test flows have been exercised during implementation, but every buyer-owned deployment still owns and must verify its own Supabase, Google OAuth, Resend SMTP, Stripe and Vercel configuration. Provider QA credentials are not embedded as starter dependencies.
 
 The owned button currently uses Radix Slot. Scope 2.0 permits a selective shadcn-style/Base UI foundation, but no migration should be performed merely for fashion; primitives should change only when an implemented surface needs it and the resulting family remains coherent.
 
