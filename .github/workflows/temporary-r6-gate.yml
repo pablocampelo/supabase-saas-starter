@@ -77,3 +77,5 @@ jobs:
 # final docs-and-code release check
 
 # final product head after documentation and claim review
+
+# rerun after final E2E assertion fixes
