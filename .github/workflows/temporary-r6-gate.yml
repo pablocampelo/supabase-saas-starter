@@ -79,3 +79,5 @@ jobs:
 # final product head after documentation and claim review
 
 # rerun after final E2E assertion fixes
+
+# exact-head check including permanent CI workflow
