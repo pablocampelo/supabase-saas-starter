@@ -155,11 +155,12 @@ export type Database = {
         };
         Relationships: [];
       };
-      example_resources: {
+      projects: {
         Row: {
           content: string;
           created_at: string;
           id: string;
+          status: string;
           title: string;
           updated_at: string;
           user_id: string;
@@ -168,6 +169,7 @@ export type Database = {
           content?: string;
           created_at?: string;
           id?: string;
+          status?: string;
           title: string;
           updated_at?: string;
           user_id?: string;
@@ -176,6 +178,7 @@ export type Database = {
           content?: string;
           created_at?: string;
           id?: string;
+          status?: string;
           title?: string;
           updated_at?: string;
           user_id?: string;
