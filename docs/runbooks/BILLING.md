@@ -148,9 +148,9 @@ Only one open local Checkout attempt is allowed per user. Concurrent creation ra
 
 If an attempt was created but no Stripe Session was linked because the process crashed, a later Checkout request can expire the stale attempt after the preparation window. Reconciliation also diagnoses/clears stale attempts when applied.
 
-## Release verification
+## Deployment verification
 
-Before a release candidate is promoted, verify in the intended hosted test/staging environment:
+Before promoting any buyer-owned hosted environment to production, verify:
 
 - monthly Checkout;
 - annual Checkout;
@@ -163,4 +163,4 @@ Before a release candidate is promoted, verify in the intended hosted test/stagi
 - reconciliation dry-run and apply;
 - test/live credential isolation.
 
-Release evidence must correspond to the candidate SHA.
+Deployment evidence must correspond to the deployed SHA. Repository release certification is separate and does not substitute for provider-specific verification.
