@@ -84,7 +84,7 @@ test("Projects controls follow Free, Pro, and retained-data semantics", async ({
 
   await page.goto("/app/projects?scenario=retained");
   await expect(page.getByRole("link", { name: "New project" })).toHaveCount(0);
-  await page.getByRole("heading", { name: "Launch workspace" }).click();
+  await page.getByRole("link", { name: /Launch workspace/ }).click();
   await expect(page.getByRole("heading", { name: "Read project" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Save project" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Upgrade to edit" })).toBeVisible();
@@ -130,7 +130,7 @@ test("app shell contains real product surfaces without fake business KPIs", asyn
   await page.goto("/app?scenario=pro-monthly");
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
   await expect(page.getByRole("main")).not.toContainText(/MRR|ARR|Active users|Conversion rate|Revenue chart/i);
-  await expect(page.getByText("Your product starts here", { exact: true })).toBeVisible();
+  await expect(page.getByText("Adaptability proven", { exact: true })).toBeVisible();
   await expect(page.locator("[data-preview-notice]")).toContainText("Sample account data only");
 
   if (info.project.name === "chromium-360") {
