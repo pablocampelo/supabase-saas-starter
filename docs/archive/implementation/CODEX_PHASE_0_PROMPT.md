@@ -1,5 +1,7 @@
 # Codex Prompt — Phase 0: Repository Audit + Foundation
 
+> **Historical / non-authoritative:** This executed Phase 0 prompt predates reconciliation with V1 Scope 1.1. Its original instructions are preserved below as historical evidence and must not be used to infer current auth scope. The current product authority is [docs/product/V1_SCOPE.md](../product/V1_SCOPE.md), which supports Google OAuth, magic-link login, and email/password with verification/reset under Supabase Auth.
+
 You are implementing **DaysNotWeeks V1**.
 
 ## Authority
