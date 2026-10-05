@@ -1,0 +1,73 @@
+name: Temporary R6 release gate
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/temporary-r6-gate.yml
+
+permissions:
+  contents: read
+
+jobs:
+  r6:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_local_test_fixture
+      SUPPORT_EMAIL: support@example.com
+
+    steps:
+      - name: Checkout R6 adaptation branch
+        uses: actions/checkout@v4
+        with:
+          ref: qa-r6-projects-adaptation
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Frozen install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Production build
+        run: pnpm build
+
+      - name: Start local Supabase
+        run: pnpm supabase:start
+
+      - name: Clean database reset
+        run: pnpm supabase:db:reset
+
+      - name: Database tests
+        run: pnpm supabase:test:db
+
+      - name: Regenerate database types
+        run: pnpm supabase:types
+
+      - name: Generated types unchanged
+        run: git diff --exit-code -- lib/supabase/database.types.ts
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E
+        run: pnpm test:e2e
