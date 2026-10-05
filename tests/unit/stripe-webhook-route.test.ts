@@ -18,11 +18,13 @@ vi.mock("@/lib/billing/webhook", () => ({
   processStripeEvent,
 }));
 
+const now = Math.floor(Date.now() / 1000);
+
 const payload = JSON.stringify({
   id: "evt_signature_test",
   object: "event",
   api_version: "2026-09-30.clover",
-  created: 1_791_218_000,
+  created: now,
   data: { object: {} },
   livemode: false,
   pending_webhooks: 1,
@@ -35,7 +37,7 @@ describe("Stripe webhook HTTP boundary", () => {
     const signature = Stripe.webhooks.generateTestHeaderString({
       payload,
       secret: webhookSecret,
-      timestamp: 1_791_218_000,
+      timestamp: now,
     });
     const { POST } = await import("@/app/api/stripe/webhook/route");
 
@@ -56,7 +58,7 @@ describe("Stripe webhook HTTP boundary", () => {
 
     const response = await POST(new Request("http://localhost/api/stripe/webhook", {
       method: "POST",
-      headers: { "stripe-signature": "t=1791218000,v1=invalid" },
+      headers: { "stripe-signature": `t=${now},v1=invalid` },
       body: payload,
     }));
 
