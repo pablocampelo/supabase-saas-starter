@@ -10,7 +10,7 @@ export const billingPresentation: Record<BillingUiStatus, { label: string; title
   failed: { label: "Needs attention", title: "Payment wasn't confirmed.", description: "No Pro access was granted. Try again or contact support if you need help. This is not a successful payment.", tone: "danger" },
 };
 export function exampleControls(entitlements: EntitlementsViewModel) {
-  return { create: entitlements.canCreateProjects, edit: entitlements.canEditProjects, read: entitlements.canReadOwnProjects, delete: entitlements.canDeleteOwnProjects };
+  return { create: entitlements.canCreateProject, edit: entitlements.canEditProject, read: entitlements.canReadOwnProject, delete: entitlements.canDeleteOwnProject };
 }
 export function canChooseInterval(plan: AccountPlanViewModel) { return !plan.hasCurrentSubscription; }
 export function displayPrice(pricing: PricingViewModel, interval: "month" | "year") {
