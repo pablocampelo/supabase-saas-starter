@@ -54,6 +54,9 @@ jobs:
       - name: Production build
         run: pnpm build
 
+      - name: Ensure local Supabase is stopped
+        run: pnpm supabase:stop --no-backup || true
+
       - name: Start local Supabase
         run: pnpm supabase:start
 
