@@ -19,3 +19,13 @@ export function safeReturnPath(value: string | null | undefined, siteUrl?: strin
   const candidate = sameOriginPath(value.trim(), siteUrl);
   return candidate && APP_RETURN_PATH.test(candidate) ? candidate : "/app";
 }
+
+// Use the exact registered OAuth callback URL for the default app destination.
+// Hosted Supabase Auth may fall back to Site URL when a query-bearing redirect_to
+// is not on its allowed redirect list, losing the PKCE code exchange entirely.
+export function googleCallbackUrl(origin: string, requestedNext: string | null): string {
+  const callback = new URL("/auth/callback", origin);
+  const next = safeReturnPath(requestedNext);
+  if (next !== "/app") callback.searchParams.set("next", next);
+  return callback.toString();
+}
