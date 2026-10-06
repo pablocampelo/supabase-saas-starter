@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { isE2EAuthBypassEnabled } from "@/lib/auth/e2e";
-import { safeReturnPath } from "@/lib/auth/redirects";
+import { googleCallbackUrl, safeReturnPath } from "@/lib/auth/redirects";
 
 describe("safeReturnPath", () => {
   it("allows only supported private app destinations", () => {
@@ -18,6 +18,26 @@ describe("safeReturnPath", () => {
   it("accepts a same-origin absolute app URL only when the expected origin is supplied", () => {
     expect(safeReturnPath("https://app.example.com/app/billing", "https://app.example.com")).toBe("/app/billing");
     expect(safeReturnPath("https://evil.example/app/billing", "https://app.example.com")).toBe("/app");
+  });
+});
+
+describe("Google OAuth callback URL", () => {
+  it("uses the exact hosted callback URL for the default app return", () => {
+    expect(googleCallbackUrl("https://example.vercel.app", null)).toBe(
+      "https://example.vercel.app/auth/callback",
+    );
+    expect(googleCallbackUrl("https://example.vercel.app", "/app")).toBe(
+      "https://example.vercel.app/auth/callback",
+    );
+    expect(googleCallbackUrl("https://example.vercel.app", "https://evil.example/app")).toBe(
+      "https://example.vercel.app/auth/callback",
+    );
+  });
+
+  it("preserves validated specific private destinations", () => {
+    expect(googleCallbackUrl("https://example.vercel.app", "/app/billing")).toBe(
+      "https://example.vercel.app/auth/callback?next=%2Fapp%2Fbilling",
+    );
   });
 });
 
