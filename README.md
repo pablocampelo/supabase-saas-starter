@@ -1,6 +1,6 @@
 # DaysNotWeeks
 
-**The SaaS foundation you can replace the example in—not rebuild around.**
+**Own the foundation. Build the product.**
 
 DaysNotWeeks is a focused, cloneable **Next.js + Supabase + Stripe** starter for technical founders and small teams building a subscription SaaS. Authentication, private user data, paid access and billing recovery are connected and tested. You own the code, providers and deployment.
 
