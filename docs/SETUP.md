@@ -1,344 +1,205 @@
-# Current setup
+# Setup and deployment
 
-`docs/product/SCOPE.md` defines the final supported product. This document describes the setup required by the repository as it exists now and calls out provider setup that remains deployment-owned.
+This is the supported **buyer-owned** path from a fresh clone to a deployed SaaS. DaysNotWeeks is a **repository**, not a managed hosting, email or billing service. Its verified code does not validate a buyer's credentials or DNS.
 
-## Local foundation
+**Supported versions:** use the Node, pnpm, dependencies and Supabase CLI pinned in `package.json`, `.node-version` and the lockfile (currently Node 24, pnpm 11.19.0 and Supabase CLI 2.118.0).
 
-Local application development uses a local Supabase stack and Mailpit. It does **not** require Resend, DNS, a hosted Supabase project or a public domain.
+## 1. Local development
 
-Prerequisites:
-
-- Node and pnpm versions committed by the repository (currently Node 24.x and pnpm 11.19.0);
-- Docker Desktop or another Docker-compatible runtime running locally.
-
-Install dependencies and start the pinned Supabase CLI stack:
+**Prerequisites:** Node.js 24, pnpm 11.19.0, Docker running.
 
 ```sh
+git clone <your-repository-url> my-saas
+cd my-saas
 pnpm install --frozen-lockfile
 pnpm supabase:start
 pnpm supabase:status
 ```
 
-The repository pins Supabase CLI `2.118.0` in the package scripts via `pnpm dlx`; it is not added to application runtime dependencies.
+Copy `.env.example` to `.env.local` and configure:
 
-`pnpm supabase:status` prints the local API URL and browser-safe publishable key. Copy `.env.example` to `.env.local` and use the local values:
-
-```text
+```dotenv
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable key printed by pnpm supabase:status>
-SUPABASE_SECRET_KEY=<local service-role JWT printed by pnpm supabase:status>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable key from pnpm supabase:status>
 SUPPORT_EMAIL=support@example.com
+SUPABASE_SECRET_KEY=<local service-role JWT from pnpm supabase:status>
 ```
 
-For local billing writes, `SUPABASE_SECRET_KEY` must be the local legacy service-role JWT printed by the CLI. Hosted projects should instead use their server-only `sb_secret_` key. Never place either privileged key in a `NEXT_PUBLIC_*` variable.
+The privileged `SUPABASE_SECRET_KEY` is needed for billing server operations; **never** expose it in `NEXT_PUBLIC_*`. Hosted Supabase uses its `sb_secret_` key instead of the local service-role JWT.
 
-Then start Next.js:
-
-```sh
-pnpm dev
-```
-
-Local service defaults committed in `supabase/config.toml`:
-
-- Supabase API: `http://127.0.0.1:54321`;
-- Postgres: port `54322`;
-- Supabase Studio: `http://127.0.0.1:54323`;
-- Mailpit: `http://127.0.0.1:54324`.
-
-Machine-specific port workarounds may be used locally when an operating system reserves those defaults, but they are not starter requirements and must not replace the committed canonical ports.
-
-The local Auth configuration enables email confirmations and uses the committed `supabase/templates/confirmation.html` and `supabase/templates/recovery.html` templates. These use the same `TokenHash -> /auth/confirm -> verifyOtp()` SSR/PKCE path required by hosted Auth. `http://localhost:3000/**` is allowed only in the local configuration; do not copy that wildcard to production.
-
-To exercise the local email/password journey:
-
-1. Open `http://localhost:3000/signup` and create a user.
-2. Open Mailpit at `http://127.0.0.1:54324`.
-3. Open the confirmation email and follow its link; it should pass through `/auth/confirm` and land in the private app.
-4. Sign out.
-5. Request password recovery from the login/recovery UI.
-6. Open the recovery message in Mailpit and follow its link; it should pass through `/auth/confirm?type=recovery` and open `/reset-password` with a recovery session.
-7. Set a new password and sign in normally.
-8. Exercise resend verification with a fresh unconfirmed account if needed.
-
-No email leaves the machine in this workflow. Stop the stack with:
-
-```sh
-pnpm supabase:stop
-```
-
-## Database, RLS and generated types
-
-The committed SQL migrations are the schema authority. They currently create:
-
-- `public.billing_projection`, a server-owned reconstructible billing projection;
-- the current-user Pro entitlement boundary (`private.has_pro()` plus the authenticated RPC wrapper);
-- `public.example_resources`, including ownership defaults, constraints, immutable-owner enforcement, indexes and RLS.
-
-The Example policies implement the product contract directly in Postgres:
-
-- anonymous access denied;
-- authenticated users can read/delete only their own resources;
-- create/update require ownership plus a current Pro entitlement;
-- owner transfer is rejected;
-- authenticated clients have no direct read/write grants on the billing projection.
-
-Rebuild and verify the local database with:
+Initialize/verify the local schema and launch:
 
 ```sh
 pnpm supabase:db:reset
-pnpm supabase:test:db
+pnpm dev
 ```
 
-`pnpm supabase:db:reset` is destructive to the **local** database: it recreates the database from committed migrations. Do not run it against a hosted project and do not use it when local data must be preserved.
+Open **http://localhost:3000**. Supabase Studio is **http://127.0.0.1:54323**; local Auth email is captured by Mailpit at **http://127.0.0.1:54324**. Local Auth does **not** require Google credentials, Resend, DNS or hosted Supabase.
 
-The pgTAP suite under `supabase/tests/database/` exercises two authenticated identities, anonymous denial, ownership isolation, immutable owner, financial-write denial, Free/Pro/revoked transitions, premium-write gating and retained read/delete semantics.
-
-Regenerate TypeScript types from the local schema with:
-
-```sh
-pnpm supabase:types
-```
-
-The generator writes `lib/supabase/database.types.ts` explicitly as UTF-8 so generation is stable across shells, including Windows PowerShell. Generated types are derived artifacts; migrations remain the authority.
-
-## Application checks
-
-Run the application checks separately:
+The local stack includes committed **confirm-signup and password-recovery templates**. Verify email/password signup, confirmation, sign-in, sign-out and password reset using the links in Mailpit. The recovery link must reach `/auth/confirm?type=recovery` and then `/reset-password`.
 
 ```sh
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm supabase:test:db
+pnpm supabase:types
 pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-The browser regression suite uses synthetic public configuration and an `E2E_AUTH_BYPASS` flag injected only by Playwright. The bypass is ignored in production and is not an application authentication mechanism. Local browser checks, Mailpit flows and local RLS tests do not certify deployer-owned hosted SMTP, Google OAuth, Stripe or Vercel configuration.
+Run `pnpm supabase:db:reset` before DB tests whenever you need a clean local schema. **It destroys local DB data; never run it against a hosted database.** Generated types should match `lib/supabase/database.types.ts` without a diff. Stop the local stack with `pnpm supabase:stop`.
 
-## Safe local build fixture
+The browser suite includes a strictly non-production presentation-only bypass. It cannot grant real users access and is not a substitute for provider-level Auth testing.
 
-For a build-only check without starting the local Supabase stack, tests may use synthetic values such as:
+## 2. Product identity and code
 
-```text
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_local_test_fixture
-SUPPORT_EMAIL=support@example.com
+In `config/product.ts`, change the product name, public/private navigation, currency, pricing descriptions and feature copy. Edit the landing, Help and legal templates for your real product. The Terms and Privacy pages contain explicit placeholders; **do not publish them as finished policies**.
+
+The Example Resource exists only to demonstrate isolation and billing gates. Replace it as described in [Architecture → Replacing the Example Resource](ARCHITECTURE.md#replacing-the-example-resource), preserving SQL migrations, RLS, immutable ownership and current-user `has_pro()`. Auth and Billing must not depend on your product-specific resource.
+
+## 3. Hosted Supabase and database
+
+1. Create a buyer-owned **Supabase project** per environment. Do not reuse a production project for disposable QA.
+2. Configure the application environment with your project's **URL**, `sb_publishable_` key and **server-only** `sb_secret_` key.
+3. Apply all committed migrations to a **clean test project first**. Verify generated types, RLS/privileges and migrations before changing a live database.
+4. Apply hosted migrations as an explicit operator step (for example, with the pinned Supabase CLI):
+
+```sh
+pnpm dlx supabase@2.118.0 login
+pnpm dlx supabase@2.118.0 link --project-ref <your-project-ref>
+pnpm dlx supabase@2.118.0 db push
 ```
 
-Synthetic values are not operational credentials. A successful local build does not validate external-provider configuration.
+Check the CLI's target project before applying changes. These commands operate on a hosted project once linked. **Never run a local DB reset against hosted data.** Do not run hosted migrations automatically in every Vercel preview deployment. Database rollback requires its own plan; rolling back the application does not revert Postgres.
 
-## Environment rules
+### Auth URL configuration
 
-- Browser-visible variables must use only publishable/public values.
-- Secrets never belong in `NEXT_PUBLIC_*` variables.
-- Hosted URLs require HTTPS; loopback HTTP is allowed for local development.
-- Staging/test and production/live provider credentials must remain separate.
-- Missing or invalid required configuration must fail safely without printing supplied secret values.
-- `E2E_AUTH_BYPASS` is test-only, is set by Playwright, and must never be treated as an operational setting.
+In Supabase **Authentication → URL Configuration**, use **one canonical application origin** for the environment:
 
-## Provider ownership
+```text
+Site URL: https://your-app.example.com
 
-DaysNotWeeks integrates external providers but does not proxy or resell them. Each deployed product owns and configures its own:
+Redirect URLs:
+https://your-app.example.com/auth/callback
+https://your-app.example.com/auth/confirm
+https://your-app.example.com/**
+```
 
-- Supabase project;
-- Resend account and sending domain;
-- Stripe account;
-- provider credentials and DNS.
+Use exact URLs or the narrowest wildcard needed by your Auth journeys. Keep localhost allowances **local only**. The application defaults to `/app` after Auth and rejects unsafe external private redirects.
 
-Do not use a DaysNotWeeks-owned sending domain, SMTP credential or provider account in a customer deployment. This keeps deliverability, billing, abuse controls, secret ownership and operational recovery isolated to the deployed product.
+**Crucial:** Set `NEXT_PUBLIC_SITE_URL` to that **same canonical origin** in Vercel. Stripe Checkout and Customer Portal use it for their browser returns. Using a different Vercel/team alias can lose the session cookie and send a paid user to Sign in, even while their subscription is correctly paid.
 
-## Supabase Auth
+### Google OAuth
 
-The application implements exactly the Scope 2.0 authentication surface:
+1. Create an OAuth **Web application** client in Google Cloud, and configure the consent screen/test users as appropriate.
+2. Google's **Authorized redirect URI** is the **Supabase provider callback**, *not* the Next.js app callback:
 
-- Google OAuth;
-- email/password signup and sign-in;
-- email verification and resend;
-- forgot/reset password;
-- cookie-backed SSR sessions and logout;
-- protected `/app` routes with safe internal return paths.
+```text
+https://<your-supabase-project-ref>.supabase.co/auth/v1/callback
+```
 
-Magic-link authentication is OUT.
+3. In Supabase **Authentication → Providers → Google**, enable Google and enter the buyer-owned Client ID/Secret. These values do **not** belong in the application's browser env.
+4. Test **Continue with Google** from the deployed app: consent must complete, `/auth/callback` must exchange the PKCE code, and the browser must reach an authenticated `/app`.
 
-### Redirect URLs
+### Email confirmations, recovery and SMTP
 
-Configure hosted Supabase Auth so each environment allows only the application URLs it actually needs. The application uses:
-
-- `/auth/callback` for Google OAuth PKCE exchange;
-- `/auth/confirm` for email confirmation and recovery token exchange;
-- private `/app` destinations as validated post-auth return paths.
-
-Keep local, staging and production origins isolated. A broad `http://localhost:3000/**` wildcard is committed only for local development; use exact deployed URLs in production wherever practical.
-
-### Auth email / SMTP
-
-Hosted authentication email is sent by **Supabase Auth through the deployer's own Resend SMTP configuration**. The Next.js application does not use the Resend SDK merely to deliver Auth email, and Resend SMTP credentials do not belong in `.env.local` or any `NEXT_PUBLIC_*` variable.
-
-Recommended production boundary:
-
-- use a dedicated Auth sending domain such as `auth.example.com`;
-- use a sender such as `no-reply@auth.example.com`;
-- keep Auth email separate from marketing email reputation;
-- verify the sending domain in Resend with the DNS records Resend supplies;
-- disable click/open tracking for Auth email so provider link rewriting cannot interfere with verification/recovery links;
-- keep staging/test and production sending identities isolated when practical.
-
-Resend SMTP settings for Supabase:
+For hosted Auth email, use **Supabase Auth → Resend SMTP**, not an application email integration. Verify the sending domain and its DNS records in Resend, then configure in Supabase **Authentication → SMTP Settings**:
 
 ```text
 Host: smtp.resend.com
 Port: 465
 Username: resend
-Password: <customer-owned Resend API key>
-Sender email: no-reply@auth.example.com
-Sender name: <product name>
+Password: <your Resend sending API key>
+Sender email: no-reply@<your verified domain>
+Sender name: <your product name>
 ```
 
-Configure these values in the Supabase project's **Authentication → Emails → SMTP Settings** (or equivalent current Auth SMTP configuration). The SMTP password is provider configuration owned by Supabase/Resend, not an application runtime secret.
+Use the email sender/domain you actually verified. Keep sender identity and credentials environment-owned; avoid click/link rewriting on Auth mail. A working SMTP connection alone **does not** configure the hosted email templates.
 
-For hosted projects, configure custom SMTP before relying on production email delivery or hosted email-template customization. Supabase's default email provider is for limited testing and may impose delivery/template restrictions.
+In Supabase **Authentication → Email Templates**, replace the default templates with the committed versions in `supabase/templates/`. **Do not use the default `{{ .ConfirmationURL }}` link** if the starter's cookie-backed token-hash exchange is required.
 
-Local Supabase development uses Mailpit instead of hosted SMTP credentials.
-
-### Confirm signup template
-
-The local template is committed at `supabase/templates/confirmation.html`. For hosted Supabase, configure the **Confirm signup** template with the same token-hash link:
+**Confirm signup** (body/link from `supabase/templates/confirmation.html`):
 
 ```html
-<h2>Confirm your email address</h2>
-<p>Follow the link below to confirm this email address and finish signing up.</p>
-<p>
-  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next={{ .RedirectTo }}">
-    Confirm email address
-  </a>
-</p>
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next={{ .RedirectTo }}">
+  Confirm email address
+</a>
 ```
 
-The application validates the resulting return destination against the same-origin `/app` allowlist before redirecting.
-
-### Password recovery template
-
-**Hosted release prerequisite:** The default Supabase **Reset password** email often uses `{{ .ConfirmationURL }}`, which can verify a recovery token and redirect to the public landing page without establishing the server-side recovery session required by this starter. The app expects the email to open its `/auth/confirm` route, which calls `verifyOtp()` and then redirects to `/reset-password`. Configuring SMTP and Site URL alone does **not** install this custom hosted template.
-
-In each hosted Supabase project, open **Authentication → Email Templates → Reset Password** (menu labels may vary). Replace the default link with the one in the committed `supabase/templates/recovery.html` template below, then save and **request a new reset email**. Previously sent emails retain their old URLs.
+**Reset password** (body/link from `supabase/templates/recovery.html`):
 
 ```html
-<h2>Reset your password</h2>
-<p>We received a request to reset your password. Follow the link below to choose a new one.</p>
-<p>
-  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next={{ .RedirectTo }}">
-    Reset password
-  </a>
-</p>
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next={{ .RedirectTo }}">
+  Reset password
+</a>
 ```
 
-`resetPasswordForEmail` supplies the original validated private destination as `.RedirectTo`. The confirmation route validates it again, establishes the recovery session, and then opens `/reset-password?next=...`. After a successful password update, the application signs out the recovery session and sends the user back through normal sign-in while preserving that safe destination.
+These are **hosted provider settings**: committing local template files does not automatically install them in Supabase. After saving, request fresh emails; previously sent links do not change. Confirm that the browser reaches `/app` after signup and `/reset-password` after recovery. An email that sends you to the public landing page instead of the reset form is often still using the **default Supabase verification link**.
 
-### Google OAuth
+## 4. Stripe test mode
 
-Enable only Google for the supported OAuth surface. Configure the Google project, consent screen and Supabase callback values independently for staging and production. The application starts OAuth at `/auth/google` and exchanges the returned authorization code at `/auth/callback`.
+Create one Stripe product with **two recurring Prices** in the same configured currency: monthly and annual. Stripe Price is authoritative for amount/interval; no hard-coded duplicate amounts are required in the app.
 
-Google OAuth is not enabled in the committed local Supabase configuration because it requires deployer-owned OAuth credentials. Email/password Auth is fully testable locally without Google.
+Set these **server-only** variables:
 
-### Hosted Auth verification
-
-Before promoting any buyer-owned environment to production, verify on that deployed SHA:
-
-- Google signup/sign-in and callback;
-- email/password signup;
-- confirmation email and resend;
-- invalid/expired confirmation behavior;
-- forgot/reset password, preserved safe return path, and reused/expired recovery links;
-- logout and session refresh;
-- unauthenticated `/app` redirect plus safe `next` handling;
-- Account display-name update;
-- support behavior for sensitive account changes.
-
-The starter's Auth implementation is release-tested, but provider configuration remains environment-specific. Do not hard-code a DaysNotWeeks domain or SMTP account into the starter; each deployment must verify its own provider settings.
-
-## Stripe Billing
-
-The supported billing path is implemented as Stripe Checkout + Customer Portal + signed webhooks + a server-owned reconstructible Pro projection.
-
-Stripe is the financial source of truth. The application stores only the supported monthly/annual Price IDs; Stripe Price remains authoritative for amount, currency, active state and recurrence. The browser cannot supply arbitrary Price, customer, subscription or entitlement identifiers.
-
-Required server-only variables:
-
-```text
-STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=
-STRIPE_PRO_MONTHLY_PRICE_ID=
-STRIPE_PRO_ANNUAL_PRICE_ID=
+```dotenv
+STRIPE_SECRET_KEY=<test secret key, sk_test_...>
+STRIPE_WEBHOOK_SECRET=<signing secret for this exact webhook endpoint>
+STRIPE_PRO_MONTHLY_PRICE_ID=<monthly Price ID>
+STRIPE_PRO_ANNUAL_PRICE_ID=<annual Price ID>
 ```
 
-Keep test/sandbox and live values strictly separated. A test Price ID must never be combined with a live secret key, and the inverse must also fail closed.
+Never mix Stripe test/live keys, Price IDs and signing secrets. Checkout passes selected server-owned Price IDs; the browser cannot change the financial mapping. Billing is gated by **confirmed paid invoice periods**, not a Checkout success redirect.
 
-### Local Stripe verification
-
-Run the application and Stripe listener in separate terminals. With the application on port 3000:
-
-```powershell
-stripe listen `
-  --events "checkout.session.completed,checkout.session.expired,invoice.paid,invoice.payment_failed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,charge.refunded,charge.dispute.created,charge.dispute.updated,charge.dispute.closed" `
-  --forward-to "http://127.0.0.1:3000/api/stripe/webhook"
-```
-
-Copy the listener's current `whsec_...` value into `STRIPE_WEBHOOK_SECRET` and restart Next.js after changing it. Keep the listener open while exercising Checkout or the Customer Portal.
-
-The supported entitlement semantics are deliberately narrow:
-
-- Checkout completion and browser success redirects never grant Pro.
-- A supported, positive `invoice.paid` fact advances `paid_through`; the Price must match the server-owned subscription mapping and expected currency/recurrence/positive amount. An archived Price remains valid for a legitimate historical subscription.
-- Payment failure does not grant a new period. Previously confirmed access remains only until the existing `paid_through`.
-- Cancellation at period end keeps Pro through the already-paid period and projects a canceling state.
-- Unsupported Price, currency, recurrence, identity or non-positive payment evidence fails closed.
-- Webhook event IDs are idempotent. Failed events are retryable, and a processing lease older than five minutes can be reclaimed after a worker crash.
-
-### Billing reconciliation / repair
-
-The billing projection is reconstructible from Stripe plus the server-owned Checkout-attempt ledger. Reconciliation is a dry-run by default:
+For local webhook testing, run the app and the Stripe CLI listener in separate terminals:
 
 ```sh
-pnpm billing:reconcile
+stripe listen --events checkout.session.completed,checkout.session.expired,invoice.paid,invoice.payment_failed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,charge.refunded,charge.dispute.created,charge.dispute.updated,charge.dispute.closed --forward-to http://127.0.0.1:3000/api/stripe/webhook
 ```
 
-Apply the reported repair explicitly:
+Use the listener's **current** `whsec_` signing secret as `STRIPE_WEBHOOK_SECRET` locally and restart Next.js after changing environment values.
+
+For a hosted environment, register **HTTPS `https://your-app.example.com/api/stripe/webhook`** in Stripe test mode with the same supported event set and use *that endpoint's* separate signing secret in Vercel. A local CLI secret does not validate a hosted webhook signature.
+
+Verify monthly and annual Checkout, payment confirmation, cancellation, renewal and failure in **Stripe test mode**. A browser may close before the webhook; access must still converge through trusted Stripe facts. Inspect Billing and the DB projection, not just the success page. Customer Portal must open only for the authenticated owner's customer ID.
+
+The [Billing runbook](runbooks/BILLING.md) covers duplicate/reordered events, refunds/disputes and manual reconciliation. **No automatic reconciliation cron or guaranteed recovery time is included.**
+
+## 5. Deploy to Vercel
+
+1. Push your adapted repository to your Git provider and import it into a buyer-owned **Vercel** project.
+2. Use the supported **Node 24** baseline and the committed `pnpm-lock.yaml` for installation/build.
+3. Set `NEXT_PUBLIC_SITE_URL`, the Supabase URL/publishable key, support email, Supabase server secret and Stripe server keys/Price IDs in the correct Vercel environments. Browser-exposed variables must contain **no secrets**.
+4. Configure hosted Google OAuth, verified Auth SMTP/templates and Stripe webhook for the final domain **before** promoting the site.
+5. Apply controlled hosted SQL migrations **before** deploying incompatible application changes.
+6. Build/deploy and smoke the actual deployed SHA.
+
+Keep preview/staging/test credentials isolated from live production; changing an environment variable requires a **new deployment** for the updated build/runtime config.
+
+### Hosted go-live verification
+
+Before accepting a deployment as ready, exercise:
+- Fresh password signup → delivered confirmation link → authenticated Dashboard; resend and invalid/expired callback behaviors.
+- Google OAuth consent → authenticated Dashboard; logout and return paths.
+- Forgot password → delivered recovery email → password change → new login.
+- Anonymous/private navigation, A/B isolation, Pro-only create/edit, retained read/delete after downgrade.
+- Monthly and annual test Checkout, remote signed webhook `invoice.paid`, Pro entitlement, browser-close safety, duplicate/concurrent safety, Portal, renewal/failure/cancellation.
+- Correct canonical return origin, SEO metadata, private noindex, keyboard/focus and responsive layouts.
+- Legal content, support contact, secrets and production/live provider separation.
+
+Use the [release notes](release/v0.1.0.md) as **starter implementation** evidence, not as a substitute for buyer-owned hosted QA.
+
+## 6. Operation and maintenance
 
 ```sh
-pnpm billing:reconcile -- --apply
-```
-
-To limit either mode to one authenticated account:
-
-```sh
+pnpm billing:reconcile                # dry-run, all known accounts
 pnpm billing:reconcile -- --user <supabase-user-uuid>
-pnpm billing:reconcile -- --user <supabase-user-uuid> --apply
+pnpm billing:reconcile -- --apply      # explicit financial repair, after review
 ```
 
-The reconciliation command uses the same paid-period, supported-state and historical-Price policy as webhook processing. It compares current Stripe facts with the local projection, reports drift without secrets, and writes only with `--apply`. It does not accept an entitlement or paid-through value from the operator, and it cannot grant Pro without matching provider evidence. It also repairs a completed Checkout attempt that remained locally in `created` state because the completion webhook was missed.
+Always confirm the target Supabase and Stripe environments before applying reconciliation. Logs and output must never expose credentials or sensitive tokens. If Stripe exhausts its webhook retries, an operator may need to reconcile; the starter does not run a scheduler by default.
 
-Run reconciliation with the same environment isolation rules as the application. Never point a local/test repair run at live Stripe or an unrelated hosted Supabase project.
-
-### Hosted Stripe deployment verification
-
-Before promoting any buyer-owned environment to production, verify on that deployed SHA:
-
-- monthly and annual Checkout using the intended Stripe environment;
-- signed webhook delivery for Checkout, paid invoice, payment failure and subscription lifecycle events;
-- Customer Portal creation and return flow;
-- cancellation-at-period-end while retaining access through `paid_through`;
-- duplicate/reordered webhook delivery and repair/reconciliation behavior;
-- strict separation between test/sandbox and live credentials.
-
-Do not apply starter billing migrations blindly to an unrelated or pre-existing hosted schema. Review the target database and migrate it through the deployment's controlled process.
-
-## Deployment
-
-Vercel is the only supported deployment target.
-
-Each deployment must keep local, staging and production isolated; apply database migrations through a controlled process rather than every preview deploy; and verify hosted Google OAuth, SMTP, Stripe webhook behavior and the deployed SHA before production promotion.
-
-DaysNotWeeks release certification covers the distributable repository and its executable gates. It does not certify a buyer's provider credentials, DNS, OAuth consent screen, email deliverability, webhook destination or Vercel project; those remain deployment-owned.
+Maintain framework/provider compatibility, security updates and regressions without adding unrelated infrastructure. See [Architecture](ARCHITECTURE.md), the [Billing runbook](runbooks/BILLING.md) and the [canonical Scope](product/SCOPE.md) for authoritative boundaries.
