@@ -3,7 +3,6 @@ import { LiveAppShell } from "@/components/app/live-app-shell";
 import { toAccountPlanViewModel, type CurrentBillingPlan } from "@/lib/billing/view";
 import { toExampleResourceViewModel } from "@/lib/example/data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getPreview } from "@/lib/ui/fixtures";
 import type { AppViewModel, PricingViewModel } from "@/lib/ui/models";
 
 function displayName(user: { email?: string; user_metadata?: Record<string, unknown> }) {
@@ -30,10 +29,9 @@ export async function AuthenticatedAppShell({ children, pricing, supportEmail }:
   if (entitlement.error || billingPlan.error || examples.error) throw new Error("APP_DATA_LOAD_FAILED");
 
   const name = displayName(user);
-  const base = getPreview("free");
   const canWriteExample = entitlement.data === true;
   const app: AppViewModel = {
-    ...base,
+    display: "ready",
     user: {
       id: user.id,
       name,

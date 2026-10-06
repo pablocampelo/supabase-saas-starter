@@ -1,1737 +1,189 @@
 # DaysNotWeeks — Product Scope 2.0
 
-- **Versión:** Product Scope 2.0
-- **Estado:** APPROVED / CANONICAL
-- **Producto:** DaysNotWeeks
-- **Naturaleza:** feature-closed SaaS foundation
-- **Principio:** minimum essential infrastructure, maximum adaptability
-- **Autoridad:** este documento es el único contrato de producto vigente.
-- **Base de decisión:** Product Scope 1.1 + decisiones explícitas de producto + Technology & Architecture Research 2026-09-28
-
----
-
-# 1. Product definition
-
-DaysNotWeeks es una foundation SaaS premium para founders técnicos y pequeños equipos que construyen productos de **cuenta individual con suscripción recurrente**.
-
-El stack soportado es deliberadamente único:
+**Status:** APPROVED / CANONICAL  
+**Product:** DaysNotWeeks  
+**Type:** Feature-closed SaaS foundation  
+**Principle:** Minimum essential infrastructure, maximum adaptability
 
-- Next.js App Router
-- React
-- TypeScript strict
-- Node.js LTS
-- Supabase Auth
-- Supabase Postgres
-- Row Level Security
-- Stripe
-- Tailwind CSS
-- Vercel
+This is the **sole product contract**. Implementations, tests, documentation and future maintenance must respect it. Earlier specifications and development prompts are historical, not additive requirements. Changing an exclusion or the supported business model requires an explicit product decision.
 
-La foundation debe resolver correctamente las partes fundacionales difíciles de un SaaS para que el comprador pueda empezar directamente por su producto.
+## 1. Product and buyer
 
-No intenta proporcionar el mayor número de funcionalidades.
+DaysNotWeeks is a premium, deliberately focused Next.js foundation for **technical founders and small teams (approximately 1–5 developers)** building an individual-account, recurring-subscription SaaS.
 
-Optimiza para:
+One user owns their own data and may receive one `pro` entitlement. There are no organizations, workspaces, memberships, roles or seats. The buyer's development team may have multiple people; the buyer's end-user account model does not.
 
-1. fast shipping;
-2. bajo overhead conceptual;
-3. seguridad;
-4. mantenibilidad;
-5. adaptación;
-6. claridad de arquitectura;
-7. comportamiento verificable;
-8. buena experiencia para humanos y coding agents;
-9. escalabilidad razonable sin infraestructura prematura.
+**Supported stack:** Next.js App Router, React, strict TypeScript, Node.js LTS, Supabase Auth, Supabase Postgres with RLS, Stripe, Tailwind CSS and Vercel. Each core boundary has one supported implementation path, not a portfolio of interchangeable providers.
 
-La métrica principal no es cuántas features incluye.
+The buyer can clone the versioned repository, install reproducibly, configure branding and provider-owned environments, apply SQL migrations, deploy to Vercel, run individual-account Auth, isolate private data, sell monthly or annual Pro, use Stripe Customer Portal, diagnose/reconcile billing drift and **replace the Example Resource without rebuilding Auth, Billing or the foundation**.
 
-La métrica principal es:
+The product is measured by the foundational work it removes, **not** by the number of features bundled.
 
-> cuánto trabajo fundacional correcto deja de tener que reconstruir el comprador antes de empezar su producto.
+## 2. Engineering principles
 
----
+- **One supported path.** Avoid equivalent alternate implementations of core services.
+- **Earn every permanent dependency.** Add infrastructure only when its absence breaks a core journey or regularly forces the buyer to rebuild a sensitive boundary.
+- **No speculative abstraction.** Abstractions solve present repetition, not hypothetical future integrations.
+- **Server/database authority.** UI state never establishes identity, ownership, authorization, entitlement or financial truth.
+- **A replaceable Example.** Its only role is to prove Auth → ownership → RLS → Pro → CRUD.
+- **Feature-closed, maintained.** Security updates, compatibility work, provider changes, defects, regressions and documentation corrections are maintenance; new features are not implied.
+- **OUT means OUT.** Exclusions are not a hidden backlog. Do not invent future phases to reintroduce them.
 
-# 2. ICP
+## 3. Foundation and configuration
 
-DaysNotWeeks está diseñado para:
+Use one Next.js App Router application with compatible React, strict TypeScript, a supported Node LTS, React Server Components where useful, Server Actions for UI mutations where appropriate, Route Handlers for explicit HTTP behavior, and **one package manager with a committed frozen lockfile**. Concrete dependency versions are fixed and verified at each release; the scope does not require automatic pursuit of the newest version.
 
-- technical founders;
-- equipos pequeños de aproximadamente 1–5 developers;
-- productos SaaS de cuenta individual;
-- un modelo Free + un único nivel Pro;
-- suscripción mensual o anual;
-- productos cuya feature principal todavía debe construirse;
-- equipos que prefieren una foundation pequeña, explícita y profundamente integrada.
+**Versioned product configuration** owns name, branding, navigation, content, supported plans and currency. **Environment/provider configuration** owns secrets, Supabase connection, OAuth, SMTP, Stripe keys/Price IDs, deployment URLs and other environment-specific identifiers. Each value has one authority.
 
-El modelo soportado es:
+The logical catalog is exactly `free`, `pro_monthly`, `pro_annual`. Application code selects what can be purchased; Stripe Price determines amount, currency and recurrence. Public pricing may be derived/cached from validated Prices. An archived Price is not automatically invalid for a previously established subscription.
 
-```text
-user
-└── owns data
-    └── may have Pro access
-```
+## 4. Identity and Auth email
 
-No existe dentro del producto soportado:
+**Supabase Auth is the only identity authority.** The two supported paths are:
 
-```text
-organization
-workspace
-team
-membership
-seat
-role
-```
+- Google OAuth: signup/sign-in, callback, canceled/error state, cookie-backed session and validated private return path.
+- Email/password: signup, verification, resend, sign-in, forgot/reset password, session and logout.
 
-El equipo que desarrolla el SaaS puede tener varias personas.
+Use server-side Supabase identity verification appropriate to the pinned SDK. Every sensitive mutation rechecks identity and authorization. Authentication redirects accept only valid internal `/app` destinations, defaulting to `/app`. Do not automatically link accounts based only on matching email.
 
-Los clientes del SaaS no comparten una organización dentro del modelo DaysNotWeeks.
+The Account surface exposes identity/email, display-name updates, recovery, logout and Help; manual account linking, advanced self-service email change and automatic account deletion are excluded.
 
----
+**Auth email:** Supabase Auth → buyer-owned **Resend SMTP** for hosted confirmation and recovery. Document verified sender/domain, relevant DNS, SMTP, template callback routing and local vs hosted configuration; test real hosted delivery. Local Supabase uses email capture. Do not install an application email SDK/framework just for Supabase Auth.
 
-# 3. Product promise
+## 5. Database, ownership and Example
 
-Un comprador debe poder:
+Supabase Postgres is the supported database. **Versioned SQL migrations** are schema authority. Keep only necessary grants, constraints, indexes and minimal development seed; generate TypeScript DB types from the real schema. Do not maintain a second hand-written editable schema or introduce an ORM/repository framework by default.
 
-1. clonar el repositorio;
-2. instalarlo de forma reproducible;
-3. configurar marca y contenido;
-4. configurar Supabase;
-5. configurar Google OAuth;
-6. configurar SMTP Auth;
-7. configurar Stripe;
-8. aplicar migrations;
-9. desplegar en Vercel;
-10. registrar y autenticar usuarios;
-11. recuperar una cuenta;
-12. almacenar datos privados aislados mediante RLS;
-13. cobrar Pro mensual o anual;
-14. obtener acceso Pro desde hechos financieros confiables;
-15. gestionar billing mediante Stripe Customer Portal;
-16. diagnosticar y reparar una discrepancia de billing;
-17. sustituir el Example Resource por el dominio real sin reconstruir Auth, Billing o la foundation.
+A private resource belongs to one authenticated user. RLS must enforce row isolation, anonymous denial and immutable ownership, including direct Supabase Data API access. The client cannot assign/transfer owners, edit financial state or grant Pro; UI/Server Action checks never replace RLS.
 
----
+The app includes a generic, honest **Dashboard** (greeting, actual plan/account status and useful navigation, no invented metrics) and one intentionally simple, replaceable **Example Resource** with fields conceptually `id`, `user_id`, `title`, `content`, timestamps.
 
-# 4. Product principles
+| Entitlement | Create | Read own | Edit own | Delete own |
+| --- | --- | --- | --- | --- |
+| Free | No | Yes | No | Yes |
+| Pro | Yes | Yes | Yes | Yes |
+| Former Pro | No | Yes | No | Yes |
 
-## P1 — One supported path per important job
+Retained data remains readable/deletable by its owner after Pro is lost. The Example must not become a dependency of Auth, Billing, Account, product configuration or the shared app shell.
 
-Cada frontera core tiene una solución soportada.
+## 6. Billing and financial truth
 
-No se mantienen alternativas equivalentes por defecto.
+The entire monetization model is **Free + one Pro tier**, offered monthly or annually with identical `pro` access and one configured currency. Stripe owns Checkout, Customer, subscriptions, invoices, payment methods, Customer Portal, financial state, receipts and cancellation. The server chooses the supported offer; browser parameters cannot supply authoritative Price, customer, subscription or entitlement IDs.
 
----
+**Stripe is the financial source of truth.** The application stores a minimal, reconstructible **billing projection**, not a user-editable `is_pro` boolean. Its semantic fields cover user/customer/subscription mapping, supported Price and interval, subscription state, last recognized paid financial period, `paid_through`, synchronization time and projection version/concurrency equivalent.
 
-## P2 — Permanent complexity must earn its place
+Expose exactly one current-user entitlement, `has_pro()`, through the database. Do not permit clients to query or mutate another user's financial entitlement by passing an arbitrary user ID.
 
-Una pieza de infraestructura sólo entra cuando su ausencia:
+**Paid-through rule:** Pro is based on a verified positive paid invoice for a correctly mapped, supported Stripe subscription and the **actual covered financial period**. Neither `subscription.status = active`, `current_period_end`, Checkout completion nor a browser redirect is sufficient.
 
-- rompe un journey fundamental; o
-- obligaría habitualmente al comprador a reconstruir una frontera delicada.
+- Checkout pending: no new Pro.
+- Supported paid invoice: establishes/advances paid-through.
+- Paid renewal: extends to the newly confirmed period, never a fabricated 30/365-day interval.
+- Failed renewal, past-due or unpaid: no new period; only previously paid-through access remains.
+- Cancellation at period end: retains already-paid access, grants no additional period.
+- Immediate/terminal cancellation: projects the current Stripe state without inventing new access.
+- Unsupported Price/state/currency/recurrence/amount or inconsistent mapping: **fail closed** for new access; remain diagnosable and reconcilable.
+- Refund/dispute: record relevant event without extending access or automatically revoking an already-confirmed period. The buyer's refund policy may require a Stripe adjustment followed by reconciliation. Do not claim a universal automated revocation policy.
 
-No se incluye infraestructura porque “pueda ser útil más adelante”.
+**Checkout and webhook correctness:**
+- A durable checkout attempt, user/session association, appropriate Stripe idempotency keys and atomic open-attempt handling prevent competing subscriptions; incomplete attempts can be recovered/expired.
+- Verify the **raw-body Stripe signature** and correct environment before processing; never trust browser financial identifiers.
+- Do not return success before durable processing or a deliberate permanent ignore. Store unique event receipts without retaining full sensitive payloads indefinitely.
+- Event-ID deduplication alone is insufficient: independent concurrent events must converge through versioned/transactional/locked projection updates. Do not hold database transactions open during external Stripe HTTP calls.
+- Retry, reordered/duplicate events and crash recovery must be safe.
 
----
+**Reconciliation:** ship a small operator command that reads current Stripe facts, compares local projection, reports safe drift, defaults to dry-run and requires explicit apply. Reuse the webhook's financial policy and fail closed on contradictory data. A default cron/worker/automatic recovery SLA is **not** provided: exhausted retries may require operator action.
 
-## P3 — No speculative abstraction
+## 7. Product experience
 
-No existen interfaces, adapters, plugin systems o frameworks genéricos para proveedores que el producto no soporta.
+**Public:** one coherent Header, Hero, Features, Pricing, FAQ, CTA, Footer, Terms, Privacy and Help composition. **Private:** Dashboard, Example, Billing, Account and Help.
 
-Una abstracción debe resolver una repetición real del producto actual.
+Billing displays actual plan/interval/state, paid-through when useful, confirmation/pending/error recovery, purchase CTA and an owner-only Customer Portal entry. A browser return never displays an unearned payment success.
 
----
+Use Tailwind with one semantic light theme, accessible HTML and a **small owned component set**. Introduce behavior-heavy headless primitives selectively; do not install a full component gallery or incompatible primitive families. Forms use HTML, appropriate Server Actions/`useActionState`, server-side Zod and database constraints. State authority belongs to the server/DB, not localStorage or client caches. Do not add a generic form, client-state or server-state framework by default.
 
-## P4 — Trust boundaries are explicit
+Public pages have appropriate title/description/canonical/Open Graph/robots/sitemap. Private pages are noindex. Terms/Privacy are explicitly editable **templates**, not published legal advice. Avoid artificial public example routes.
 
-La UI no constituye autorización.
+Provide public Help, configurable support email, actionable errors, safe operational diagnostics and a billing recovery runbook. Avoid tokens, secrets, sensitive payloads and unnecessary PII in logs. Do not build a helpdesk.
 
-Identidad, ownership, autorización, entitlement y estado financiero utilizan límites server/database adecuados.
+Protect materially costly or sensitive surfaces using Supabase Auth limits, request payload bounds, pagination, scoped billing attempt/cooldown controls, server authorization and RLS. Do not claim a universal WAF/anti-abuse product; direct Supabase Data API access depends on database controls, not Vercel WAF.
 
----
+Security includes server-side identity/authorization, immutable owner, financial write restrictions, signed Stripe webhooks, safe redirects, request-size limits, secret isolation, appropriate headers/XSS/CSRF-origin defenses and supported dependency patches. A CSP must not break actual Auth/Checkout flows merely to appear stricter.
 
-## P5 — Example proves the foundation
+Keyboard operation, focus visibility, labels, usable errors, contrast, zoom and responsive layouts are required; perform automated accessibility checks on representative journeys. Do not claim universal WCAG certification.
 
-El dominio de ejemplo existe para demostrar que:
+## 8. Verification, CI and deployment
 
-```text
-Auth
-→ ownership
-→ RLS
-→ entitlement
-→ CRUD
-```
+Prefer **few high-value tests** protecting critical invariants:
+- Unit: redirects, environment parsing, catalog, paid-state policy.
+- Integration/HTTP: signed webhooks, Checkout/Portal, server authorization and error paths.
+- Real Postgres: users A/B, anonymous, immutable owner, financial write denial, Free/Pro/revoked gating, retained read/delete.
+- Billing race cases: duplicated, concurrent and out-of-order events, stale projection writes, failures and competing Checkout attempts.
+- Stripe test/sandbox: monthly/annual, browser closed, payment, renewal, failed payment, cancellation and reconciliation.
+- Browser E2E: essential journeys and representative accessibility/responsive checks.
 
-funcionan conjuntamente.
+**Minimal GitHub Actions CI** verifies frozen install, lint, typecheck, tests, local Supabase reset + RLS, production build and critical browser E2E. Use least-privilege permissions and pinned trusted actions. Never execute untrusted PR code with production provider secrets.
 
-No existe para convertirse en un producto de demostración complejo.
+**Before release**, gather hosted evidence on the candidate SHA for Google OAuth, real SMTP, signup confirmation, password recovery/callbacks, Stripe sandbox and remote webhooks, deployed Vercel and hosted Supabase. Providers need not run for every PR.
 
----
+**Vercel is the only supported deployment target.** Keep local/staging/production isolated; no live secrets in staging. Verify migrations from a clean database, then migrate hosted databases in a controlled sequence (expand/contract when necessary); do not migrate on each preview deployment. Application rollback is not an automatic Postgres rollback.
 
-## P6 — Feature-closed, actively maintained
+## 9. Documentation and adaptability
 
-DaysNotWeeks está cerrado respecto a funcionalidades.
+Keep distinct, short sources of truth:
+- `README.md`: buyer value, quick start, navigation.
+- `docs/product/SCOPE.md`: what the product is and excludes (this file).
+- `docs/ARCHITECTURE.md`: implementation and trust boundaries.
+- `docs/SETUP.md`: environments, provider configuration and deployment.
+- `AGENTS.md`: edit/test discipline for developers and coding agents.
+- `docs/runbooks/BILLING.md`: Stripe diagnostics and reconciliation.
 
-Mantenimiento sí incluye:
+No agent-specific adapters, proprietary coding-agent layers or speculative plug-in architecture. Structure, generated types and tests must be legible to humans and agents without a specialized certification framework. Do not claim unmeasured AI productivity improvements.
 
-- security patches;
-- compatibility fixes;
-- dependency updates necesarios;
-- cambios requeridos por Next.js, Supabase, Stripe o Vercel;
-- bug fixes;
-- regression fixes;
-- corrección de documentación.
+**R6 adaptability acceptance:** following only distributed documentation, a developer or coding agent can rebrand, replace Example with a Projects-like domain, add a field, migrate, regenerate types, preserve owner/RLS/Pro rules, pass relevant tests and **leave Auth and Billing untouched**.
 
-Mantenimiento no autoriza automáticamente nuevas features.
+## 10. Explicit exclusions (OUT)
 
----
+These features may be built by the buyer but are **not** integrated, certified or maintained by the starter:
 
-## P7 — OUT means OUT
+- **Identity:** magic links, extra OAuth providers, MFA, SSO, alternative Auth, manual linking, advanced self-service email changes, automated account deletion.
+- **Organizations:** teams, workspaces, invitations, memberships, seats, RBAC/roles.
+- **Monetization:** one-time/lifetime sales, extra paid tiers, trials, coupons/promotions, usage billing, credits, seat billing, active interval switching, general entitlement engines and mandatory Stripe Entitlements.
+- **Data/platform:** Storage/uploads, Realtime, CMS, alternate databases, default ORM or generic repository layer.
+- **API:** generic public API, GraphQL, default tRPC/RPC framework or external SDK.
+- **Background jobs:** generic queues/workers, event buses, schedulers and default reconciliation cron.
+- **Marketing:** blog, CMS, lead capture, waitlist backend, testimonials gallery, UI catalog, multiple landing variants.
+- **UI:** dark mode, theme switcher, multiple skins, unused component libraries, fake metrics and generic charts.
+- **Email:** in-app email SDK, welcome notifications, campaigns or general notification platforms.
+- **Analytics:** marketing/product analytics, conversion tracking, analytics dashboard.
+- **Operations:** custom admin/helpdesk, impersonation, complex doctor, Management API readers, auto-provisioning/repair, generic observability stacks.
+- **Architecture:** provider abstraction framework, plug-in system, default monorepo, extra supported runtimes or deployment targets.
+- **Internationalization:** locale routes, translation system, multilingual SEO.
+- **AI:** tool/vendor-specific layers, prompt packs, multi-agent certification.
 
-No existe P1, P2 ni POST-V1 como roadmap implícito.
+## 11. Distribution and release acceptance
 
-Una capacidad marcada OUT no forma parte del producto ni constituye deuda pendiente.
+The **versioned Git repository/commit/tag** is the canonical distributable artifact. ZIPs or marketplace downloads are derived copies, never separately maintained implementations.
 
-Añadirla requiere una nueva decisión explícita de producto.
+A release is ready **only if all relevant gates pass**:
 
----
+| Gate | Required evidence |
+| --- | --- |
+| **R1 — Foundation** | Clean frozen install, lint, typecheck, tests, build, safe invalid configuration, no secret leakage |
+| **R2 — Identity** | Google and password signup/login, verification/resend, recovery/reset, logout, invalid callback and unsafe redirect denial, hosted SMTP delivery |
+| **R3 — Database** | Clean migrations and aligned generated types; A/B and anonymous isolation, immutable owner, financial-write denial, Free/Pro/revoked writes, retained own read/delete |
+| **R4 — Billing** | Monthly/annual Checkout, browser-close safety, verified paid-through entitlement, signature denial, duplicate/concurrent/competing processing, renewal/failure/cancellation, owner Portal, historical Price, reconciliation repair |
+| **R5 — Product** | Public/private screens, SEO and private noindex, responsive/keyboard/focus/error handling, no false payment success |
+| **R6 — Adaptability** | Example replacement with Auth, Billing, RLS, entitlement and build intact |
 
-# 5. Foundation — IN
+## 12. Scale, maintenance and claims
 
-## F1 — Runtime and application
+Optimize initially for early SaaS adoption (roughly 0–1k users), with incremental evolution for successful products (roughly 1k–100k). **These are planning bands, not guaranteed capacity.** Evolve indexing, query plans, hosting/provider plans, caching, observability and targeted async work **only after actual operating evidence**. Do not prebuild an S3/high-volume architecture.
 
-DaysNotWeeks entrega una única aplicación Next.js App Router.
+Maintain supported security, frameworks, Supabase/Stripe/Vercel compatibility, dependencies and regressions, prioritizing stability and simplicity over novelty. Feature-closed does not mean unmaintained.
 
-Baseline arquitectónico:
+Claim only properties demonstrated by release evidence: integrated Auth/private data/Billing, RLS-backed isolation, browser-independent paid provisioning, diagnosable/recoverable billing drift, a replaceable Example and reproducible verification. **Do not claim** quantified time saved, universal performance limits/readiness, complete elimination of billing edge cases, zero maintenance, superiority to every alternative or unmeasured coding-agent productivity.
 
-- Node.js LTS soportado;
-- React compatible con la release elegida de Next.js;
-- TypeScript strict;
-- RSC para composición/lecturas cuando sean apropiados;
-- Server Actions para mutaciones de UI cuando simplifiquen el flujo;
-- Route Handlers cuando se necesite semántica HTTP explícita;
-- Turbopack/default tooling de la familia Next soportada;
-- un único package manager y lockfile.
-
-Las versiones concretas se fijan y verifican en cada release.
-
-El Product Scope no obliga a perseguir automáticamente la última versión publicada.
-
----
-
-## F2 — Configuration
-
-La configuración debe estar centralizada y ser fácil de localizar.
-
-Conceptualmente:
-
-```text
-config/
-  product.ts
-  site.ts
-  billing.ts
-```
-
-La estructura literal puede variar si existe una opción más simple.
-
-### Código versionado
-
-Contiene información como:
-
-- nombre;
-- branding;
-- navegación;
-- contenido;
-- capacidades;
-- Free + Pro;
-- monthly + annual;
-- moneda soportada;
-- comportamiento de producto.
-
-### Environment
-
-Contiene únicamente información que sea:
-
-- secreta; o
-- específica del entorno/proveedor.
-
-Ejemplos:
-
-- Supabase URLs/keys;
-- Stripe secret key;
-- Stripe webhook secret;
-- Stripe Price IDs;
-- identificadores de proveedor;
-- URLs externas específicas del entorno.
-
-Cada dato debe tener una autoridad clara.
-
----
-
-## F3 — Catalog authority
-
-El producto soporta un catálogo lógico:
-
-```text
-free
-pro_monthly
-pro_annual
-```
-
-El código decide qué opciones pueden venderse.
-
-Los Price IDs correspondientes se configuran por entorno.
-
-Stripe Price es la autoridad de:
-
-- amount;
-- currency;
-- recurrence interval.
-
-La aplicación no mantiene manualmente esos importes en múltiples lugares.
-
-La UI pública puede utilizar una representación derivada/cacheada del catálogo validado.
-
-Un Price archivado para nuevas ventas no invalida automáticamente una suscripción histórica que ya utilizaba ese Price.
-
----
-
-# 6. Identity — IN
-
-Supabase Auth es la única autoridad de identidad.
-
-DaysNotWeeks soporta exactamente dos caminos de autenticación.
-
-## Google OAuth
-
-Incluye:
-
-- alta;
-- login;
-- callback;
-- cancelación/error;
-- sesión compartida;
-- retorno interno seguro.
-
-Los secretos Google se configuran mediante el proveedor correspondiente y Supabase.
-
-No se exponen al browser.
-
----
-
-## Email/password
-
-Incluye:
-
-- signup;
-- email verification;
-- resend verification;
-- login;
-- forgot password;
-- reset password;
-- session;
-- logout.
-
----
-
-## Session rules
-
-La identidad sensible se valida mediante los mecanismos server-side recomendados por Supabase para la versión soportada.
-
-No se confía en estado de UI como prueba de identidad.
-
-Las mutaciones vuelven a comprobar identidad/autorización.
-
-Los redirects de Auth aceptan únicamente destinos internos válidos.
-
-Fallback recomendado:
-
-```text
-/app
-```
-
----
-
-## Account
-
-El usuario puede:
-
-- ver email/identidad;
-- editar display name;
-- recuperar/resetear password;
-- logout;
-- acceder a ayuda.
-
-No se realiza linking manual de cuentas basándose únicamente en igualdad de email.
-
----
-
-# 7. Auth email — IN
-
-Password verification y recovery requieren un SMTP real en entornos alojados.
-
-El único camino soportado de referencia es:
-
-```text
-Supabase Auth
-→ Resend SMTP
-```
-
-DaysNotWeeks documenta:
-
-- dominio/remitente;
-- SPF/DKIM cuando corresponda;
-- configuración SMTP;
-- callbacks;
-- diferencias local/staging/production;
-- prueba de entrega.
-
-Local utiliza el mecanismo de captura de correo del entorno Supabase.
-
-No se instala Resend SDK en la aplicación sólo para este job.
-
-No existe framework de email de aplicación.
-
----
-
-# 8. Database and private data — IN
-
-Supabase Postgres es la única base de datos soportada.
-
-El contrato utiliza:
-
-- SQL migrations versionadas;
-- RLS;
-- grants explícitos;
-- constraints;
-- índices necesarios;
-- tipos TypeScript generados desde el schema;
-- seed local mínimo cuando sea necesario.
-
-La autoridad del schema es:
-
-```text
-SQL migrations
-```
-
-Los tipos generados son derivados.
-
-No existe un schema paralelo editable manualmente en TypeScript.
-
-No existe ORM por defecto.
-
----
-
-## Ownership
-
-Los recursos privados pertenecen a una identidad concreta.
-
-El cliente no puede:
-
-- escoger arbitrariamente otro owner;
-- transferir ownership;
-- modificar estado financiero;
-- modificar entitlement.
-
-RLS protege los datos incluso cuando se accede mediante la Data API.
-
-Autorización en UI o Server Action no sustituye RLS.
-
----
-
-# 9. App shell — IN
-
-## Dashboard
-
-`/app` es una dashboard CORE.
-
-Debe ser:
-
-- genérica;
-- limpia;
-- neutral;
-- fácil de rebrandear;
-- útil como punto de entrada;
-- libre de métricas ficticias.
-
-Puede presentar información real como:
-
-- saludo;
-- plan;
-- estado de cuenta;
-- billing;
-- acceso al Example Resource;
-- indicación de dónde comienza el producto del comprador.
-
-No se construye una dashboard universal.
-
----
-
-## Example Resource
-
-DaysNotWeeks entrega un único recurso EXAMPLE deliberadamente simple.
-
-Conceptualmente:
-
-```text
-id
-user_id
-title
-content
-created_at
-updated_at
-```
-
-Debe demostrar:
-
-- creación;
-- lectura;
-- edición;
-- eliminación;
-- ownership;
-- RLS;
-- entitlement.
-
-### Free
-
-Puede:
-
-- leer sus recursos existentes;
-- eliminar sus recursos existentes.
-
-No puede:
-
-- crear;
-- editar.
-
-### Pro
-
-Puede:
-
-- crear;
-- leer;
-- editar;
-- eliminar sus propios recursos.
-
-### Revoked Pro
-
-Pierde create/edit.
-
-Conserva read/delete sobre sus propios datos retenidos.
-
----
-
-## Replaceability requirement
-
-El Example Resource no puede convertirse en dependencia de:
-
-- Auth;
-- Billing;
-- Account;
-- configuration;
-- global app shell.
-
-El comprador debe poder sustituirlo por otro dominio sin modificar las fronteras anteriores.
-
----
-
-# 10. Billing — IN
-
-DaysNotWeeks soporta:
-
-```text
-Free
-
-Pro
-├── Monthly
-└── Annual
-```
-
-Monthly y Annual conceden el mismo entitlement:
-
-```text
-pro
-```
-
-Existe una sola moneda configurada por release/producto.
-
-No existe otro nivel pagado.
-
----
-
-# 11. Stripe responsibilities
-
-Stripe proporciona:
-
-- Checkout;
-- Customer;
-- subscription;
-- invoices;
-- payment methods;
-- Customer Portal;
-- receipts;
-- cancelación;
-- estado financiero.
-
-La aplicación decide server-side qué opción comercial puede comprarse.
-
-El cliente no envía como autoridad:
-
-- arbitrary Price ID;
-- customer ID;
-- subscription ID;
-- entitlement.
-
----
-
-# 12. Financial truth and local projection
-
-Stripe es la fuente financiera de verdad.
-
-DaysNotWeeks mantiene una **proyección local mínima y reconstruible** para poder autorizar sin consultar Stripe en cada request.
-
-La proyección debe contener suficiente información para responder correctamente:
-
-> ¿tiene este usuario acceso Pro ahora?
-
-No se utiliza un simple booleano `is_pro` editable como modelo financiero.
-
----
-
-## Minimum semantic state
-
-La implementación debe poder representar conceptualmente:
-
-### Billing identity
-
-- application user;
-- Stripe customer;
-- subscription reference.
-
-### Subscription state
-
-- supported Price;
-- interval;
-- relevant Stripe state.
-
-### Paid access
-
-- evidencia del último periodo reconocido;
-- `paid-through`;
-- origen financiero correspondiente;
-- fecha de sincronización.
-
-### Projection version
-
-Una versión/control equivalente debe impedir que un cálculo antiguo sobrescriba un estado más reciente.
-
-La estructura exacta de tablas es decisión de Engineering.
-
----
-
-# 13. Pro entitlement
-
-Existe un único entitlement funcional:
-
-```text
-pro
-```
-
-La DB proporciona una única frontera canónica para consultar ese permiso.
-
-Conceptualmente:
-
-```text
-has_pro()
-```
-
-El cliente no proporciona un `user_id` arbitrario a esta función para consultar o modificar acceso ajeno.
-
-El Example Resource consume este contrato.
-
-No existe:
-
-- entitlement engine;
-- feature registry;
-- RBAC;
-- ACL framework;
-- grants genéricos.
-
----
-
-# 14. Paid-through policy
-
-Acceso Pro se basa en **periodo confirmado como pagado**, no únicamente en:
-
-- `subscription.status = active`;
-- `current_period_end`;
-- Checkout success;
-- redirect del browser.
-
-Un pago válido para una suscripción soportada concede acceso hasta el final del periodo reconocido.
-
-No se suman arbitrariamente 30 o 365 días.
-
-La semántica debe derivarse del periodo financiero realmente confirmado.
-
----
-
-## Default lifecycle
-
-### Checkout creado / payment pending
-
-No concede Pro nuevo.
-
-### Factura soportada confirmada como satisfecha/pagada
-
-Puede establecer o extender `paid-through`.
-
-### Renewal paid
-
-Extiende `paid-through` al nuevo periodo reconocido.
-
-### Renewal failure / past_due
-
-No concede un nuevo periodo.
-
-El usuario conserva únicamente el acceso previamente confirmado hasta su `paid-through`.
-
-### Cancellation at period end
-
-Mantiene acceso únicamente hasta el periodo ya confirmado.
-
-No se crea un periodo adicional.
-
-### Immediate/terminal cancellation confirmed
-
-La proyección debe reflejar el estado terminal de acuerdo con los hechos actuales recuperados de Stripe y no conceder acceso nuevo.
-
-### Unsupported state / unsupported Price / inconsistent mapping
-
-Nunca concede nuevo acceso por inferencia.
-
-La discrepancia debe quedar diagnosticable y reconciliable.
-
----
-
-# 15. Refunds and disputes
-
-Refunds y disputes nunca conceden acceso nuevo.
-
-DaysNotWeeks no pretende imponer una política comercial universal sobre todos los negocios.
-
-El comportamiento default es:
-
-1. registrar/representar el hecho financiero relevante;
-2. no ampliar `paid-through`;
-3. no revocar automáticamente un periodo ya concedido únicamente por recibir el evento;
-4. dejar la situación disponible para revisión operativa.
-
-Si el operador necesita revocar acceso según su política comercial:
-
-```text
-ajusta/cancela el estado correspondiente en Stripe
-→ ejecuta reconciliación
-→ la proyección local converge
-```
-
-No se publicita que DaysNotWeeks automatiza todas las políticas posibles de refund/dispute.
-
----
-
-# 16. Checkout concurrency — IN
-
-El flujo soportado debe impedir razonablemente dobles compras originadas por la aplicación.
-
-Debe existir conceptualmente un **Checkout attempt durable**.
-
-Como mínimo debe permitir:
-
-- identificar el intento;
-- asociarlo al usuario;
-- asociarlo a la Checkout Session;
-- conocer su estado;
-- conocer expiración cuando corresponda;
-- recuperar un crash entre Stripe y DB;
-- reutilizar o rechazar un intento aún válido.
-
-El browser nunca decide si puede abrir una segunda suscripción.
-
----
-
-## Idempotency
-
-Creación de operaciones financieras relevantes utiliza idempotency keys apropiadas.
-
-Un retry no debe crear silenciosamente una segunda compra equivalente.
-
----
-
-# 17. Stripe webhooks — IN
-
-El endpoint webhook debe:
-
-1. leer el body requerido para verificación;
-2. verificar firma;
-3. identificar el entorno correcto;
-4. rechazar eventos no auténticos;
-5. resolver mappings únicamente server-side;
-6. recuperar hechos Stripe adicionales cuando sean necesarios;
-7. calcular la nueva proyección;
-8. persistir efecto y recibo de procesamiento de forma durable;
-9. devolver éxito únicamente después de un resultado durable o un rechazo permanente deliberado.
-
-No se responde éxito y después se confía en trabajo no durable.
-
----
-
-## Processed event receipt
-
-Los eventos procesados mantienen al menos un identificador único suficiente para deduplicación y diagnóstico.
-
-No se necesita almacenar payload completo indefinidamente por defecto.
-
----
-
-# 18. Billing concurrency — IN
-
-Deduplicar `event.id` no resuelve carreras entre eventos diferentes.
-
-La actualización de una misma billing account debe protegerse mediante un mecanismo equivalente a:
-
-```text
-read projection version
-→ obtain current Stripe facts
-→ calculate
-→ compare-and-swap
-→ retry if version changed
-```
-
-La implementación exacta puede utilizar:
-
-- transaction;
-- RPC;
-- lock acotado;
-- optimistic concurrency;
-
-siempre que conserve el comportamiento.
-
-No se mantiene una transacción DB abierta durante llamadas HTTP a Stripe.
-
----
-
-# 19. Reconciliation — IN
-
-DaysNotWeeks entrega un mecanismo simple de reconciliación.
-
-Debe reutilizar la misma lógica de cálculo que el webhook.
-
-Debe soportar como mínimo:
-
-```text
-billing:reconcile <user>
-```
-
-o una interfaz equivalente.
-
-Semántica deseada:
-
-- dry-run por defecto;
-- apply explícito;
-- output sin secretos;
-- consulta los hechos actuales necesarios de Stripe;
-- compara con proyección local;
-- informa discrepancias;
-- puede aplicar la proyección correcta.
-
-Puede admitir lote paginado si resulta simple y necesario para operación.
-
-No se construye una plataforma genérica de workflows.
-
----
-
-## No automatic recovery SLA
-
-DaysNotWeeks no incluye cron/scheduler de reconciliación por defecto.
-
-Por tanto:
-
-> si Stripe agota sus retries y un evento no converge, la recuperación puede requerir intervención operativa.
-
-Esto es una limitación explícita del producto.
-
-No se promete autocuración dentro de un tiempo fijo.
-
----
-
-# 20. Product surfaces — IN
-
-## Public
-
-Una única composición pública:
-
-- Header
-- Hero
-- Features
-- Pricing
-- FAQ
-- CTA
-- Footer
-- Terms
-- Privacy
-- Help
-
-No es una marketing component library.
-
----
-
-## Application
-
-Incluye:
-
-- Dashboard
-- Example
-- Billing
-- Account
-- Help
-
----
-
-## Billing UI
-
-Debe poder mostrar:
-
-- Free / Pro;
-- monthly / annual cuando corresponda;
-- estado relevante;
-- `paid-through` o fecha equivalente útil;
-- pending;
-- error/recovery;
-- acceso a Customer Portal;
-- CTA de compra cuando proceda.
-
-No representa un redirect como pago confirmado.
-
----
-
-# 21. UI foundation — IN
-
-Se entrega:
-
-- Tailwind CSS;
-- un único tema;
-- tokens semánticos;
-- HTML semántico;
-- primitives únicamente donde el comportamiento complejo las justifique.
-
-Baseline recomendado:
-
-```text
-shadcn-style owned components
-+
-Base UI primitives selectively
-```
-
-No se instala una galería completa.
-
-Elementos simples como:
-
-- button;
-- input;
-- textarea;
-- label;
-
-pueden seguir siendo HTML/componentes propios simples.
-
-No se mezclan varias librerías headless sin necesidad.
-
----
-
-# 22. Forms and validation — IN
-
-Default:
-
-- HTML forms;
-- Server Actions cuando correspondan;
-- React/useActionState cuando aporte UX;
-- Zod server-side;
-- DB constraints para invariantes persistentes.
-
-No existe por defecto:
-
-- React Hook Form;
-- segundo validador;
-- form framework genérico.
-
----
-
-# 23. Client state — IN
-
-No se instala por defecto una state/server-state library.
-
-Default:
-
-- React local state;
-- URL;
-- RSC;
-- DB;
-- revalidation.
-
-No existe autoridad de entitlement en:
-
-- localStorage;
-- Zustand;
-- Query cache;
-- cookies controladas por cliente.
-
----
-
-# 24. SEO — IN
-
-Las rutas públicas reales implementan:
-
-- metadata;
-- title;
-- description;
-- canonical;
-- Open Graph;
-- robots;
-- sitemap cuando corresponda.
-
-Las superficies privadas no son indexables.
-
-No existe página `/example` pública artificial.
-
-Terms y Privacy son plantillas editables, no asesoramiento jurídico.
-
----
-
-# 25. Help and operations — IN
-
-DaysNotWeeks incluye:
-
-- `/help`;
-- support email configurable;
-- mensajes de error accionables;
-- reference/correlation ID cuando aporte valor;
-- logs operativos seguros;
-- runbook Auth;
-- runbook Billing;
-- runbook recovery;
-- procedimiento de restore documentado al nivel que corresponda al proveedor.
-
-Los logs deben evitar:
-
-- tokens;
-- secrets;
-- bodies sensibles;
-- PII innecesaria.
-
-No existe helpdesk propio.
-
----
-
-# 26. Abuse protection — IN
-
-No se incluye Redis/Upstash ni limiter genérico por defecto.
-
-DaysNotWeeks sí protege las superficies que pueden producir impacto real.
-
-Incluye:
-
-- límites nativos de Supabase Auth;
-- límites de payload;
-- paginación;
-- Checkout attempt atómico;
-- cooldown acotado para operaciones financieras que puedan generar coste;
-- autorización/RLS.
-
-No se afirma que estas protecciones constituyan una plataforma universal antiabuso.
-
-La Data API directa de Supabase queda protegida por RLS/permissions, no por un WAF Vercel.
-
----
-
-# 27. Security — IN
-
-Como mínimo:
-
-- server-side identity verification;
-- server-side authorization;
-- RLS;
-- owner inmutable desde cliente;
-- financial tables no editables por authenticated users;
-- Stripe signature verification;
-- redirect validation;
-- payload limits;
-- environment secrets server-only;
-- security headers apropiados;
-- XSS-safe rendering;
-- CSRF/origin protections adecuadas al mecanismo de mutación;
-- dependency/security patch policy.
-
-Security headers y CSP deben ser compatibles con los journeys reales.
-
-No se añade complejidad de CSP que rompa caching/rendering únicamente para presumir de una política más estricta.
-
----
-
-# 28. Accessibility — IN
-
-Los journeys propios deben ser utilizables con:
-
-- teclado;
-- focus visible;
-- labels;
-- mensajes de error;
-- contraste suficiente;
-- responsive layouts;
-- zoom razonable;
-- dialogs/menus accesibles.
-
-Se ejecutan automated accessibility checks sobre rutas representativas.
-
-No se vende certificación WCAG universal.
-
----
-
-# 29. Testing — IN
-
-El principio es:
-
-> few high-value tests protecting critical invariants.
-
----
-
-## Unit
-
-Para lógica pequeña como:
-
-- redirect validation;
-- env parsing;
-- financial state calculation;
-- catalog validation.
-
----
-
-## HTTP / integration
-
-Para:
-
-- webhook verification;
-- Checkout;
-- Portal;
-- server authorization;
-- provider errors.
-
----
-
-## Real database
-
-Con identidades reales de test:
-
-- A;
-- B;
-- anonymous;
-- Free;
-- Pro;
-- revoked Pro.
-
-Debe comprobar:
-
-- RLS;
-- ownership;
-- immutable owner;
-- financial writes denied;
-- premium writes;
-- retained read/delete.
-
----
-
-## Billing concurrency
-
-Debe cubrir:
-
-- duplicate event;
-- concurrent distinct events;
-- stale projection version;
-- transaction failure;
-- competing Checkout attempts.
-
----
-
-## Stripe sandbox
-
-Debe cubrir:
-
-- monthly;
-- annual;
-- browser closed;
-- payment;
-- renewal;
-- failure;
-- cancellation;
-- reconciliation.
-
----
-
-## Browser E2E
-
-Debe cubrir journeys esenciales, no cada combinación posible.
-
----
-
-# 30. CI — IN
-
-DaysNotWeeks incluye una GitHub Actions CI pequeña.
-
-Debe ejecutar como mínimo:
-
-```text
-frozen install
-lint
-typecheck
-unit/integration tests
-Supabase local + DB/RLS tests
-production build
-critical browser tests
-```
-
-Puede dividirse en pocos jobs para mantener feedback razonable.
-
-No se construye una plataforma CI propia.
-
----
-
-## CI security
-
-Workflows utilizan:
-
-- permisos mínimos;
-- actions fijadas de manera segura;
-- ausencia de secretos production en código PR no confiable.
-
-No se utiliza una configuración que ejecute código no confiable con secretos privilegiados.
-
----
-
-# 31. Hosted release verification — IN
-
-No todos los providers externos necesitan ejecutarse en cada PR.
-
-Antes de release se verifica en un entorno alojado apropiado:
-
-- Google OAuth;
-- SMTP real;
-- email verification;
-- password recovery;
-- callbacks;
-- Stripe sandbox;
-- webhook remoto;
-- Vercel deploy;
-- Supabase hosted.
-
-La evidencia debe corresponder al SHA candidato.
-
----
-
-# 32. Deployment — IN
-
-Vercel es el único deployment target soportado.
-
-Entornos:
-
-```text
-local
-staging
-production
-```
-
-Staging debe utilizar recursos/credenciales aislados apropiados.
-
-Production no comparte secretos con testing.
-
----
-
-## Database deployment
-
-Migrations no se ejecutan desde cada preview deploy.
-
-Cambios relevantes siguen una secuencia segura:
-
-```text
-test migration from empty DB
-→ validate compatibility
-→ apply controlled migration
-→ deploy compatible application
-→ smoke
-```
-
-Cuando sea necesario, se utiliza expand/contract.
-
-Rollback de aplicación no implica rollback automático de Postgres.
-
----
-
-# 33. Documentation — IN
-
-El repositorio mantiene pocas fuentes canónicas:
-
-```text
-README.md
-AGENTS.md
-docs/product/SCOPE.md
-docs/ARCHITECTURE.md
-docs/SETUP.md
-docs/runbooks/BILLING.md
-```
-
-Otros runbooks pueden existir sólo si protegen un journey real.
-
----
-
-## Responsibilities
-
-### README
-
-Primer arranque y orientación.
-
-### SCOPE
-
-Qué es y qué no es DaysNotWeeks.
-
-### ARCHITECTURE
-
-Cómo está construido el sistema actual y dónde están sus trust boundaries.
-
-### SETUP
-
-Configuración de entornos y proveedores.
-
-### AGENTS
-
-Reglas para humanos/coding agents que modifican el repo.
-
-### Billing runbook
-
-Diagnóstico y reconciliación financiera.
-
-No se duplican reglas de producto completas entre documentos.
-
----
-
-# 34. Agent adaptability — IN
-
-DaysNotWeeks no mantiene adapters específicos para herramientas de IA.
-
-Sí mantiene propiedades estructurales útiles para cualquier agente:
-
-- estructura predecible;
-- pocos documentos;
-- una única autoridad;
-- tipos generados;
-- schemas explícitos;
-- tests ejecutables;
-- fronteras pequeñas;
-- bajo nivel de magic;
-- configuración centralizada.
-
-No se afirma una mejora porcentual de productividad sin medirla.
-
----
-
-# 35. Adaptability acceptance test
-
-Antes de una release, un developer o coding agent debe poder, siguiendo únicamente la documentación distribuida:
-
-1. rebrandear el producto;
-2. sustituir Example Resource por un dominio como `Projects`;
-3. añadir al menos un campo;
-4. aplicar migration;
-5. regenerar tipos;
-6. conservar ownership;
-7. conservar RLS;
-8. conservar Pro gating;
-9. pasar tests relevantes;
-10. no modificar Auth ni Billing para conseguirlo.
-
-Si sustituir el ejemplo obliga a reescribir Billing/Auth, la arquitectura falla el contrato.
-
----
-
-# 36. OUT
-
-Las siguientes capacidades no forman parte de DaysNotWeeks.
-
-El comprador puede implementarlas bajo su responsabilidad, pero DaysNotWeeks no las integra, prueba ni mantiene como configuración soportada.
-
-## Identity
-
-- magic link;
-- OAuth providers adicionales;
-- MFA;
-- SSO;
-- alternative auth frameworks;
-- manual account linking;
-- advanced self-service email change;
-- automated account deletion.
-
-## Organizations
-
-- organizations;
-- teams;
-- workspaces;
-- memberships;
-- invitations;
-- roles;
-- RBAC;
-- seats.
-
-## Monetization
-
-- one-time;
-- lifetime;
-- multiple paid tiers;
-- trials;
-- coupons;
-- promotions;
-- usage billing;
-- credits;
-- seat billing;
-- active interval switching;
-- generic entitlement engine;
-- Stripe Entitlements as required architecture.
-
-## Data/platform
-
-- Storage;
-- uploads;
-- Realtime;
-- CMS;
-- alternative DB;
-- ORM by default;
-- generic repository layer.
-
-## API
-
-- public generic API;
-- GraphQL;
-- tRPC by default;
-- RPC framework;
-- external SDK.
-
-## Background infrastructure
-
-- generic queues;
-- workers;
-- event bus;
-- scheduler;
-- cron reconciler by default.
-
-## Marketing
-
-- blog;
-- CMS content system;
-- lead capture;
-- waitlist backend;
-- testimonials library;
-- component gallery;
-- multiple landing variants.
-
-## UI
-
-- dark mode;
-- theme selector;
-- multiple skins;
-- unused component catalog;
-- fake dashboard metrics;
-- generic charts.
-
-## Email
-
-- application email SDK;
-- welcome email framework;
-- notifications platform;
-- campaigns.
-
-## Analytics
-
-- product analytics;
-- marketing analytics;
-- conversion tracking;
-- analytics dashboard.
-
-## Operations
-
-- custom admin dashboard;
-- impersonation;
-- helpdesk;
-- complex doctor;
-- Management API readers;
-- auto-provisioning;
-- auto-repair platform;
-- generic observability stack.
-
-## Developer architecture
-
-- provider abstraction layers;
-- plugins framework;
-- monorepo by default;
-- alternate runtimes as supported paths;
-- multiple deployment targets.
-
-## Internationalization
-
-- locale routing;
-- translation framework;
-- language selector;
-- multilingual SEO infrastructure.
-
-## AI
-
-- Codex-specific layer;
-- Claude-specific layer;
-- Cursor-specific layer;
-- prompt packs;
-- multi-agent certification.
-
----
-
-# 37. Distribution
-
-El artefacto canónico es el repositorio Git versionado.
-
-Una release se identifica mediante commit/tag.
-
-Un ZIP, marketplace download u otro formato comercial es únicamente una copia derivada de ese release.
-
-No constituye una segunda superficie técnica que deba mantenerse independientemente.
-
----
-
-# 38. Release gates
-
-Una release DaysNotWeeks sólo está lista cuando todos los gates aplicables pasan.
-
-## R1 — Foundation
-
-- clean frozen install;
-- lint PASS;
-- typecheck PASS;
-- tests PASS;
-- build PASS;
-- invalid configuration fails safely;
-- no secret leakage.
-
-## R2 — Identity
-
-- Google signup/login;
-- password signup;
-- verification;
-- resend;
-- login;
-- recovery/reset;
-- logout;
-- invalid callback;
-- unsafe redirect denied;
-- SMTP hosted delivery verified.
-
-## R3 — Database
-
-- migrations from clean DB;
-- generated types aligned;
-- A cannot access B;
-- anonymous denied;
-- owner immutable;
-- Free premium writes denied;
-- Pro premium writes allowed;
-- revoked Pro denied premium writes;
-- retained own read/delete works.
-
-## R4 — Billing
-
-- Monthly Checkout;
-- Annual Checkout;
-- browser may close before confirmation;
-- access derives from financial truth;
-- invalid webhook signature denied;
-- duplicate event safe;
-- concurrent events converge;
-- competing Checkout attempts safe;
-- renewal;
-- failure;
-- cancellation;
-- Portal own customer;
-- historical valid Price handled correctly;
-- reconciliation repairs a known inconsistent fixture.
-
-## R5 — Product
-
-- landing;
-- signup;
-- app;
-- Dashboard;
-- Example;
-- Billing;
-- Account;
-- Help;
-- SEO;
-- private noindex;
-- responsive;
-- keyboard/focus/errors;
-- no false financial success.
-
-## R6 — Adaptability
-
-A developer/agent successfully replaces the Example Resource while preserving Auth, Billing, RLS and build integrity.
-
----
-
-# 39. Scalability contract
-
-DaysNotWeeks optimiza primero para:
-
-### S1
-
-0–1k users / early SaaS.
-
-### S2
-
-1k–100k users / successful SaaS with real billing.
-
-El número exacto de usuarios no constituye una capacidad garantizada.
-
-La arquitectura debe permitir evolución incremental mediante:
-
-- better indexing;
-- query optimization;
-- larger provider plans;
-- targeted caching;
-- external observability;
-- targeted async processing;
-
-cuando exista evidencia de necesidad.
-
-S3 no se construye anticipadamente.
-
-Si alta carga exige:
-
-- worker;
-- queue;
-- scheduled reconciliation;
-- richer state management;
-- direct SQL;
-- additional observability;
-
-esas piezas se añaden al producto comprador a partir de métricas reales.
-
-No forman parte preventiva de DaysNotWeeks.
-
----
-
-# 40. Maintenance policy
-
-DaysNotWeeks es un producto cerrado en features pero no abandonado.
-
-Maintenance incluye:
-
-- security updates;
-- framework compatibility;
-- Supabase compatibility;
-- Stripe compatibility;
-- Vercel compatibility;
-- supported dependency updates;
-- regression fixes.
-
-Las actualizaciones deben privilegiar:
-
-1. seguridad;
-2. estabilidad;
-3. compatibilidad;
-4. simplicidad.
-
-No se adopta una tecnología nueva únicamente por ser más reciente.
-
----
-
-# 41. Product claims
-
-DaysNotWeeks puede afirmar únicamente propiedades demostradas por su release.
-
-Puede aspirar a demostrar:
-
-- integrated Auth/Data/Billing;
-- RLS-backed isolation;
-- browser-independent billing provisioning;
-- recoverable billing drift;
-- small replaceable example;
-- reproducible verification;
-- predictable agent-friendly structure.
-
-No debe afirmar sin evidencia:
-
-- ahorrar una cantidad concreta de horas;
-- ser más rápido que todos los competidores;
-- soportar una cifra concreta de usuarios;
-- eliminar todos los billing edge cases;
-- ser maintenance-free;
-- mejorar productividad IA en un porcentaje concreto;
-- ofrecer universal production readiness.
-
----
-
-# 42. Scope governance
-
-Tras aprobación, este documento pasa a ser la única autoridad de producto.
-
-Los documentos históricos:
-
-- V1 Scope 1.0;
-- V1 Scope 1.1;
-- BUILD_SPEC histórico;
-- prompts ejecutados;
-
-no añaden requisitos.
-
-Pueden conservarse únicamente como historia, claramente marcados como no autoritativos.
-
----
-
-## Engineering authority
-
-Engineering puede decidir:
-
-- estructura concreta de tablas;
-- helpers;
-- nombres internos;
-- división de módulos;
-- mechanism exacto de optimistic concurrency;
-- organización de tests;
-- implementación UI;
-- scripts concretos;
-
-siempre que respete este contrato.
-
-Engineering no puede introducir mediante ADR:
-
-- un nuevo provider;
-- un nuevo modelo comercial;
-- organizations;
-- un nuevo método Auth;
-- otro deployment target;
-- una feature OUT.
-
----
-
-# 43. Final definition
-
-DaysNotWeeks es:
-
-> Una foundation SaaS focalizada para productos Next.js de cuenta individual con suscripción recurrente, donde identidad, datos privados, RLS, billing, entitlement, app shell y recuperación operativa ya están correctamente conectados y verificados para que el comprador pueda empezar directamente por su producto.
-
-DaysNotWeeks no es:
-
-> Un framework SaaS universal, una plataforma de organizations, una colección de integraciones, una biblioteca de componentes, un CMS, un sistema de analytics, un admin framework o una capa de abstracción sobre múltiples proveedores.
-
-La filosofía final es:
+**Engineering may choose** schema layout, helpers, internal names, bounded concurrency mechanisms, UI composition and testing structure that respect this contract. Engineering may **not** introduce a new provider, commercial model, authentication method, organizations, excluded feature or deployment target through an internal refactor or ADR.
 
 > Build the difficult foundation once. Keep everything else out of the way.
