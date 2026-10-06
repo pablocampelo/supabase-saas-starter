@@ -1,82 +1,85 @@
 # DaysNotWeeks
 
-DaysNotWeeks is a focused Next.js SaaS foundation for individual-account subscription products.
+**The SaaS foundation you can replace the example in—not rebuild around.**
 
-The canonical product contract is [`docs/product/SCOPE.md`](docs/product/SCOPE.md). Historical contracts and executed prompts under `docs/archive/` are non-authoritative.
+DaysNotWeeks is a focused, cloneable **Next.js + Supabase + Stripe** starter for technical founders and small teams building a subscription SaaS. Authentication, private user data, paid access and billing recovery are connected and tested. You own the code, providers and deployment.
 
-## Current repository state
+Built for **individual user accounts**, **Free + Pro**, and **monthly or annual billing**. Not a team/organization platform or a multi-provider framework.
 
-The repository currently contains the permanent Scope 2.0 UI/design-system foundation plus real Supabase Auth, Postgres/RLS, generated database types, and the replaceable Example Resource.
+## What's included
 
-Auth includes Google OAuth entry/callback, email/password signup and sign-in, email verification/resend, password recovery/reset, SSR cookie sessions, logout, protected `/app` routing, safe internal redirects, and Account display-name updates.
+| Foundation | What you get |
+| --- | --- |
+| **Auth** | Google and email/password signup, verification, login, recovery, logout and server-side sessions |
+| **Private data** | Supabase Postgres, versioned SQL migrations, generated types, ownership constraints and RLS |
+| **Subscriptions** | Stripe Checkout for Pro monthly/annual, Customer Portal, signed webhooks and paid-through entitlement |
+| **Reliability** | Idempotent billing event handling, concurrency protections, diagnostics and dry-run reconciliation |
+| **App** | Public landing/pricing/Help, Dashboard, Account, Billing, legal templates and one replaceable Example Resource |
+| **Confidence** | Frozen dependency versions, GitHub Actions, database security tests, unit tests and browser E2E |
 
-The database layer uses versioned SQL migrations, explicit grants, RLS, immutable ownership, a server-owned billing projection, a current-user `has_pro()` entitlement boundary, pgTAP coverage, and generated TypeScript database types. The Example Resource is persisted in Postgres and proves Auth → ownership → RLS → entitlement → CRUD: Free/revoked users retain read/delete access to owned resources, while current Pro entitlement is required for create/edit.
+The **Example Resource** is intentionally small. It proves that Auth → ownership → RLS → Pro → CRUD works end to end; it is **not** something you must keep in your product.
 
-Stripe billing is implemented with server-selected Checkout, Customer Portal, signed webhooks, durable event/Checkout ledgers, paid-through entitlement projection, crash-recoverable event processing and a server-only reconciliation command. DaysNotWeeks is distributed as a repository rather than operated as a hosted SaaS. Each buyer-owned deployment must configure and verify its own hosted Supabase, Google OAuth, SMTP, Stripe and Vercel environment.
+## Run it locally
 
-Do not infer implemented behavior from the product Scope; see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the current implementation boundary.
-
-## Clone and first run
-
-Clone the repository into the product you are building, then install from the committed lockfile:
+**Prerequisites:** Node.js 24, pnpm 11.19.0 and Docker. Use the pinned versions and lockfile.
 
 ```sh
-git clone <repository-url> my-saas
+git clone <your-repository-url> my-saas
 cd my-saas
 pnpm install --frozen-lockfile
-```
-
-Use the versions committed by the repository (`package.json`, lockfile and `.node-version`). At the current baseline this is Node 24 and pnpm 11.19.0. Docker must be running for the local Supabase stack.
-
-```sh
 pnpm supabase:start
 pnpm supabase:status
 ```
 
-Copy `.env.example` to `.env.local`, set `NEXT_PUBLIC_SITE_URL=http://localhost:3000`, use the local Supabase URL/publishable key printed by `pnpm supabase:status`, use the local service-role JWT for `SUPABASE_SECRET_KEY` when exercising billing writes, and set a local support email. Stripe billing additionally requires test-mode Stripe credentials and the configured monthly/annual Price IDs. Then:
-
-```sh
-pnpm dev
-```
-
-Local Auth email is captured by Mailpit at `http://127.0.0.1:54324`; no Resend account, DNS or public domain is required for local signup/confirmation/recovery testing.
-
-Database verification uses the local Supabase/Postgres stack:
+Copy `.env.example` to `.env.local`. Set the local Supabase URL and publishable key printed by `pnpm supabase:status`, keep `NEXT_PUBLIC_SITE_URL=http://localhost:3000`, and provide a support email. For local billing writes, use the **local service-role key** as `SUPABASE_SECRET_KEY`. Never put it in a `NEXT_PUBLIC_*` variable.
 
 ```sh
 pnpm supabase:db:reset
-pnpm supabase:test:db
-pnpm supabase:types
+pnpm dev
 ```
 
-`supabase:db:reset` is destructive to the local database and rebuilds it from committed migrations. `supabase:test:db` exercises ownership, RLS, immutable owner, anonymous denial, Free/Pro/revoked entitlement behavior, and retained read/delete semantics. `supabase:types` regenerates `lib/supabase/database.types.ts` as UTF-8.
+Open **http://localhost:3000**. Local signup and password recovery use Mailpit at **http://127.0.0.1:54324**—no real email account is required to explore the foundation.
 
-Run the application checks separately:
+To exercise real Checkout and Pro, configure **Stripe test-mode** credentials and the two supported Price IDs in `.env.local`, then run a local Stripe webhook listener. The exact steps are in [Setup](docs/SETUP.md).
+
+## Turn the starter into your product
+
+1. **Brand it:** edit `config/product.ts` for product name, navigation, positioning, currency and supported plan copy. Replace the sample marketing and legal content before publishing.
+2. **Own the providers:** create your own Supabase project, Google OAuth credentials, verified SMTP sender and Stripe products/Prices. Use environment-specific secrets and one canonical deployment URL. [Setup](docs/SETUP.md) walks through the supported path.
+3. **Replace Example:** build your own domain in place of `lib/example/`, the Example routes and related presentation. Add a SQL migration and regenerate DB types. Keep the existing Auth, Billing and RLS trust boundaries. See [Architecture](docs/ARCHITECTURE.md#replacing-the-example-resource).
+4. **Deploy:** apply hosted migrations deliberately, deploy to **Vercel**, configure Stripe's signed webhook and verify Auth, paid access and recovery on your own domain.
+
+**You are not deploying a DaysNotWeeks-hosted service.** This repository becomes your SaaS, with your own data, accounts, billing and infrastructure.
+
+## Check your changes
 
 ```sh
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm supabase:db:reset
+pnpm supabase:test:db
+pnpm supabase:types
 pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-Stop local Supabase with `pnpm supabase:stop`.
+GitHub Actions runs the release-critical checks automatically. The database reset is **destructive to your local Supabase database**. Do not point it at hosted data. CI and a local build do not replace hosted provider verification.
 
-These local checks do not certify deployer-owned hosted Google OAuth, Resend SMTP, Stripe, or Vercel configuration.
+## Know the boundaries
 
-## Provider ownership
+DaysNotWeeks deliberately has **one user-owned data model, one Pro entitlement, two billing intervals and one supported deployment target**. It does not include teams/seats, extra OAuth providers, usage billing, queues, a CMS, analytics, a generic API, automatic billing-repair cron or an admin panel.
 
-The starter integrates with external providers but does not proxy or resell them. Each deployed product uses its own Supabase project, Resend account/sending domain and Stripe account. Provider credentials and DNS remain owned by the deployer and are never shared with DaysNotWeeks.
-
-For Auth email, Supabase Auth sends through the deployer's Resend SMTP configuration. The Next.js application does not need Resend SDK credentials merely to deliver Supabase Auth email.
+**A browser returning from Checkout never grants Pro.** Access comes from verified Stripe payment facts projected into a server-owned paid-through state. If webhook retries are exhausted, the [Billing runbook](docs/runbooks/BILLING.md) documents the manual reconciliation path; no automatic recovery SLA is promised.
 
 ## Documentation
 
-- [Product Scope](docs/product/SCOPE.md) — sole product authority.
-- [Architecture](docs/ARCHITECTURE.md) — implementation structure and trust boundaries.
-- [Setup](docs/SETUP.md) — current local/provider setup boundary.
-- [Billing runbook](docs/runbooks/BILLING.md) — webhook, reconciliation and recovery operations.
-- [v0.1.0 release notes](docs/release/v0.1.0.md) — verified features, provider ownership and release scope.
-- [Historical material](docs/archive/README.md) — traceability only.
+- [Setup](docs/SETUP.md) — local development, hosted Supabase/Auth/SMTP, Stripe and Vercel.
+- [Architecture](docs/ARCHITECTURE.md) — boundaries, code map and replacing Example.
+- [Billing runbook](docs/runbooks/BILLING.md) — payment recovery and safe reconciliation.
+- [Product Scope 2.0](docs/product/SCOPE.md) — the canonical supported feature contract.
+- [Release notes](docs/release/v0.1.0.md) — versioned release and verification evidence.
+- [AGENTS.md](AGENTS.md) — concise rules for developers and coding agents.
+
+**Distribution:** the versioned Git repository is the product. Any ZIP is only a snapshot of a tagged commit.
