@@ -78,4 +78,5 @@ For Auth email, Supabase Auth sends through the deployer's Resend SMTP configura
 - [Architecture](docs/ARCHITECTURE.md) — implementation structure and trust boundaries.
 - [Setup](docs/SETUP.md) — current local/provider setup boundary.
 - [Billing runbook](docs/runbooks/BILLING.md) — webhook, reconciliation and recovery operations.
+- [v0.1.0 release notes](docs/release/v0.1.0.md) — verified features, provider ownership and release scope.
 - [Historical material](docs/archive/README.md) — traceability only.
