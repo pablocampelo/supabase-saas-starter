@@ -221,7 +221,9 @@ The application validates the resulting return destination against the same-orig
 
 ### Password recovery template
 
-The local template is committed at `supabase/templates/recovery.html`. Configure the hosted Supabase **Reset password** template with the same recovery flow:
+**Hosted release prerequisite:** The default Supabase **Reset password** email often uses `{{ .ConfirmationURL }}`, which can verify a recovery token and redirect to the public landing page without establishing the server-side recovery session required by this starter. The app expects the email to open its `/auth/confirm` route, which calls `verifyOtp()` and then redirects to `/reset-password`. Configuring SMTP and Site URL alone does **not** install this custom hosted template.
+
+In each hosted Supabase project, open **Authentication → Email Templates → Reset Password** (menu labels may vary). Replace the default link with the one in the committed `supabase/templates/recovery.html` template below, then save and **request a new reset email**. Previously sent emails retain their old URLs.
 
 ```html
 <h2>Reset your password</h2>
