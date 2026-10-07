@@ -2,6 +2,16 @@
   "name": "supabase-saas-starter",
   "version": "0.1.0",
   "private": true,
+  "description": "Production-ready SaaS starter built with Next.js, Supabase, Stripe and Vercel.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pablocampelo/supabase-saas-starter.git"
+  },
+  "homepage": "https://supasaas-kit.vercel.app",
+  "bugs": {
+    "url": "https://github.com/pablocampelo/supabase-saas-starter/issues"
+  },
   "type": "module",
   "packageManager": "pnpm@11.19.0",
   "engines": {
