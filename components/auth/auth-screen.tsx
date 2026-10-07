@@ -98,7 +98,7 @@ export function AuthScreen({ mode, supportEmail }: { mode: Mode; supportEmail: s
 
   return <AuthFrame signup={mode === "signup"} centered={centered} backHref={mode === "login" ? "/" : "/login"}>
     {mode !== "signup" && !centered && <><Link href="/login" className="nav-link mb-9 inline-flex items-center gap-2"><ArrowLeft className="size-4" aria-hidden="true"/>Back</Link><div className="mb-7">{success || verified ? <CircleCheck className="size-8 text-success" aria-hidden="true"/> : mode === "error" || invalidLink ? <CircleAlert className="size-8 text-warning" aria-hidden="true"/> : mode === "verify-email" || sent ? <Mail className="size-7" aria-hidden="true"/> : <KeyRound className="size-7" aria-hidden="true"/>}</div></>}
-    {(centered || mode === "signup") && <div className="mb-7 flex justify-center"><Image src="/icon.svg" width={32} height={32} alt={productConfig.name} unoptimized/></div>}
+    {(centered || mode === "signup") && <div className="mb-7 flex justify-center"><Image src="/icon.svg" width={40} height={40} alt={productConfig.shortName} className="size-10" unoptimized/></div>}
     <h1 tabIndex={sent ? -1 : undefined} ref={element => { if (element && recoverySent) element.focus(); }} className={`text-3xl leading-tight sm:text-4xl ${centered ? "text-center" : ""}`}>{heading}</h1>
     <p className={`mt-3 text-sm leading-7 text-muted-foreground ${centered ? "mb-6 text-center break-words" : ""}`}>{success ? "You can now sign in with your new password." : verified ? "Your account is ready to sign in." : sent ? `We sent a password reset link to ${recoveryEmail}.` : invalidLink ? "Request a fresh link to continue. Verification and recovery links can expire or be used only once." : descriptions[mode]}</p>
 
