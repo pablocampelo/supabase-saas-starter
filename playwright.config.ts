@@ -9,7 +9,14 @@ export default defineConfig({
   workers: process.env.CI ? 2 : 3,
   timeout: 60_000,
   use: { baseURL: "http://127.0.0.1:3100", trace: "retain-on-failure" },
-  projects: [360, 768, 1280].map((width) => ({ name: `chromium-${width}`, use: { browserName: "chromium", viewport: { width, height: 900 } } })),
+  projects: [360, 768, 1280].map((width) => ({
+    name: `chromium-${width}`,
+    use: {
+      browserName: "chromium",
+      ...(process.env.CI ? { channel: "chrome" as const } : {}),
+      viewport: { width, height: 900 },
+    },
+  })),
   webServer: {
     command: "pnpm dev --hostname 127.0.0.1 --port 3100",
     url: "http://127.0.0.1:3100",

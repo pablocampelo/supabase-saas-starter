@@ -2,7 +2,7 @@
 
 **Production-ready SaaS starter built with Next.js, Supabase, Stripe and Vercel.**
 
-[Live demo](https://supasaas-kit.vercel.app) · [Setup](docs/SETUP.md) · [Architecture](docs/ARCHITECTURE.md) · [Billing runbook](docs/runbooks/BILLING.md)
+[Live demo](https://supasaas-kit.vercel.app) · [Setup](docs/SETUP.md) · [Architecture](docs/ARCHITECTURE.md) · [Billing](docs/BILLING.md)
 
 [![CI](https://github.com/pablocampelo/supabase-saas-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/pablocampelo/supabase-saas-starter/actions/workflows/ci.yml)
 
@@ -86,12 +86,7 @@ This constraint is intentional: the infrastructure stays understandable while th
 
 - [Setup](docs/SETUP.md) — local development, hosted Supabase/Auth/SMTP, Stripe and Vercel
 - [Architecture](docs/ARCHITECTURE.md) — boundaries, code map and replacing Example
-- [Billing runbook](docs/runbooks/BILLING.md) — payment recovery and safe reconciliation
-- [Product Scope 2.0](docs/product/SCOPE.md) — canonical supported feature contract
-- [Release notes](docs/release/v0.1.0.md) — versioned release and verification evidence
-- [AGENTS.md](AGENTS.md) — concise rules for developers and coding agents
-- [CONTRIBUTING.md](CONTRIBUTING.md) — contribution workflow and scope expectations
-- [SECURITY.md](SECURITY.md) — responsible vulnerability reporting
+- [Billing](docs/BILLING.md) — Stripe operations, recovery and safe reconciliation
 
 ## License
 

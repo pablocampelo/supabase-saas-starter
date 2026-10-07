@@ -1,6 +1,6 @@
 # Architecture
 
-Supabase SaaS Starter is one Next.js App Router application backed by Supabase Auth/Postgres and Stripe. It is designed for **one user owning private product data**, with one optional Pro entitlement. See the [canonical Scope](product/SCOPE.md) for supported behavior; this page describes the implementation and its trust boundaries.
+Supabase SaaS Starter is one Next.js App Router application backed by Supabase Auth/Postgres and Stripe. It is designed for **one user owning private product data**, with one optional Pro entitlement. The [README scope](../README.md#scope) defines the supported product boundary; this page describes the implementation and its trust boundaries.
 
 ## Request and financial flows
 
@@ -63,7 +63,7 @@ The application offers Free, Pro Monthly and Pro Annual, with one logical `pro` 
 
 The server creates idempotent, user-bound Checkout attempts. Stripe sends signed webhooks to `app/api/stripe/webhook/route.ts`. Processing verifies signatures and environment, deduplicates receipts, handles competing/late events and commits the verified subscription and paid invoice facts to the local paid-through projection. A successful Checkout browser redirect **never** advances access.
 
-`billing:reconcile` reads Stripe facts and reports drift without modifying state by default. Operators must opt into `--apply`. There is **no default worker, scheduler or automatic recovery SLA**. Use the [Billing runbook](runbooks/BILLING.md) when retries fail.
+`billing:reconcile` reads Stripe facts and reports drift without modifying state by default. Operators must opt into `--apply`. There is **no default worker, scheduler or automatic recovery SLA**. Use the [Billing](BILLING.md) when retries fail.
 
 ## Replacing the Example Resource
 
