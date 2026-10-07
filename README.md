@@ -1,57 +1,66 @@
 # Supabase SaaS Starter
 
-**Own the foundation. Build the product.**
+**Production-ready SaaS starter built with Next.js, Supabase, Stripe and Vercel.**
 
-Supabase SaaS Starter is a focused, cloneable **Next.js + Supabase + Stripe** starter for technical founders and small teams building a subscription SaaS. Authentication, private user data, paid access and billing recovery are connected and tested. You own the code, providers and deployment.
+[Live demo](https://supasaas-kit.vercel.app) · [Setup](docs/SETUP.md) · [Architecture](docs/ARCHITECTURE.md) · [Billing runbook](docs/runbooks/BILLING.md)
 
-Built for **individual user accounts**, **Free + Pro**, and **monthly or annual billing**. Not a team/organization platform or a multi-provider framework.
+[![CI](https://github.com/pablocampelo/supabase-saas-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/pablocampelo/supabase-saas-starter/actions/workflows/ci.yml)
+
+[![SupaSaaS sign up preview](https://supasaas-kit.vercel.app/opengraph-image)](https://supasaas-kit.vercel.app/signup)
+
+Supabase SaaS Starter gives technical founders and small teams a focused subscription foundation instead of another oversized boilerplate. Authentication, private user data, paid access, billing recovery and the deployment path are connected and tested.
+
+Built for **individual user accounts**, **Free + Pro**, and **monthly or annual billing**. The repository deliberately stays narrow: no teams, seats, usage billing, CMS, analytics framework or speculative provider abstraction.
+
+## Why this starter
+
+- **Security boundaries are explicit.** Supabase Auth, Postgres ownership and RLS are exercised together instead of relying on client-side checks.
+- **Billing is server-authoritative.** Stripe Checkout and Customer Portal are backed by signed webhooks, idempotent event handling and paid-through entitlement state. A browser return never grants Pro.
+- **The sample domain is replaceable.** The Example Resource proves Auth → ownership → RLS → Pro → CRUD end to end without becoming architecture you have to keep.
+- **The supported path is tested.** CI covers frozen install, lint, typecheck, unit tests, production build, Supabase migrations, database security tests, generated types and Playwright E2E.
 
 ## What's included
 
-| Foundation | What you get |
+| Foundation | What ships |
 | --- | --- |
-| **Auth** | Google and email/password signup, verification, login, recovery, logout and server-side sessions |
-| **Private data** | Supabase Postgres, versioned SQL migrations, generated types, ownership constraints and RLS |
-| **Subscriptions** | Stripe Checkout for Pro monthly/annual, Customer Portal, signed webhooks and paid-through entitlement |
-| **Reliability** | Idempotent billing event handling, concurrency protections, diagnostics and dry-run reconciliation |
-| **App** | Public landing/pricing/Help, Dashboard, Account, Billing, legal templates and one replaceable Example Resource |
-| **Confidence** | Frozen dependency versions, GitHub Actions, database security tests, unit tests and browser E2E |
-
-The **Example Resource** is intentionally small. It proves that Auth → ownership → RLS → Pro → CRUD works end to end; it is **not** something you must keep in your product.
+| **Next.js** | App Router, strict TypeScript, responsive marketing/auth/app surfaces and Vercel deployment |
+| **Supabase** | Google + email/password Auth, Postgres, migrations, generated types, ownership constraints and RLS |
+| **Stripe** | Free + Pro, monthly/annual Checkout, Customer Portal, signed webhooks and paid-through access |
+| **Product flows** | Signup, verification, login, recovery, Dashboard, Account, Billing, Help and legal templates |
+| **Reliability** | Idempotent billing processing, concurrency protection, diagnostics and dry-run reconciliation |
+| **Confidence** | GitHub Actions, unit tests, database tests and browser E2E |
 
 ## Run it locally
 
-**Prerequisites:** Node.js 24, pnpm 11.19.0 and Docker. Use the pinned versions and lockfile.
+**Prerequisites:** Node.js 24, pnpm 11.19.0 and Docker.
 
 ```sh
-git clone <your-repository-url> my-saas
+git clone https://github.com/pablocampelo/supabase-saas-starter.git my-saas
 cd my-saas
 pnpm install --frozen-lockfile
 pnpm supabase:start
 pnpm supabase:status
 ```
 
-Copy `.env.example` to `.env.local`. Set the local Supabase URL and publishable key printed by `pnpm supabase:status`, keep `NEXT_PUBLIC_SITE_URL=http://localhost:3000`, and provide a support email. For local billing writes, use the **local service-role key** as `SUPABASE_SECRET_KEY`. Never put it in a `NEXT_PUBLIC_*` variable.
+Copy `.env.example` to `.env.local`. Use the local Supabase URL and publishable key printed by `pnpm supabase:status`, keep `NEXT_PUBLIC_SITE_URL=http://localhost:3000`, and provide a support email. For local billing writes, use the **local service-role key** as `SUPABASE_SECRET_KEY`. Never expose it through a `NEXT_PUBLIC_*` variable.
 
 ```sh
 pnpm supabase:db:reset
 pnpm dev
 ```
 
-Open **http://localhost:3000**. Local signup and password recovery use Mailpit at **http://127.0.0.1:54324**—no real email account is required to explore the foundation.
+Open **http://localhost:3000**. Local signup and password recovery use Mailpit at **http://127.0.0.1:54324**, so you can exercise email flows without a real inbox.
 
-To exercise real Checkout and Pro, configure **Stripe test-mode** credentials and the two supported Price IDs in `.env.local`, then run a local Stripe webhook listener. The exact steps are in [Setup](docs/SETUP.md).
+To exercise real Checkout and Pro, add Stripe **test-mode** credentials and the supported monthly/annual Price IDs, then run a local Stripe webhook listener. See [Setup](docs/SETUP.md) for the complete provider and deployment path.
 
-## Turn the starter into your product
+## Make it yours
 
-1. **Brand it:** edit `config/product.ts` for product name, navigation, positioning, currency and supported plan copy. Replace the sample marketing and legal content before publishing.
-2. **Own the providers:** create your own Supabase project, Google OAuth credentials, verified SMTP sender and Stripe products/Prices. Use environment-specific secrets and one canonical deployment URL. [Setup](docs/SETUP.md) walks through the supported path.
-3. **Replace Example:** build your own domain in place of `lib/example/`, the Example routes and related presentation. Add a SQL migration and regenerate DB types. Keep the existing Auth, Billing and RLS trust boundaries. See [Architecture](docs/ARCHITECTURE.md#replacing-the-example-resource).
-4. **Deploy:** apply hosted migrations deliberately, deploy to **Vercel**, configure Stripe's signed webhook and verify Auth, paid access and recovery on your own domain.
+1. **Brand it.** Edit `config/product.ts`, replace the sample marketing/legal copy and point the canonical site URL at your deployment.
+2. **Own the providers.** Create your Supabase project, Google OAuth credentials, SMTP sender and Stripe products/Prices.
+3. **Replace Example.** Build your real domain in place of `lib/example/` and the Example routes. Add migrations and regenerate database types while preserving Auth, Billing and RLS trust boundaries.
+4. **Deploy.** Apply hosted migrations deliberately, deploy to Vercel, configure the signed Stripe webhook and verify Auth, recovery and paid access on the hosted environment.
 
-**You are not deploying a Supabase SaaS Starter-hosted service.** This repository becomes your SaaS, with your own data, accounts, billing and infrastructure.
-
-## Check your changes
+## Verify changes
 
 ```sh
 pnpm lint
@@ -65,21 +74,25 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-GitHub Actions runs the release-critical checks automatically. The database reset is **destructive to your local Supabase database**. Do not point it at hosted data. CI and a local build do not replace hosted provider verification.
+The database reset is **destructive to your local Supabase database**. Never point it at hosted data. CI validates the repository; hosted credentials, redirects, SMTP and webhook destinations still need environment-level verification.
 
-## Know the boundaries
+## Scope
 
-Supabase SaaS Starter deliberately has **one user-owned data model, one Pro entitlement, two billing intervals and one supported deployment target**. It does not include teams/seats, extra OAuth providers, usage billing, queues, a CMS, analytics, a generic API, automatic billing-repair cron or an admin panel.
+The starter intentionally supports **one user-owned data model, one Pro entitlement, two billing intervals and Vercel as the deployment target**. It does not include teams/seats, extra OAuth providers, usage billing, queues, CMS, analytics, a generic API, automatic billing-repair cron or an admin panel.
 
-**A browser returning from Checkout never grants Pro.** Access comes from verified Stripe payment facts projected into a server-owned paid-through state. If webhook retries are exhausted, the [Billing runbook](docs/runbooks/BILLING.md) documents the manual reconciliation path; no automatic recovery SLA is promised.
+This constraint is intentional: the infrastructure stays understandable while the replaceable product domain stays yours.
 
 ## Documentation
 
-- [Setup](docs/SETUP.md) — local development, hosted Supabase/Auth/SMTP, Stripe and Vercel.
-- [Architecture](docs/ARCHITECTURE.md) — boundaries, code map and replacing Example.
-- [Billing runbook](docs/runbooks/BILLING.md) — payment recovery and safe reconciliation.
-- [Product Scope 2.0](docs/product/SCOPE.md) — the canonical supported feature contract.
-- [Release notes](docs/release/v0.1.0.md) — versioned release and verification evidence.
-- [AGENTS.md](AGENTS.md) — concise rules for developers and coding agents.
+- [Setup](docs/SETUP.md) — local development, hosted Supabase/Auth/SMTP, Stripe and Vercel
+- [Architecture](docs/ARCHITECTURE.md) — boundaries, code map and replacing Example
+- [Billing runbook](docs/runbooks/BILLING.md) — payment recovery and safe reconciliation
+- [Product Scope 2.0](docs/product/SCOPE.md) — canonical supported feature contract
+- [Release notes](docs/release/v0.1.0.md) — versioned release and verification evidence
+- [AGENTS.md](AGENTS.md) — concise rules for developers and coding agents
+- [CONTRIBUTING.md](CONTRIBUTING.md) — contribution workflow and scope expectations
+- [SECURITY.md](SECURITY.md) — responsible vulnerability reporting
 
-**Distribution:** the versioned Git repository is the product. Any ZIP is only a snapshot of a tagged commit.
+## License
+
+[MIT](LICENSE)

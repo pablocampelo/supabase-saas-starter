@@ -40,6 +40,20 @@ test("public surfaces are indexable while auth and app surfaces stay private", a
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("This page isn’t here.");
 });
 
+test("social cards use the sign up preview", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /\/opengraph-image/);
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute("content", /\/twitter-image/);
+  await expect(page.getByText("MOST POPULAR", { exact: true })).toBeVisible();
+
+  for (const route of ["/opengraph-image", "/twitter-image"]) {
+    const response = await page.request.get(route);
+    expect(response.ok()).toBe(true);
+    expect(response.headers()["content-type"]).toContain("image/png");
+  }
+});
+
 test("robots and sitemap expose only supported public surfaces", async ({ page }) => {
   const robots = await (await page.request.get("/robots.txt")).text();
   expect(robots).toContain("Disallow: /app");

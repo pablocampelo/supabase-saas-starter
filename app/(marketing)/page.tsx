@@ -3,8 +3,8 @@ import { Landing } from "@/components/marketing/landing";
 import { getPricingView } from "@/config/pricing";
 
 export const metadata = publicMetadata(
-  "The SaaS foundation",
-  "Explore the Supabase SaaS Starter foundation: account flows, the replaceable Example Resource, private data, and subscription states.",
+  "Production-ready SaaS starter",
+  "Build on Next.js, Supabase, Stripe and Vercel with connected Auth, private data, subscriptions and billing recovery.",
   "/",
 );
 
