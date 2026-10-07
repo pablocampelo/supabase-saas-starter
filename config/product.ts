@@ -1,5 +1,6 @@
 export const productConfig = {
   name: "Supabase SaaS Starter",
+  shortName: "SupaSaaS",
   seo: { title: "Supabase SaaS Starter", description: "A focused SaaS foundation for individual-account subscription products." },
   legal: { terms: "/terms", privacy: "/privacy" },
   navigation: {
