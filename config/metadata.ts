@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { productConfig } from "./product";
 
 const socialImage = {
-  url: "/opengraph-image",
+  url: "/social-preview.png",
   width: 1200,
   height: 630,
   alt: "SupaSaaS sign up screen",
@@ -26,7 +26,7 @@ export function publicMetadata(title: string, description: string, path: string)
       card: "summary_large_image",
       title: `${title} | ${productConfig.name}`,
       description,
-      images: [{ url: "/twitter-image", alt: socialImage.alt }],
+      images: [socialImage],
     },
   };
 }

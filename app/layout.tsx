@@ -8,7 +8,12 @@ const funnelSans = localFont({ src: "../node_modules/@fontsource-variable/funnel
 
 export function generateMetadata(): Metadata {
   const site = getSiteConfig();
-  const socialAlt = "SupaSaaS sign up screen";
+  const socialImage = {
+    url: "/social-preview.png",
+    width: 1200,
+    height: 630,
+    alt: "SupaSaaS sign up screen",
+  };
   return {
     metadataBase: new URL(site.url),
     title: { default: site.seo.title, template: `%s | ${site.name}` },
@@ -20,13 +25,13 @@ export function generateMetadata(): Metadata {
       url: "/",
       siteName: site.name,
       type: "website",
-      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: socialAlt }],
+      images: [socialImage],
     },
     twitter: {
       card: "summary_large_image",
       title: site.seo.title,
       description: site.seo.description,
-      images: [{ url: "/twitter-image", alt: socialAlt }],
+      images: [socialImage],
     },
   };
 }
