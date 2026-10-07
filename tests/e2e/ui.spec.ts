@@ -47,7 +47,7 @@ test("social cards use the sign up preview", async ({ page }) => {
   await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute("content", /\/social-preview\.png/);
   await expect(page.getByText("MOST POPULAR", { exact: true })).toBeVisible();
 
-  for (const route of ["/social-preview.png", "/landing.png"]) {
+  for (const route of ["/social-preview.png"]) {
     const response = await page.request.get(route);
     expect(response.ok()).toBe(true);
     expect(response.headers()["content-type"]).toContain("image/png");

@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/pablocampelo/supabase-saas-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/pablocampelo/supabase-saas-starter/actions/workflows/ci.yml)
 
-[![SupaSaaS landing preview](public/landing.png)](https://supasaas-kit.vercel.app)
+[![SupaSaaS sign up preview](public/social-preview.png)](https://supasaas-kit.vercel.app/signup)
 
 Supabase SaaS Starter gives technical founders and small teams a focused subscription foundation instead of another oversized boilerplate. Authentication, private user data, paid access, billing recovery and the deployment path are connected and tested.
 
