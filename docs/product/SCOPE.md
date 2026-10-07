@@ -1,7 +1,7 @@
-# DaysNotWeeks — Product Scope 2.0
+# Supabase SaaS Starter — Product Scope 2.0
 
 **Status:** APPROVED / CANONICAL  
-**Product:** DaysNotWeeks  
+**Product:** Supabase SaaS Starter  
 **Type:** Feature-closed SaaS foundation  
 **Principle:** Minimum essential infrastructure, maximum adaptability
 
@@ -9,7 +9,7 @@ This is the **sole product contract**. Implementations, tests, documentation and
 
 ## 1. Product and buyer
 
-DaysNotWeeks is a premium, deliberately focused Next.js foundation for **technical founders and small teams (approximately 1–5 developers)** building an individual-account, recurring-subscription SaaS.
+Supabase SaaS Starter is a premium, deliberately focused Next.js foundation for **technical founders and small teams (approximately 1–5 developers)** building an individual-account, recurring-subscription SaaS.
 
 One user owns their own data and may receive one `pro` entitlement. There are no organizations, workspaces, memberships, roles or seats. The buyer's development team may have multiple people; the buyer's end-user account model does not.
 

@@ -1,6 +1,6 @@
 # Architecture
 
-DaysNotWeeks is one Next.js App Router application backed by Supabase Auth/Postgres and Stripe. It is designed for **one user owning private product data**, with one optional Pro entitlement. See the [canonical Scope](product/SCOPE.md) for supported behavior; this page describes the implementation and its trust boundaries.
+Supabase SaaS Starter is one Next.js App Router application backed by Supabase Auth/Postgres and Stripe. It is designed for **one user owning private product data**, with one optional Pro entitlement. See the [canonical Scope](product/SCOPE.md) for supported behavior; this page describes the implementation and its trust boundaries.
 
 ## Request and financial flows
 
@@ -83,4 +83,4 @@ Vercel is the supported deployment target. Each buyer deploys to **their own** S
 
 The CI workflow validates frozen installation, lint, typecheck, unit tests, production build, clean Supabase migrations, RLS/pgTAP, generated-type stability and Playwright browser journeys. **CI cannot certify your own hosted credentials, redirects or webhook destination**; complete the hosted steps in [Setup](SETUP.md).
 
-DaysNotWeeks is distributed as a Git release, not a hosted shared SaaS.
+Supabase SaaS Starter is distributed as a Git release, not a hosted shared SaaS.

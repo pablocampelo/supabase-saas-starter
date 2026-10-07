@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
 const targetFile = resolve(repoRoot, "lib/supabase/database.types.ts");
-const tempDir = mkdtempSync(join(tmpdir(), "daysnotweeks-supabase-types-"));
+const tempDir = mkdtempSync(join(tmpdir(), "supabase-saas-types-"));
 const tempFile = join(tempDir, "database.types.ts");
 const pnpm = "pnpm";
 
@@ -45,13 +45,13 @@ function runGenerationOnWindows(tempFile) {
       "-NoProfile",
       "-NonInteractive",
       "-Command",
-      "pnpm dlx supabase@2.118.0 gen types typescript --local > $env:DNW_TYPES_TMP",
+      "pnpm dlx supabase@2.118.0 gen types typescript --local > $env:SAAS_TYPES_TMP",
     ],
     {
       cwd: repoRoot,
       env: {
         ...process.env,
-        DNW_TYPES_TMP: tempFile,
+        SAAS_TYPES_TMP: tempFile,
       },
       stdio: "inherit",
     },
@@ -82,13 +82,13 @@ function runFormattingOnWindows(tempFile) {
       "-NoProfile",
       "-NonInteractive",
       "-Command",
-      "pnpm dlx oxfmt@0.71.0 --write $env:DNW_TYPES_TMP",
+      "pnpm dlx oxfmt@0.71.0 --write $env:SAAS_TYPES_TMP",
     ],
     {
       cwd: repoRoot,
       env: {
         ...process.env,
-        DNW_TYPES_TMP: tempFile,
+        SAAS_TYPES_TMP: tempFile,
       },
       stdio: "inherit",
     },

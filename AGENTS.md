@@ -2,7 +2,7 @@
 
 Read [Product Scope 2.0](docs/product/SCOPE.md) first. It is the **only product contract**. [Architecture](docs/ARCHITECTURE.md) explains current boundaries; [Setup](docs/SETUP.md) explains provider configuration; the [Billing runbook](docs/runbooks/BILLING.md) explains recovery.
 
-DaysNotWeeks is **feature-closed**. Fix defects and maintain supported integrations, but do not introduce teams, more tiers, additional OAuth methods/providers, a CMS, generic APIs, analytics, workers, plug-ins, extra deployment targets or speculative abstractions without an explicit change to Scope.
+Supabase SaaS Starter is **feature-closed**. Fix defects and maintain supported integrations, but do not introduce teams, more tiers, additional OAuth methods/providers, a CMS, generic APIs, analytics, workers, plug-ins, extra deployment targets or speculative abstractions without an explicit change to Scope.
 
 ## Preserve trust boundaries
 

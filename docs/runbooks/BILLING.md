@@ -1,6 +1,6 @@
 # Billing runbook
 
-This runbook covers the supported operational path for DaysNotWeeks Stripe Billing. Stripe remains the financial source of truth; the local database contains a minimal reconstructible projection used for authorization.
+This runbook covers the supported operational path for Supabase SaaS Starter Stripe Billing. Stripe remains the financial source of truth; the local database contains a minimal reconstructible projection used for authorization.
 
 ## Safety boundary
 

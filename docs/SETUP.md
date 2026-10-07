@@ -1,6 +1,6 @@
 # Setup and deployment
 
-This is the supported **buyer-owned** path from a fresh clone to a deployed SaaS. DaysNotWeeks is a **repository**, not a managed hosting, email or billing service. Its verified code does not validate a buyer's credentials or DNS.
+This is the supported **buyer-owned** path from a fresh clone to a deployed SaaS. Supabase SaaS Starter is a **repository**, not a managed hosting, email or billing service. Its verified code does not validate a buyer's credentials or DNS.
 
 **Supported versions:** use the Node, pnpm, dependencies and Supabase CLI pinned in `package.json`, `.node-version` and the lockfile (currently Node 24, pnpm 11.19.0 and Supabase CLI 2.118.0).
 

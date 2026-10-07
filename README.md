@@ -1,8 +1,8 @@
-# DaysNotWeeks
+# Supabase SaaS Starter
 
 **Own the foundation. Build the product.**
 
-DaysNotWeeks is a focused, cloneable **Next.js + Supabase + Stripe** starter for technical founders and small teams building a subscription SaaS. Authentication, private user data, paid access and billing recovery are connected and tested. You own the code, providers and deployment.
+Supabase SaaS Starter is a focused, cloneable **Next.js + Supabase + Stripe** starter for technical founders and small teams building a subscription SaaS. Authentication, private user data, paid access and billing recovery are connected and tested. You own the code, providers and deployment.
 
 Built for **individual user accounts**, **Free + Pro**, and **monthly or annual billing**. Not a team/organization platform or a multi-provider framework.
 
@@ -49,7 +49,7 @@ To exercise real Checkout and Pro, configure **Stripe test-mode** credentials an
 3. **Replace Example:** build your own domain in place of `lib/example/`, the Example routes and related presentation. Add a SQL migration and regenerate DB types. Keep the existing Auth, Billing and RLS trust boundaries. See [Architecture](docs/ARCHITECTURE.md#replacing-the-example-resource).
 4. **Deploy:** apply hosted migrations deliberately, deploy to **Vercel**, configure Stripe's signed webhook and verify Auth, paid access and recovery on your own domain.
 
-**You are not deploying a DaysNotWeeks-hosted service.** This repository becomes your SaaS, with your own data, accounts, billing and infrastructure.
+**You are not deploying a Supabase SaaS Starter-hosted service.** This repository becomes your SaaS, with your own data, accounts, billing and infrastructure.
 
 ## Check your changes
 
@@ -69,7 +69,7 @@ GitHub Actions runs the release-critical checks automatically. The database rese
 
 ## Know the boundaries
 
-DaysNotWeeks deliberately has **one user-owned data model, one Pro entitlement, two billing intervals and one supported deployment target**. It does not include teams/seats, extra OAuth providers, usage billing, queues, a CMS, analytics, a generic API, automatic billing-repair cron or an admin panel.
+Supabase SaaS Starter deliberately has **one user-owned data model, one Pro entitlement, two billing intervals and one supported deployment target**. It does not include teams/seats, extra OAuth providers, usage billing, queues, a CMS, analytics, a generic API, automatic billing-repair cron or an admin panel.
 
 **A browser returning from Checkout never grants Pro.** Access comes from verified Stripe payment facts projected into a server-owned paid-through state. If webhook retries are exhausted, the [Billing runbook](docs/runbooks/BILLING.md) documents the manual reconciliation path; no automatic recovery SLA is promised.
 
