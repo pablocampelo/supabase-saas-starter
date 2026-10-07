@@ -12,6 +12,7 @@ pnpm build
 pnpm supabase:db:reset
 pnpm supabase:test:db
 pnpm supabase:types
+pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
