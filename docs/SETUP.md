@@ -166,7 +166,7 @@ For a hosted environment, register **HTTPS `https://your-app.example.com/api/str
 
 Verify monthly and annual Checkout, payment confirmation, cancellation, renewal and failure in **Stripe test mode**. A browser may close before the webhook; access must still converge through trusted Stripe facts. Inspect Billing and the DB projection, not just the success page. Customer Portal must open only for the authenticated owner's customer ID.
 
-The [Billing runbook](runbooks/BILLING.md) covers duplicate/reordered events, refunds/disputes and manual reconciliation. **No automatic reconciliation cron or guaranteed recovery time is included.**
+The [Billing](BILLING.md) covers duplicate/reordered events, refunds/disputes and manual reconciliation. **No automatic reconciliation cron or guaranteed recovery time is included.**
 
 ## 5. Deploy to Vercel
 
@@ -190,7 +190,7 @@ Before accepting a deployment as ready, exercise:
 - Correct canonical return origin, SEO metadata, private noindex, keyboard/focus and responsive layouts.
 - Legal content, support contact, secrets and production/live provider separation.
 
-Use the [release notes](release/v0.1.0.md) as **starter implementation** evidence, not as a substitute for buyer-owned hosted QA.
+Treat the repository CI as implementation verification, not as a substitute for buyer-owned hosted QA.
 
 ## 6. Operation and maintenance
 
@@ -202,4 +202,4 @@ pnpm billing:reconcile -- --apply      # explicit financial repair, after review
 
 Always confirm the target Supabase and Stripe environments before applying reconciliation. Logs and output must never expose credentials or sensitive tokens. If Stripe exhausts its webhook retries, an operator may need to reconcile; the starter does not run a scheduler by default.
 
-Maintain framework/provider compatibility, security updates and regressions without adding unrelated infrastructure. See [Architecture](ARCHITECTURE.md), the [Billing runbook](runbooks/BILLING.md) and the [canonical Scope](product/SCOPE.md) for authoritative boundaries.
+Maintain framework/provider compatibility, security updates and regressions without adding unrelated infrastructure. See [Architecture](ARCHITECTURE.md), [Billing](BILLING.md) and the [README scope](../README.md#scope) for the supported boundaries.
