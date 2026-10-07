@@ -101,7 +101,7 @@ export function RealAuthScreen({ mode, supportEmail }: { mode: Mode; supportEmai
 
   return <AuthFrame signup={mode === "signup"} centered={centered} backHref={mode === "login" ? "/" : loginHref} signInHref={loginHref}>
     {mode !== "signup" && !centered && <><Link href={loginHref} className="nav-link mb-9 inline-flex items-center gap-2"><ArrowLeft className="size-4" aria-hidden="true"/>Back</Link><div className="mb-7">{mode === "error" || invalidLink ? <CircleAlert className="size-8 text-warning" aria-hidden="true"/> : mode === "verify-email" || sent ? <Mail className="size-7" aria-hidden="true"/> : success ? <CircleCheck className="size-8 text-success" aria-hidden="true"/> : <KeyRound className="size-7" aria-hidden="true"/>}</div></>}
-    {(centered || mode === "signup") && <div className="mb-7 flex justify-center"><Image src="/icon.svg" width={32} height={32} alt={productConfig.name} unoptimized/></div>}
+    {(centered || mode === "signup") && <div className="mb-7 flex justify-center"><Image src="/icon.svg" width={40} height={40} alt={productConfig.shortName} className="size-10" unoptimized/></div>}
     <h1 className={`text-3xl leading-tight sm:text-4xl ${centered ? "text-center" : ""}`}>{heading}</h1>
     <p className={`mt-3 text-sm leading-7 text-muted-foreground ${centered ? "mb-6 text-center break-words" : ""}`}>{description}</p>
 
