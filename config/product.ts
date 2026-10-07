@@ -1,7 +1,7 @@
 export const productConfig = {
   name: "Supabase SaaS Starter",
   shortName: "SupaSaaS",
-  seo: { title: "Supabase SaaS Starter", description: "A focused SaaS foundation for individual-account subscription products." },
+  seo: { title: "Supabase SaaS Starter", description: "Production-ready SaaS starter built with Next.js, Supabase, Stripe and Vercel." },
   legal: { terms: "/terms", privacy: "/privacy" },
   navigation: {
     public: [{ label: "Features", href: "/#features" }, { label: "Pricing", href: "/#pricing" }, { label: "FAQ", href: "/#faq" }],
