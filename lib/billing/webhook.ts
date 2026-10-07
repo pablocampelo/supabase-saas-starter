@@ -109,8 +109,8 @@ async function resolveSupportedSubscription(
   admin: AdminClient,
   subscription: Stripe.Subscription,
 ): Promise<SupportedSubscription> {
-  const attemptId = metadataValue(subscription.metadata, "dnw_checkout_attempt_id");
-  const metadataUserId = metadataValue(subscription.metadata, "dnw_user_id");
+  const attemptId = metadataValue(subscription.metadata, "saas_checkout_attempt_id");
+  const metadataUserId = metadataValue(subscription.metadata, "saas_user_id");
   if (!attemptId || !metadataUserId) throw new Error("BILLING_SUBSCRIPTION_METADATA_MISSING");
 
   const attempt = await loadAttempt(admin, attemptId);
@@ -183,8 +183,8 @@ async function retrieveAndSyncSubscription(admin: AdminClient, subscriptionId: s
 async function handleCheckoutCompleted(admin: AdminClient, session: Stripe.Checkout.Session, event: Stripe.Event) {
   if (session.mode !== "subscription") return "ignored" as const;
 
-  const attemptId = metadataValue(session.metadata, "dnw_checkout_attempt_id");
-  const metadataUserId = metadataValue(session.metadata, "dnw_user_id");
+  const attemptId = metadataValue(session.metadata, "saas_checkout_attempt_id");
+  const metadataUserId = metadataValue(session.metadata, "saas_user_id");
   if (!attemptId || !metadataUserId) throw new Error("BILLING_CHECKOUT_METADATA_MISSING");
 
   const attempt = await loadAttempt(admin, attemptId);
@@ -218,7 +218,7 @@ async function handleCheckoutCompleted(admin: AdminClient, session: Stripe.Check
 }
 
 async function handleCheckoutExpired(admin: AdminClient, session: Stripe.Checkout.Session) {
-  const attemptId = metadataValue(session.metadata, "dnw_checkout_attempt_id");
+  const attemptId = metadataValue(session.metadata, "saas_checkout_attempt_id");
   if (!attemptId) return "ignored" as const;
 
   const attempt = await loadAttempt(admin, attemptId);

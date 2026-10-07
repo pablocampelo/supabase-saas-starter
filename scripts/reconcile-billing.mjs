@@ -241,8 +241,8 @@ async function resolveAttemptSubscription(attempt) {
   }
 
   if (
-    session.metadata?.dnw_checkout_attempt_id !== attempt.id
-    || session.metadata?.dnw_user_id !== attempt.user_id
+    session.metadata?.saas_checkout_attempt_id !== attempt.id
+    || session.metadata?.saas_user_id !== attempt.user_id
     || session.client_reference_id !== attempt.user_id
   ) {
     throw new Error("BILLING_RECONCILE_CHECKOUT_IDENTITY_MISMATCH");
@@ -278,8 +278,8 @@ async function resolveAttemptSubscription(attempt) {
 
 function validateSubscription(subscription, attempt, expectedCustomerId) {
   if (
-    subscription.metadata?.dnw_checkout_attempt_id !== attempt.id
-    || subscription.metadata?.dnw_user_id !== attempt.user_id
+    subscription.metadata?.saas_checkout_attempt_id !== attempt.id
+    || subscription.metadata?.saas_user_id !== attempt.user_id
   ) {
     throw new Error("BILLING_RECONCILE_SUBSCRIPTION_IDENTITY_MISMATCH");
   }

@@ -1,6 +1,6 @@
 export const productConfig = {
-  name: "DaysNotWeeks",
-  seo: { title: "DaysNotWeeks", description: "A focused SaaS foundation for individual-account subscription products." },
+  name: "Supabase SaaS Starter",
+  seo: { title: "Supabase SaaS Starter", description: "A focused SaaS foundation for individual-account subscription products." },
   legal: { terms: "/terms", privacy: "/privacy" },
   navigation: {
     public: [{ label: "Features", href: "/#features" }, { label: "Pricing", href: "/#pricing" }, { label: "FAQ", href: "/#faq" }],

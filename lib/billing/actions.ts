@@ -104,8 +104,8 @@ export async function createCheckoutAction(formData: FormData) {
   if (attemptError || !attempt) throw new Error("BILLING_CHECKOUT_ATTEMPT_CREATE_FAILED");
 
   const metadata = {
-    dnw_user_id: user.id,
-    dnw_checkout_attempt_id: attempt.id,
+    saas_user_id: user.id,
+    saas_checkout_attempt_id: attempt.id,
   };
   const stripe = getStripe();
   const session = await stripe.checkout.sessions.create(
