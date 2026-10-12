@@ -47,10 +47,10 @@ test("public navigation has no obsolete sections or broken anchors", async ({ pa
     await expect(page.getByText(label, { exact: true })).toHaveCount(0);
   }
 
-  const header = page.getByRole("navigation", { name: "Main navigation" });
+  const header = page.locator('nav[aria-label="Main navigation"]');
   const footer = page.getByRole("navigation", { name: "Product" });
   for (const [label, hash] of [["Pricing", "#pricing"], ["FAQ", "#faq"]] as const) {
-    await expect(header.getByRole("link", { name: label })).toHaveAttribute("href", `/${hash}`);
+    await expect(header.locator("a").filter({ hasText: label })).toHaveAttribute("href", `/${hash}`);
     await expect(footer.getByRole("link", { name: label })).toHaveAttribute("href", `/${hash}`);
     await expect(page.locator(hash)).toHaveCount(1);
   }
