@@ -12,9 +12,8 @@ const footerGroups = [
   {
     title: "Product",
     items: [
-      ["Pricing", "/#pricing"],
-      ["FAQ", "/#faq"],
-      ["Sign in", "/login"],
+      ...productConfig.navigation.public.map(({ label, href }) => [label, href] as const),
+      ["Sign in", "/login"] as const,
     ],
   },
   {
