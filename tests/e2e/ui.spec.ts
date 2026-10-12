@@ -40,6 +40,25 @@ test("public surfaces are indexable while auth and app surfaces stay private", a
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("This page isn’t here.");
 });
 
+test("public navigation has no obsolete sections or broken anchors", async ({ page }) => {
+  await page.goto("/");
+
+  for (const label of ["From clone to product", "What’s included", "Start building"]) {
+    await expect(page.getByText(label, { exact: true })).toHaveCount(0);
+  }
+
+  const header = page.getByRole("navigation", { name: "Main navigation" });
+  const footer = page.getByRole("navigation", { name: "Product" });
+  for (const [label, hash] of [["Pricing", "#pricing"], ["FAQ", "#faq"]] as const) {
+    await expect(header.getByRole("link", { name: label })).toHaveAttribute("href", `/${hash}`);
+    await expect(footer.getByRole("link", { name: label })).toHaveAttribute("href", `/${hash}`);
+    await expect(page.locator(hash)).toHaveCount(1);
+  }
+
+  await expect(page.locator('a[href="/#features"]')).toHaveCount(0);
+  await expect(page.locator("#features")).toHaveCount(0);
+});
+
 test("social cards use the sign up preview", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /\/social-preview\.png/);
