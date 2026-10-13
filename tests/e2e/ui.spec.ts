@@ -59,6 +59,22 @@ test("public navigation has no obsolete sections or broken anchors", async ({ pa
   await expect(page.locator("#features")).toHaveCount(0);
 });
 
+test("landing has no section, header or footer divider borders", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("header.border-b, footer.border-t, #pricing.border-t, #faq.border-t, #faq .divide-y, #faq .border-y")).toHaveCount(0);
+});
+
+test("Google authentication buttons display the multicolor brand mark", async ({ page }) => {
+  for (const route of ["/login", "/signup"]) {
+    await page.goto(route);
+    const button = page.locator("button, a").filter({ hasText: "Continue with Google" });
+    await expect(button.locator("svg path")).toHaveCount(4);
+    for (const color of ["#EA4335", "#4285F4", "#FBBC05", "#34A853"]) {
+      await expect(button.locator(`svg path[fill="${color}"]`)).toHaveCount(1);
+    }
+  }
+});
+
 test("social cards use the sign up preview", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /\/social-preview\.png/);

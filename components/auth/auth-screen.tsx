@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { ArrowLeft, CircleAlert, CircleCheck, KeyRound, Mail } from "lucide-react";
 import { productConfig } from "@/config/product";
 import { AuthVisual } from "@/components/auth/auth-visual";
+import { GoogleMark } from "@/components/auth/google-mark";
 import { Brand } from "@/components/shared/brand";
 import { Notice } from "@/components/shared/patterns";
 import { PreviewNotice } from "@/components/shared/preview-notice";
@@ -102,7 +103,7 @@ export function AuthScreen({ mode, supportEmail }: { mode: Mode; supportEmail: s
     <h1 tabIndex={sent ? -1 : undefined} ref={element => { if (element && recoverySent) element.focus(); }} className={`text-3xl leading-tight sm:text-4xl ${centered || mode === "signup" ? "text-center" : ""}`}>{heading}</h1>
     <p className={`mt-3 text-sm leading-7 text-muted-foreground ${centered ? "mb-6 text-center break-words" : mode === "signup" ? "text-center break-words" : ""}`}>{success ? "You can now sign in with your new password." : verified ? "Your account is ready to sign in." : sent ? `We sent a password reset link to ${recoveryEmail}.` : invalidLink ? "Request a fresh link to continue. Verification and recovery links can expire or be used only once." : descriptions[mode]}</p>
 
-    {showGoogle && !sent && !success && !invalidLink && <div className="mt-8 space-y-5"><Button type="button" variant="outline" className="w-full" disabled={pending} onClick={async () => setMessage((await previewAction("google")).message)}>Continue with Google</Button><div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t"/></div><div className="relative flex justify-center text-[11px] uppercase tracking-[.12em]"><span className="bg-background px-3 text-muted-foreground">or continue with email</span></div></div></div>}
+    {showGoogle && !sent && !success && !invalidLink && <div className="mt-8 space-y-5"><Button type="button" variant="outline" className="w-full" disabled={pending} onClick={async () => setMessage((await previewAction("google")).message)}><GoogleMark />Continue with Google</Button><div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t"/></div><div className="relative flex justify-center text-[11px] uppercase tracking-[.12em]"><span className="bg-background px-3 text-muted-foreground">or continue with email</span></div></div></div>}
 
     {mode !== "signup" && !centered && previewNotice}
     {state === "invalid" && <div className="mb-5"><Notice tone="danger">Email or password is incorrect. Check your details and try again.</Notice></div>}

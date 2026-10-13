@@ -85,7 +85,7 @@ export function Landing({ pricing }: { pricing: PricingViewModel }) {
 
       <Pricing pricing={pricing} />
 
-      <section id="faq" className="section-space border-t">
+      <section id="faq" className="section-space">
         <div className="site-container grid gap-10 lg:grid-cols-[1fr_1.5fr]">
           <div>
             <p className="eyebrow">FAQ</p>
@@ -98,7 +98,7 @@ export function Landing({ pricing }: { pricing: PricingViewModel }) {
               A focused foundation is easier to understand, adapt, and trust.
             </p>
           </div>
-          <div className="divide-y border-y">
+          <div className="">
             {faqs.map(([question, answer], index) => (
               <details className="faq-item py-5" key={question}>
                 <summary className="flex cursor-pointer list-none items-center gap-3 text-sm font-medium">
