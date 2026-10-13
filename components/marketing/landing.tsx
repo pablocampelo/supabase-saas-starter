@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { AccountSummary, ExampleRows, PlanSummary } from "@/components/app/summary";
 import { Pricing } from "@/components/marketing/pricing";
 import { Badge, Panel } from "@/components/shared/patterns";
@@ -46,7 +45,6 @@ export function Landing({ pricing }: { pricing: PricingViewModel }) {
             <Button asChild size="lg">
               <Link href="/signup">
                 Get started
-                <ArrowRight aria-hidden="true" />
               </Link>
             </Button>
           </div>
