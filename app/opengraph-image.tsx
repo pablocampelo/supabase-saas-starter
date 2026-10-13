@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { productConfig } from "@/config/product";
 
 export const alt = "Xerv — Build the product. Not the infrastructure.";
 export const size = { width: 1200, height: 630 };
@@ -18,7 +19,7 @@ export default function Image() {
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 21, color: "#a3a9b4" }}>
         <span>Next.js  ·  Supabase  ·  Stripe  ·  Resend  ·  Vercel</span>
-        <span style={{ color: "#e4f222", fontWeight: 700 }}>github.com/pablocampelo/xerv</span>
+        <span style={{ color: "#e4f222", fontWeight: 700 }}>{productConfig.repositoryUrl.replace(/^https?:\/\//, "")}</span>
       </div>
     </div>,
     size,

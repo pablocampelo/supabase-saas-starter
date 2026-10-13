@@ -1,4 +1,7 @@
+const repositoryUrl = "https://github.com/pablocampelo/xerv";
+
 export const productConfig = {
+  repositoryUrl,
   name: "Xerv",
   shortName: "Xerv",
   seo: {
@@ -13,7 +16,7 @@ export const productConfig = {
     public: [
       { label: "Pricing", href: "/#pricing" },
       { label: "FAQ", href: "/#faq" },
-      { label: "GitHub", href: "https://github.com/pablocampelo/xerv" },
+      { label: "GitHub", href: repositoryUrl },
     ],
     app: [
       { label: "Dashboard", href: "/app" },

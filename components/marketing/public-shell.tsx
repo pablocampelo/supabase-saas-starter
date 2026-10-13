@@ -34,7 +34,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
   const mobileItems = [
     ...productConfig.navigation.public,
     { label: "Sign in", href: "/login" },
-    { label: "Get Xerv", href: "https://github.com/pablocampelo/xerv" },
+    { label: "Get Xerv", href: productConfig.repositoryUrl },
   ];
 
   return (
@@ -56,7 +56,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
               Sign in
             </Link>
             <Button asChild size="sm" variant="outline">
-              <Link href="https://github.com/pablocampelo/xerv">Get Xerv</Link>
+              <Link href={productConfig.repositoryUrl}>Get Xerv</Link>
             </Button>
           </nav>
           <Button

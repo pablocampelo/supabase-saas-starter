@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { AccountSummary, ExampleRows, PlanSummary } from "@/components/app/summary";
 import { Pricing } from "@/components/marketing/pricing";
+import { productConfig } from "@/config/product";
 import { Badge, Panel } from "@/components/shared/patterns";
 import { PreviewNotice } from "@/components/shared/preview-notice";
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,7 @@ export function Landing({ pricing }: { pricing: PricingViewModel }) {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <Link href="https://github.com/pablocampelo/xerv">
+              <Link href={productConfig.repositoryUrl}>
                 View on GitHub
                 <ArrowRight aria-hidden="true" />
               </Link>

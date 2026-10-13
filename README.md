@@ -59,7 +59,7 @@ To exercise real Checkout and Pro, add Stripe **test-mode** credentials and the 
 
 ## Make it yours
 
-1. **Brand it.** Edit `config/product.ts`, replace the sample marketing/legal copy and point the canonical site URL at your deployment.
+1. **Brand it.** Edit `config/product.ts` (including `repositoryUrl`), replace the sample marketing/legal copy and point the canonical site URL at your deployment.
 2. **Own the providers.** Create your Supabase project, Google OAuth credentials, SMTP sender and Stripe products/Prices.
 3. **Replace Example.** Build your real domain in place of `lib/example/` and the Example routes. Add migrations and regenerate database types while preserving Auth, Billing and RLS trust boundaries.
 4. **Deploy.** Apply hosted migrations deliberately, deploy to Vercel, configure the signed Stripe webhook and verify Auth, recovery and paid access on the hosted environment.
