@@ -9,9 +9,9 @@ export function generateMetadata(): Metadata {
   const site = getSiteConfig();
   const socialImage = {
     url: "/opengraph-image",
-    width: 1200,
-    height: 630,
-    alt: "Xerv — Build the product. Not the infrastructure.",
+    width: 1280,
+    height: 640,
+    alt: "Xerv — Build the product. Not the infrastructure. Open-source SaaS foundation.",
   };
   return {
     metadataBase: new URL(site.url),
