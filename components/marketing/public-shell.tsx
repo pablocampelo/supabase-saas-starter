@@ -92,10 +92,6 @@ export function PublicShell({ children }: { children: ReactNode }) {
         <div className="site-container grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
             <Brand />
-            <p className="mt-4 max-w-sm text-sm leading-6 text-muted-foreground">
-              Build the product. Not the infrastructure. Free and open source under the MIT license.
-            </p>
-            <p className="mt-3 text-xs text-muted-foreground">Next.js · Supabase · Stripe · Resend · Vercel</p>
           </div>
 
           {footerGroups.map((group) => (
