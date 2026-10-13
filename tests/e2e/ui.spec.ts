@@ -59,6 +59,18 @@ test("public navigation has no obsolete sections or broken anchors", async ({ pa
   await expect(page.locator("#features")).toHaveCount(0);
 });
 
+test("public footer is logo-only and header separates navigation from account actions", async ({ page }) => {
+  await page.goto("/");
+  const footer = page.locator("footer");
+  await expect(footer.locator(".brand")).toHaveCount(1);
+  await expect(footer).not.toContainText("Build the product. Not the infrastructure.");
+  await expect(footer).not.toContainText("Next.js · Supabase · Stripe");
+  const header = page.locator('nav[aria-label="Main navigation"]');
+  await expect(header.getByRole("link", { name: "Log in" })).toHaveAttribute("href", "/login");
+  await expect(header.getByRole("link", { name: "Get started" })).toHaveAttribute("href", "/signup");
+  await expect(header.getByRole("link", { name: "Sign in" })).toHaveCount(0);
+});
+
 test("landing has no section, header or footer divider borders", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("header.border-b, footer.border-t, #pricing.border-t, #faq.border-t, #faq .divide-y, #faq .border-y")).toHaveCount(0);
