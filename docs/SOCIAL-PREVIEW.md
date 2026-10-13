@@ -8,7 +8,7 @@ The landing page metadata advertises this absolute image URL through both `og:im
 
 A link to `https://github.com/pablocampelo/xerv` gets its tags from GitHub, **not** from `supasaas-kit.vercel.app`. To use this same visual:
 
-1. After production deploy, open `https://supasaas-kit.vercel.app/opengraph-image` in a browser and save the PNG.
+1. After production deploy, open `https://xerv.vercel.app/opengraph-image` in a browser and save the PNG.
 2. Open `https://github.com/pablocampelo/xerv/settings`.
 3. Under **Social preview**, choose **Edit → Upload an image** and select the downloaded PNG (GitHub accepts PNG/JPEG/GIF < 1 MB).
 4. Recheck GitHub's own repository preview after the upload.
