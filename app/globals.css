@@ -89,10 +89,10 @@
 }
 
 @layer components {
-  .site-container { @apply mx-auto w-full max-w-[1200px] px-5 sm:px-8; }
-  .section-space { @apply py-16 md:py-24; }
+  .site-container { @apply mx-auto w-full min-w-0 max-w-[1200px] px-4 sm:px-6 lg:px-8; }
+  .section-space { @apply py-14 sm:py-16 lg:py-24; }
   .eyebrow { @apply text-xs uppercase tracking-[.12em] text-muted-foreground; font-weight: 510; }
-  .section-heading { @apply text-[40px] leading-[1.02] tracking-normal sm:text-[48px]; }
+  .section-heading { @apply text-[clamp(32px,5vw,48px)] leading-[1.1] tracking-normal; overflow-wrap: break-word; }
   .section-copy { @apply max-w-xl text-base leading-7 text-muted-foreground; }
   .nav-link { @apply rounded-sm text-[13px] text-secondary-foreground transition-colors hover:text-foreground; }
   .text-link { @apply rounded-sm text-sm font-medium underline underline-offset-4 decoration-border hover:decoration-foreground; }
