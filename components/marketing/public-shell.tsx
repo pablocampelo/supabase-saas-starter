@@ -55,7 +55,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
             <Link className="nav-link" href="/login">
               Sign in
             </Link>
-            <Button asChild size="sm" variant="outline">
+            <Button asChild size="sm">
               <Link href={productConfig.repositoryUrl}>Get Xerv</Link>
             </Button>
           </nav>

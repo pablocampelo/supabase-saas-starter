@@ -13,7 +13,8 @@ test("foundation is accessible, responsive, and honest about its current integra
 
   await expect(page.getByRole("link", { name: "View on GitHub" })).toHaveAttribute("href", "https://github.com/pablocampelo/xerv");
   await expect(page.getByRole("link", { name: "Explore the app" })).toHaveAttribute("href", "/signup");
-  await expect(page.locator("[data-preview-notice]")).toContainText("Integration preview");
+  await expect(page.locator("main .hero-preview, main [data-preview-notice]")).toHaveCount(0);
+  await expect(page.getByText("Next.js · TypeScript · Supabase · Stripe · Vercel")).toHaveCount(0);
 
   await page.keyboard.press("Tab");
   const skipLink = page.getByRole("link", { name: "Skip to content" });

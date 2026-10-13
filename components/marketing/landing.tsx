@@ -1,12 +1,7 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { AccountSummary, ExampleRows, PlanSummary } from "@/components/app/summary";
 import { Pricing } from "@/components/marketing/pricing";
 import { productConfig } from "@/config/product";
-import { Badge, Panel } from "@/components/shared/patterns";
-import { PreviewNotice } from "@/components/shared/preview-notice";
 import { Button } from "@/components/ui/button";
-import { getPreview } from "@/lib/ui/fixtures";
 import type { PricingViewModel } from "@/lib/ui/models";
 
 const faqs = [
@@ -23,66 +18,27 @@ const faqs = [
   ["Where does it deploy?", "Vercel is the only supported deployment target, with Supabase and Stripe isolated across local, staging, and production environments."],
 ] as const;
 
-function previewExampleHref(path: string) {
-  return process.env.NODE_ENV === "development"
-    ? `${path}?scenario=pro-monthly`
-    : "/app/example";
-}
-
 export function Landing({ pricing }: { pricing: PricingViewModel }) {
-  const demo = getPreview("pro-monthly");
-
   return (
     <>
-      <section className="site-container grid items-start gap-12 py-12 lg:grid-cols-[1.25fr_1fr] lg:items-center lg:gap-16 lg:py-16 xl:gap-20">
-        <div className="min-w-0">
-          <h1 className="font-heading text-[42px] font-medium leading-[1.03] tracking-[-.022em] sm:text-[64px] lg:text-[clamp(56px,5.5vw,72px)]">
-            <span className="block">Build the product.</span>
-            <span className="block">Not the infrastructure.</span>
+      <section className="site-container flex min-h-[72svh] flex-col justify-center py-24 sm:min-h-[76svh] sm:py-32 lg:py-40">
+        <div className="w-full max-w-[1000px]">
+          <h1 className="font-heading text-[clamp(42px,8.2vw,96px)] font-medium leading-[1.015] tracking-[-.045em]">
+            <span className="block text-foreground">Build the product.</span>
+            <span className="mt-2 block text-muted-foreground sm:mt-3">Not the infrastructure.</span>
           </h1>
-          <p className="section-copy mt-6">
-            The open-source Next.js foundation for authentication, private data, subscriptions, email and deployment.
-            Clone Xerv, add your brand and build what makes your product different.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg">
-              <Link href={productConfig.repositoryUrl}>
-                View on GitHub
-                <ArrowRight aria-hidden="true" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="/signup">Explore the app</Link>
-            </Button>
-          </div>
-          <p className="mt-8 text-xs leading-6 text-muted-foreground">
-            Next.js · Supabase · Stripe · Resend · Vercel
-          </p>
-          <PreviewNotice className="mt-4 max-w-xl">
-            The visual foundation is connected to deterministic sample state while Auth, RLS persistence, and Stripe
-            are implemented.
-          </PreviewNotice>
-        </div>
-
-        <div className="hero-preview w-full min-w-0 max-w-xl justify-self-center rounded-xl border bg-card p-4 sm:p-6 lg:justify-self-end">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <span className="text-xs font-medium text-muted-foreground">YOUR FOUNDATION, IN PRACTICE</span>
-            <Badge>Sample</Badge>
-          </div>
-          <div className="space-y-4">
-            <Panel title="Example resources">
-              <ExampleRows examples={demo.examples.slice(0, 2)} href={previewExampleHref} />
-            </Panel>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Panel title="Current plan">
-                <PlanSummary plan={demo.plan} />
-              </Panel>
-              <Panel title="Account">
-                <AccountSummary user={demo.user} />
-                <Link href="/login" className="text-link mt-4 inline-block">
-                  Sign in
-                </Link>
-              </Panel>
+          <div className="mt-9 flex max-w-[680px] flex-col items-start gap-8 sm:mt-12 sm:gap-10">
+            <p className="max-w-[600px] text-base leading-8 text-secondary-foreground sm:text-lg sm:leading-8">
+              The open-source Next.js foundation for authentication, private data, subscriptions, email and deployment.
+              Clone Xerv, add your brand and build what makes your product different.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild size="lg" className="min-w-40">
+                <Link href={productConfig.repositoryUrl}>View on GitHub</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link href="/signup">Explore the app</Link>
+              </Button>
             </div>
           </div>
         </div>
