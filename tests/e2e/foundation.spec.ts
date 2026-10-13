@@ -13,7 +13,8 @@ test("foundation is accessible, responsive, and honest about its current integra
 
   const getStarted = page.getByRole("link", { name: "Get started" }).first();
   await expect(getStarted).toHaveAttribute("href", "/signup");
-  await expect(page.locator("[data-preview-notice]")).toContainText("Integration preview");
+  await expect(page.locator("main .hero-preview, main [data-preview-notice]")).toHaveCount(0);
+  await expect(page.getByText("Next.js · TypeScript · Supabase · Stripe · Vercel")).toHaveCount(0);
 
   await page.keyboard.press("Tab");
   const skipLink = page.getByRole("link", { name: "Skip to content" });

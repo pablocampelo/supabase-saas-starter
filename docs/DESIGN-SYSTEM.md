@@ -7,9 +7,9 @@ The source of truth is `app/globals.css`. All UI uses its semantic Tailwind toke
 
 - Canvas `#08090a`; cards `#0f1011`; elevated surfaces `#161718`.
 - Structural edge `#303238` and muted text `#a3a9b4` (slightly brighter than the raw reference for text accessibility).
-- Primary action `#e4f222` with near-black text; never use it as a card background.
+- Primary action white `#ffffff` with near-black text and pill radius. Acid lime `#e4f222` is reserved for the Pricing MOST POPULAR badge.
 - Inter Variable for all UI and headings; variable weight ~510. No extra font dependency.
-- Radii: 6px buttons/inputs, 12px cards; simple 4px spacing rhythm.
+- Radii: pill buttons, 6px inputs, 12px cards; simple 4px spacing rhythm.
 - Contrast, functional status colors, keyboard focus and reduced-motion accessibility override decorative fidelity.
 
 ## Components
@@ -21,4 +21,4 @@ The source of truth is `app/globals.css`. All UI uses its semantic Tailwind toke
 - `components/app/*`: app shell, account, billing and replaceable example.
 
 ## Rules
-Use only one bright primary action within a local decision area. Keep all secondary actions neutral, use surface contrast rather than large shadows, and retain a visible focus indicator. Avoid copying Linear's logo or its screenshots. Keep Auth, RLS, billing contracts and navigation semantics independent of the theme.
+Use white pill buttons for primary actions, with a neutral secondary hierarchy. Keep all secondary actions neutral, use surface contrast rather than large shadows, and retain a visible focus indicator. Avoid copying Linear's logo or its screenshots. Keep Auth, RLS, billing contracts and navigation semantics independent of the theme.

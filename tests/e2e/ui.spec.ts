@@ -85,9 +85,22 @@ test("dark visual system stays consistent on public, auth and app surfaces", asy
     });
     expect(theme.scheme).toBe("dark");
     expect(theme.background).toBe("rgb(8, 9, 10)");
-    expect(theme.action).toBe("#e4f222");
+    expect(["#fff", "#ffffff"]).toContain(theme.action);
     await assertNoHorizontalOverflow(page);
   }
+});
+
+test("primary CTAs use white pill buttons while the popular badge owns lime", async ({ page }) => {
+  await page.goto("/");
+  const hero = page.getByRole("link", { name: "Get started", exact: true }).filter({ has: page.locator("svg") });
+  await expect(hero).toHaveCount(0);
+  const cta = page.getByRole("link", { name: "Get started", exact: true }).first();
+  await expect(cta).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(cta).toHaveCSS("color", "rgb(8, 9, 10)");
+  await expect(cta).toHaveClass(/rounded-full/);
+  const popular = page.getByText("MOST POPULAR", { exact: true });
+  await expect(popular).toHaveCSS("background-color", "rgb(228, 242, 34)");
+  await expect(popular).toHaveCSS("color", "rgb(8, 9, 10)");
 });
 
 test("social cards use the sign up preview", async ({ page }) => {
