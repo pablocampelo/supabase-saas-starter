@@ -71,9 +71,13 @@ test("public footer is logo-only and header separates navigation from account ac
   await expect(header.getByRole("link", { name: "Sign in" })).toHaveCount(0);
 });
 
-test("landing has no section, header or footer divider borders", async ({ page }) => {
+test("landing sections use consistent subtle white horizontal separators", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("header.border-b, footer.border-t, #pricing.border-t, #faq.border-t, #faq .divide-y, #faq .border-y")).toHaveCount(0);
+  for (const selector of ["header", "#pricing", "#faq", "footer"]) {
+    const edge = selector === "header" ? "border-bottom-color" : "border-top-color";
+    await expect(page.locator(selector)).toHaveCSS(edge, "rgba(255, 255, 255, 0.1)");
+  }
+  await expect(page.locator("#faq .divide-y, #faq .border-y")).toHaveCount(0);
 });
 
 test("Google authentication buttons display the multicolor brand mark", async ({ page }) => {
