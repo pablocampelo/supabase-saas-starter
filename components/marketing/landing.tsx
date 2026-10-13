@@ -34,7 +34,7 @@ export function Landing({ pricing }: { pricing: PricingViewModel }) {
     <>
       <section className="site-container grid items-start gap-12 py-12 lg:grid-cols-[1.25fr_1fr] lg:items-center lg:gap-16 lg:py-16 xl:gap-20">
         <div className="min-w-0">
-          <h1 className="font-heading text-[40px] font-semibold leading-[1.03] tracking-[-.035em] sm:text-[56px] lg:text-[clamp(48px,5vw,64px)]">
+          <h1 className="font-heading text-[42px] font-medium leading-[1.03] tracking-[-.022em] sm:text-[64px] lg:text-[clamp(56px,5.5vw,72px)]">
             <span className="block">Build your SaaS.</span>
             <span className="block">Start from the foundation.</span>
           </h1>
@@ -59,7 +59,7 @@ export function Landing({ pricing }: { pricing: PricingViewModel }) {
           </PreviewNotice>
         </div>
 
-        <div className="hero-preview w-full min-w-0 max-w-xl justify-self-center rounded-lg border bg-muted/50 p-4 sm:p-6 lg:justify-self-end">
+        <div className="hero-preview w-full min-w-0 max-w-xl justify-self-center rounded-xl border bg-card p-4 sm:p-6 lg:justify-self-end">
           <div className="mb-4 flex items-center justify-between gap-3">
             <span className="text-xs font-medium text-muted-foreground">YOUR FOUNDATION, IN PRACTICE</span>
             <Badge>Sample</Badge>
@@ -98,7 +98,7 @@ export function Landing({ pricing }: { pricing: PricingViewModel }) {
               A focused foundation is easier to understand, adapt, and trust.
             </p>
           </div>
-          <div className="">
+          <div className="space-y-1">
             {faqs.map(([question, answer], index) => (
               <details className="faq-item py-5" key={question}>
                 <summary className="flex cursor-pointer list-none items-center gap-3 text-sm font-medium">
