@@ -22,7 +22,7 @@ test("foundation is accessible, responsive, and honest about its current integra
 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.evaluate(() => document.fonts.ready);
-  expect(await heading.evaluate((element) => getComputedStyle(element).fontWeight)).toBe("600");
+  expect(await heading.evaluate((element) => getComputedStyle(element).fontWeight)).toBe("500");
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "index, follow");
 
   const scan = await new AxeBuilder({ page }).analyze();

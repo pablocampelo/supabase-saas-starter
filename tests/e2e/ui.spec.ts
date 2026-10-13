@@ -75,6 +75,21 @@ test("Google authentication buttons display the multicolor brand mark", async ({
   }
 });
 
+test("dark visual system stays consistent on public, auth and app surfaces", async ({ page }) => {
+  for (const route of ["/", "/signup", "/login", "/app", "/app/billing", "/app/account"]) {
+    await page.goto(route);
+    const theme = await page.evaluate(() => {
+      const root = getComputedStyle(document.documentElement);
+      const body = getComputedStyle(document.body);
+      return { scheme: root.colorScheme, background: body.backgroundColor, action: root.getPropertyValue("--primary").trim() };
+    });
+    expect(theme.scheme).toBe("dark");
+    expect(theme.background).toBe("rgb(8, 9, 10)");
+    expect(theme.action).toBe("#e4f222");
+    await assertNoHorizontalOverflow(page);
+  }
+});
+
 test("social cards use the sign up preview", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /\/social-preview\.png/);

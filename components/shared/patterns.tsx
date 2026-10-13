@@ -16,11 +16,11 @@ export function PageHeader({ title, description, action }: { title: string; desc
 }
 
 export function Panel({ title, action, children, className }: { title: string; action?: ReactNode; children: ReactNode; className?: string }) {
-  return <section className={cn("overflow-hidden rounded-lg border bg-card", className)}><div className="flex items-center justify-between gap-4 border-b px-5 py-4"><h2 className="font-sans text-sm font-semibold">{title}</h2>{action}</div><div className="p-5">{children}</div></section>;
+  return <section className={cn("overflow-hidden rounded-xl border bg-card", className)}><div className="flex items-center justify-between gap-4 border-b px-5 py-4"><h2 className="font-sans text-sm font-semibold">{title}</h2>{action}</div><div className="p-5">{children}</div></section>;
 }
 
 export function EmptyState({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
-  return <div className="rounded-lg border border-dashed px-5 py-12 text-center"><h2 className="text-xl">{title}</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">{children}</p>{action ? <div className="mt-5">{action}</div> : null}</div>;
+  return <div className="rounded-xl border border-dashed px-5 py-12 text-center"><h2 className="text-xl">{title}</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">{children}</p>{action ? <div className="mt-5">{action}</div> : null}</div>;
 }
 
 export function PageSkeleton() {

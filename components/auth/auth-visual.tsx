@@ -1,12 +1,12 @@
 /** Decorative, replaceable auth surface; contains no product data or controls. */
 export function AuthVisual() {
   return (
-    <div aria-hidden="true" className="relative hidden overflow-hidden border-r bg-muted md:flex md:items-center md:justify-center">
+    <div aria-hidden="true" className="relative hidden overflow-hidden border-r bg-card md:flex md:items-center md:justify-center">
       <div className="absolute inset-x-0 top-1/3 border-t border-border/60" />
       <div className="absolute inset-x-0 bottom-1/3 border-t border-border/60" />
       <div className="absolute inset-y-0 left-1/4 border-l border-border/60" />
       <div className="absolute inset-y-0 right-1/4 border-l border-border/60" />
-      <div className="relative w-3/4 max-w-md rounded-lg border bg-background p-5 shadow-sm lg:p-7">
+      <div className="relative w-3/4 max-w-md rounded-xl border bg-background p-5 lg:p-7">
         <div className="flex items-center gap-1.5 border-b pb-5">
           <span className="size-2 rounded-full bg-input" />
           <span className="size-2 rounded-full bg-border" />
