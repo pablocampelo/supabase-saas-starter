@@ -8,11 +8,11 @@ test("foundation is accessible, responsive, and honest about its current integra
   await page.goto("/");
 
   const heading = page.getByRole("heading", { level: 1 });
-  await expect(heading).toContainText("Build your SaaS.");
-  await expect(heading).toContainText("Start from the foundation.");
+  await expect(heading).toContainText("Build the product.");
+  await expect(heading).toContainText("Not the infrastructure.");
 
-  const getStarted = page.getByRole("link", { name: "Get started" }).first();
-  await expect(getStarted).toHaveAttribute("href", "/signup");
+  await expect(page.getByRole("link", { name: "View on GitHub" })).toHaveAttribute("href", "https://github.com/pablocampelo/xerv");
+  await expect(page.getByRole("link", { name: "Explore the app" })).toHaveAttribute("href", "/signup");
   await expect(page.locator("main .hero-preview, main [data-preview-notice]")).toHaveCount(0);
   await expect(page.getByText("Next.js · TypeScript · Supabase · Stripe · Vercel")).toHaveCount(0);
 

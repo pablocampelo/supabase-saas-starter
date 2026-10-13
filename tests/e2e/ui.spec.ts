@@ -92,9 +92,8 @@ test("dark visual system stays consistent on public, auth and app surfaces", asy
 
 test("primary CTAs use white pill buttons while the popular badge owns lime", async ({ page }) => {
   await page.goto("/");
-  const hero = page.getByRole("link", { name: "Get started", exact: true }).filter({ has: page.locator("svg") });
-  await expect(hero).toHaveCount(0);
-  const cta = page.getByRole("link", { name: "Get started", exact: true }).first();
+  const cta = page.getByRole("link", { name: "View on GitHub", exact: true });
+  await expect(cta).toHaveAttribute("href", "https://github.com/pablocampelo/xerv");
   await expect(cta).toHaveCSS("background-color", "rgb(255, 255, 255)");
   await expect(cta).toHaveCSS("color", "rgb(8, 9, 10)");
   await expect(cta).toHaveClass(/rounded-full/);
@@ -103,14 +102,14 @@ test("primary CTAs use white pill buttons while the popular badge owns lime", as
   await expect(popular).toHaveCSS("color", "rgb(8, 9, 10)");
 });
 
-test("social cards use the sign up preview", async ({ page }) => {
+test("social cards use the current Xerv branding", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /\/social-preview\.png/);
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /\/opengraph-image/);
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
-  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute("content", /\/social-preview\.png/);
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute("content", /\/opengraph-image/);
   await expect(page.getByText("MOST POPULAR", { exact: true })).toBeVisible();
 
-  for (const route of ["/social-preview.png"]) {
+  for (const route of ["/opengraph-image"]) {
     const response = await page.request.get(route);
     expect(response.ok()).toBe(true);
     expect(response.headers()["content-type"]).toContain("image/png");

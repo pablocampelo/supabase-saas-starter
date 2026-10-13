@@ -34,7 +34,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
   const mobileItems = [
     ...productConfig.navigation.public,
     { label: "Sign in", href: "/login" },
-    { label: "Get started", href: "/signup" },
+    { label: "Get Xerv", href: productConfig.repositoryUrl },
   ];
 
   return (
@@ -56,7 +56,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
               Sign in
             </Link>
             <Button asChild size="sm">
-              <Link href="/signup">Get started</Link>
+              <Link href={productConfig.repositoryUrl}>Get Xerv</Link>
             </Button>
           </nav>
           <Button
@@ -93,9 +93,9 @@ export function PublicShell({ children }: { children: ReactNode }) {
           <div>
             <Brand />
             <p className="mt-4 max-w-sm text-sm leading-6 text-muted-foreground">
-              A focused Next.js SaaS foundation for individual customer accounts.
+              Build the product. Not the infrastructure. Free and open source under the MIT license.
             </p>
-            <p className="mt-3 text-xs text-muted-foreground">Next.js · Supabase · Stripe · Vercel</p>
+            <p className="mt-3 text-xs text-muted-foreground">Next.js · Supabase · Stripe · Resend · Vercel</p>
           </div>
 
           {footerGroups.map((group) => (

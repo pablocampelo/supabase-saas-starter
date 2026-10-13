@@ -8,10 +8,10 @@ const inter = localFont({ src: "../node_modules/@fontsource-variable/inter/files
 export function generateMetadata(): Metadata {
   const site = getSiteConfig();
   const socialImage = {
-    url: "/social-preview.png",
+    url: "/opengraph-image",
     width: 1200,
     height: 630,
-    alt: "SupaSaaS sign up screen",
+    alt: "Xerv — Build the product. Not the infrastructure.",
   };
   return {
     metadataBase: new URL(site.url),

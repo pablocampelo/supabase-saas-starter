@@ -1,9 +1,12 @@
+const repositoryUrl = "https://github.com/pablocampelo/xerv";
+
 export const productConfig = {
-  name: "Supabase SaaS Starter",
-  shortName: "SupaSaaS",
+  repositoryUrl,
+  name: "Xerv",
+  shortName: "Xerv",
   seo: {
-    title: "Supabase SaaS Starter",
-    description: "Production-ready SaaS starter built with Next.js, Supabase, Stripe and Vercel.",
+    title: "Xerv — Open-source SaaS foundation",
+    description: "Build the product, not the infrastructure. Open-source Next.js SaaS foundation with Supabase, Stripe, Resend SMTP and Vercel.",
   },
   legal: {
     terms: "/terms",
@@ -13,6 +16,7 @@ export const productConfig = {
     public: [
       { label: "Pricing", href: "/#pricing" },
       { label: "FAQ", href: "/#faq" },
+      { label: "GitHub", href: repositoryUrl },
     ],
     app: [
       { label: "Dashboard", href: "/app" },
