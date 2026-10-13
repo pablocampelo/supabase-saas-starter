@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, CircleAlert, CircleCheck, KeyRound, Mail } from "lucide-react";
 import { AuthVisual } from "@/components/auth/auth-visual";
+import { GoogleMark } from "@/components/auth/google-mark";
 import { Brand } from "@/components/shared/brand";
 import { Notice } from "@/components/shared/patterns";
 import { Button } from "@/components/ui/button";
@@ -105,7 +106,7 @@ export function RealAuthScreen({ mode, supportEmail }: { mode: Mode; supportEmai
     <h1 className={`text-3xl leading-tight sm:text-4xl ${centered || mode === "signup" ? "text-center" : ""}`}>{heading}</h1>
     <p className={`mt-3 text-sm leading-7 text-muted-foreground ${centered ? "mb-6 text-center break-words" : mode === "signup" ? "text-center break-words" : ""}`}>{description}</p>
 
-    {showGoogle && <div className="mt-8 space-y-5"><Button asChild variant="outline" className="w-full"><a href={`/auth/google?next=${encodeURIComponent(destination)}`}>Continue with Google</a></Button><div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t"/></div><div className="relative flex justify-center text-[11px] uppercase tracking-[.12em]"><span className="bg-background px-3 text-muted-foreground">or continue with email</span></div></div></div>}
+    {showGoogle && <div className="mt-8 space-y-5"><Button asChild variant="outline" className="w-full"><a href={`/auth/google?next=${encodeURIComponent(destination)}`}><GoogleMark />Continue with Google</a></Button><div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t"/></div><div className="relative flex justify-center text-[11px] uppercase tracking-[.12em]"><span className="bg-background px-3 text-muted-foreground">or continue with email</span></div></div></div>}
 
     {mode === "verify-email" && <div className="mt-7 space-y-5"><p className="break-words text-sm leading-7">{verificationEmail ? <>Verification instructions were sent to <strong>{verificationEmail}</strong>. Check your inbox and spam folder.</> : <>Open the verification email sent when you created your account.</>}</p>{verificationEmail && <form action={resendAction} className="space-y-4"><input type="hidden" name="email" value={verificationEmail}/><input type="hidden" name="next" value={destination}/><Button className="w-full" type="submit" disabled={resendPending}>{resendPending ? "Sending…" : "Resend verification email"}</Button></form>}<StateNotice state={resendState}/><Link className="text-link inline-block" href={loginHref}>Back to sign in</Link></div>}
 
