@@ -1,6 +1,6 @@
 # Setup and deployment
 
-This is the supported **buyer-owned** path from a fresh clone to a deployed SaaS. Supabase SaaS Starter is a **repository**, not a managed hosting, email or billing service. Its verified code does not validate a buyer's credentials or DNS.
+This is the supported **developer-owned** path from a fresh clone to a deployed SaaS. Xerv is a **repository**, not a managed hosting, email or billing service. Its verified code does not validate a developer's credentials or DNS.
 
 **Supported versions:** use the Node, pnpm, dependencies and Supabase CLI pinned in `package.json`, `.node-version` and the lockfile (currently Node 24, pnpm 11.19.0 and Supabase CLI 2.118.0).
 
@@ -62,7 +62,7 @@ The Example Resource exists only to demonstrate isolation and billing gates. Rep
 
 ## 3. Hosted Supabase and database
 
-1. Create a buyer-owned **Supabase project** per environment. Do not reuse a production project for disposable QA.
+1. Create a developer-owned **Supabase project** per environment. Do not reuse a production project for disposable QA.
 2. Configure the application environment with your project's **URL**, `sb_publishable_` key and **server-only** `sb_secret_` key.
 3. Apply all committed migrations to a **clean test project first**. Verify generated types, RLS/privileges and migrations before changing a live database.
 4. Apply hosted migrations as an explicit operator step (for example, with the pinned Supabase CLI):
@@ -101,7 +101,7 @@ Use exact URLs or the narrowest wildcard needed by your Auth journeys. Keep loca
 https://<your-supabase-project-ref>.supabase.co/auth/v1/callback
 ```
 
-3. In Supabase **Authentication → Providers → Google**, enable Google and enter the buyer-owned Client ID/Secret. These values do **not** belong in the application's browser env.
+3. In Supabase **Authentication → Providers → Google**, enable Google and enter the developer-owned Client ID/Secret. These values do **not** belong in the application's browser env.
 4. Test **Continue with Google** from the deployed app: consent must complete, `/auth/callback` must exchange the PKCE code, and the browser must reach an authenticated `/app`.
 
 ### Email confirmations, recovery and SMTP
@@ -170,7 +170,7 @@ The [Billing](BILLING.md) covers duplicate/reordered events, refunds/disputes an
 
 ## 5. Deploy to Vercel
 
-1. Push your adapted repository to your Git provider and import it into a buyer-owned **Vercel** project.
+1. Push your adapted repository to your Git provider and import it into a developer-owned **Vercel** project.
 2. Use the supported **Node 24** baseline and the committed `pnpm-lock.yaml` for installation/build.
 3. Set `NEXT_PUBLIC_SITE_URL`, the Supabase URL/publishable key, support email, Supabase server secret and Stripe server keys/Price IDs in the correct Vercel environments. Browser-exposed variables must contain **no secrets**.
 4. Configure hosted Google OAuth, verified Auth SMTP/templates and Stripe webhook for the final domain **before** promoting the site.
@@ -190,7 +190,7 @@ Before accepting a deployment as ready, exercise:
 - Correct canonical return origin, SEO metadata, private noindex, keyboard/focus and responsive layouts.
 - Legal content, support contact, secrets and production/live provider separation.
 
-Treat the repository CI as implementation verification, not as a substitute for buyer-owned hosted QA.
+Treat the repository CI as implementation verification, not as a substitute for developer-owned hosted QA.
 
 ## 6. Operation and maintenance
 
@@ -203,3 +203,6 @@ pnpm billing:reconcile -- --apply      # explicit financial repair, after review
 Always confirm the target Supabase and Stripe environments before applying reconciliation. Logs and output must never expose credentials or sensitive tokens. If Stripe exhausts its webhook retries, an operator may need to reconcile; the starter does not run a scheduler by default.
 
 Maintain framework/provider compatibility, security updates and regressions without adding unrelated infrastructure. See [Architecture](ARCHITECTURE.md), [Billing](BILLING.md) and the [README scope](../README.md#scope) for the supported boundaries.
+
+
+See the [release checklist](RELEASE-CHECKLIST.md) before sharing a publicly accessible demo.

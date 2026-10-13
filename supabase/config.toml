@@ -1,4 +1,4 @@
-project_id = "supabase-saas-starter"
+project_id = "xerv"
 
 [api]
 enabled = true
@@ -20,7 +20,7 @@ port = 54324
 smtp_port = 54325
 pop3_port = 54326
 admin_email = "no-reply@example.test"
-sender_name = "Supabase SaaS Starter Local"
+sender_name = "Xerv Local"
 
 [auth]
 enabled = true

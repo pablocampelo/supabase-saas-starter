@@ -11,7 +11,7 @@ export function generateMetadata(): Metadata {
     url: "/social-preview.png",
     width: 1200,
     height: 630,
-    alt: "SupaSaaS sign up screen",
+    alt: "Xerv SaaS foundation preview",
   };
   return {
     metadataBase: new URL(site.url),

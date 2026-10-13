@@ -3,8 +3,8 @@ import { Landing } from "@/components/marketing/landing";
 import { getPricingView } from "@/config/pricing";
 
 export const metadata = publicMetadata(
-  "Production-ready SaaS starter",
-  "Build on Next.js, Supabase, Stripe and Vercel with connected Auth, private data, subscriptions and billing recovery.",
+  "Xerv — Build the product, not the infrastructure",
+  "Open-source Next.js SaaS foundation with Supabase Auth and RLS, Stripe subscriptions, Resend SMTP and Vercel.",
   "/",
 );
 
