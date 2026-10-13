@@ -67,7 +67,7 @@ test("landing has no section, header or footer divider borders", async ({ page }
 test("Google authentication buttons display the multicolor brand mark", async ({ page }) => {
   for (const route of ["/login", "/signup"]) {
     await page.goto(route);
-    const button = page.getByRole("button", { name: "Continue with Google" });
+    const button = page.locator("button, a").filter({ hasText: "Continue with Google" });
     await expect(button.locator("svg path")).toHaveCount(4);
     for (const color of ["#EA4335", "#4285F4", "#FBBC05", "#34A853"]) {
       await expect(button.locator(`svg path[fill="${color}"]`)).toHaveCount(1);
