@@ -46,7 +46,7 @@ export function Landing({ pricing }: { pricing: PricingViewModel }) {
 
       <Pricing pricing={pricing} />
 
-      <section id="faq" className="section-space">
+      <section id="faq" className="section-space border-t border-white/10">
         <div className="site-container grid gap-10 lg:grid-cols-[1fr_1.5fr]">
           <div>
             <p className="eyebrow">FAQ</p>

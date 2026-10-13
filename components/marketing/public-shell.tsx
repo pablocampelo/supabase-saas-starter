@@ -13,7 +13,7 @@ const footerGroups = [
     title: "Product",
     items: [
       ...productConfig.navigation.public.map(({ label, href }) => [label, href] as const),
-      ["Sign in", "/login"] as const,
+      ["Log in", "/login"] as const,
     ],
   },
   {
@@ -34,7 +34,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
   const mobileItems = [
     ...productConfig.navigation.public,
     { label: "Sign in", href: "/login" },
-    { label: "Get Xerv", href: productConfig.repositoryUrl },
+    { label: "Get started", href: "/signup" },
   ];
 
   return (
@@ -43,21 +43,25 @@ export function PublicShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
 
-      <header className="bg-background">
+      <header className="border-b border-white/10 bg-background">
         <div className="site-container flex h-16 items-center justify-between gap-4">
           <Brand />
-          <nav aria-label="Main navigation" className="hidden items-center gap-7 md:flex">
-            {productConfig.navigation.public.map((item) => (
-              <Link className="nav-link" key={item.href} href={item.href}>
-                {item.label}
+          <nav aria-label="Main navigation" className="hidden items-center md:flex">
+            <div className="flex items-center gap-7">
+              {productConfig.navigation.public.map((item) => (
+                <Link className="nav-link" key={item.href} href={item.href}>
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+            <div className="ml-10 flex items-center gap-6">
+              <Link className="nav-link" href="/login">
+                Log in
               </Link>
-            ))}
-            <Link className="nav-link" href="/login">
-              Sign in
-            </Link>
-            <Button asChild size="sm">
-              <Link href={productConfig.repositoryUrl}>Get Xerv</Link>
-            </Button>
+              <Button asChild size="sm">
+                <Link href="/signup">Get started</Link>
+              </Button>
+            </div>
           </nav>
           <Button
             className="md:hidden"
@@ -88,14 +92,10 @@ export function PublicShell({ children }: { children: ReactNode }) {
 
       <main id="main">{children}</main>
 
-      <footer className="py-12">
+      <footer className="border-t border-white/10 py-12">
         <div className="site-container grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
             <Brand />
-            <p className="mt-4 max-w-sm text-sm leading-6 text-muted-foreground">
-              Build the product. Not the infrastructure. Free and open source under the MIT license.
-            </p>
-            <p className="mt-3 text-xs text-muted-foreground">Next.js · Supabase · Stripe · Resend · Vercel</p>
           </div>
 
           {footerGroups.map((group) => (

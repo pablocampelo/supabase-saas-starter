@@ -59,9 +59,26 @@ test("public navigation has no obsolete sections or broken anchors", async ({ pa
   await expect(page.locator("#features")).toHaveCount(0);
 });
 
-test("landing has no section, header or footer divider borders", async ({ page }) => {
+test("public footer is logo-only and header separates navigation from account actions", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("header.border-b, footer.border-t, #pricing.border-t, #faq.border-t, #faq .divide-y, #faq .border-y")).toHaveCount(0);
+  const footer = page.locator("footer");
+  await expect(footer.locator(".brand")).toHaveCount(1);
+  await expect(footer).not.toContainText("Build the product. Not the infrastructure.");
+  await expect(footer).not.toContainText("Next.js · Supabase · Stripe");
+  const header = page.locator('nav[aria-label="Main navigation"]');
+  await expect(header.locator('a[href="/login"]')).toHaveAttribute("href", "/login");
+  await expect(header.locator('a[href="/signup"]')).toHaveAttribute("href", "/signup");
+  await expect(header.locator('a[href="/login"]')).toHaveText("Log in");
+});
+
+test("landing sections use consistent subtle white horizontal separators", async ({ page }) => {
+  await page.goto("/");
+  for (const selector of ["header", "#pricing", "#faq", "footer"]) {
+    const edge = selector === "header" ? "border-b" : "border-t";
+    await expect(page.locator(selector)).toHaveClass(new RegExp(`\\b${edge}\\b`));
+    await expect(page.locator(selector)).toHaveClass(/border-white/);
+  }
+  await expect(page.locator("#faq .divide-y, #faq .border-y")).toHaveCount(0);
 });
 
 test("Google authentication buttons display the multicolor brand mark", async ({ page }) => {
