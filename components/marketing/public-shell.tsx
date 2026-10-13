@@ -13,7 +13,7 @@ const footerGroups = [
     title: "Product",
     items: [
       ...productConfig.navigation.public.map(({ label, href }) => [label, href] as const),
-      ["Sign in", "/login"] as const,
+      ["Log in", "/login"] as const,
     ],
   },
   {
@@ -34,7 +34,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
   const mobileItems = [
     ...productConfig.navigation.public,
     { label: "Sign in", href: "/login" },
-    { label: "Get Xerv", href: productConfig.repositoryUrl },
+    { label: "Get started", href: "/signup" },
   ];
 
   return (
@@ -46,18 +46,22 @@ export function PublicShell({ children }: { children: ReactNode }) {
       <header className="bg-background">
         <div className="site-container flex h-16 items-center justify-between gap-4">
           <Brand />
-          <nav aria-label="Main navigation" className="hidden items-center gap-7 md:flex">
-            {productConfig.navigation.public.map((item) => (
-              <Link className="nav-link" key={item.href} href={item.href}>
-                {item.label}
+          <nav aria-label="Main navigation" className="hidden items-center md:flex">
+            <div className="flex items-center gap-7">
+              {productConfig.navigation.public.map((item) => (
+                <Link className="nav-link" key={item.href} href={item.href}>
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+            <div className="ml-10 flex items-center gap-6">
+              <Link className="nav-link" href="/login">
+                Log in
               </Link>
-            ))}
-            <Link className="nav-link" href="/login">
-              Sign in
-            </Link>
-            <Button asChild size="sm">
-              <Link href={productConfig.repositoryUrl}>Get Xerv</Link>
-            </Button>
+              <Button asChild size="sm">
+                <Link href="/signup">Get started</Link>
+              </Button>
+            </div>
           </nav>
           <Button
             className="md:hidden"
