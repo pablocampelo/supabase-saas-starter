@@ -6,11 +6,11 @@ An MIT-licensed SaaS foundation built with **Next.js, Supabase, Stripe, Resend (
 
 **Free to use · Clone it · Fork it · Build your product.**
 
-[Live demo](https://daysnotweeks-starter-rc.vercel.app) · [Setup](docs/SETUP.md) · [Architecture](docs/ARCHITECTURE.md) · [Billing](docs/BILLING.md) · [Release checklist](docs/RELEASE-CHECKLIST.md)
+[Live demo](https://supasaas-kit.vercel.app) · [Setup](docs/SETUP.md) · [Architecture](docs/ARCHITECTURE.md) · [Billing](docs/BILLING.md) · [Release checklist](docs/RELEASE-CHECKLIST.md)
 
 [![CI](https://github.com/pablocampelo/xerv/actions/workflows/ci.yml/badge.svg)](https://github.com/pablocampelo/xerv/actions/workflows/ci.yml)
 
-[![Xerv social card](https://daysnotweeks-starter-rc.vercel.app/opengraph-image)](https://daysnotweeks-starter-rc.vercel.app)
+[![Xerv social card](https://supasaas-kit.vercel.app/opengraph-image)](https://supasaas-kit.vercel.app)
 
 Xerv gives technical founders and small teams a focused subscription foundation instead of another oversized boilerplate. Authentication, private user data, paid access, billing recovery and the deployment path are connected and tested.
 
