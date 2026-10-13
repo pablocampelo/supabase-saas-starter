@@ -21,8 +21,8 @@ export function Dialog({ open, onClose, title, description, children, drawer = f
     const first = controls[0]; const last = controls.at(-1);
     if(event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
     if(!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
-  }} onCancel={onClose} onClose={onClose} aria-labelledby={`${id}-title`} aria-describedby={description ? `${id}-description` : undefined} className={cn("fixed max-h-[90svh] overflow-y-auto border bg-background p-6 text-foreground backdrop:bg-foreground/30", drawer ? "inset-y-0 left-0 right-auto m-0 h-svh max-h-svh w-80 max-w-[90vw] rounded-none" : "inset-0 m-auto w-[calc(100%_-_2rem)] max-w-md rounded-lg shadow-sm")}>
-    <div className="flex items-start justify-between gap-4"><h2 id={`${id}-title`} className="text-xl">{title}</h2><Button variant="ghost" size="sm" aria-label="Close dialog" onClick={onClose}><X aria-hidden="true"/></Button></div>
+  }} onCancel={onClose} onClose={onClose} aria-labelledby={`${id}-title`} aria-describedby={description ? `${id}-description` : undefined} className={cn("fixed max-h-[90svh] min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain border bg-background p-4 text-foreground sm:p-6 backdrop:bg-foreground/30", drawer ? "inset-y-0 left-0 right-auto m-0 h-svh max-h-svh w-80 max-w-[min(90vw,24rem)] rounded-none" : "inset-0 m-auto w-[calc(100%_-_2rem)] max-w-md rounded-xl shadow-sm")}>
+    <div className="flex items-start justify-between gap-4"><h2 id={`${id}-title`} className="min-w-0 break-words text-xl">{title}</h2><Button variant="ghost" size="sm" aria-label="Close dialog" onClick={onClose}><X aria-hidden="true"/></Button></div>
     {description ? <p id={`${id}-description`} className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p> : null}
     <div className="mt-6">{children}</div>
   </dialog>;

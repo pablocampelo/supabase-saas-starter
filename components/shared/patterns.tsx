@@ -12,15 +12,15 @@ export function Notice({ children, tone = "neutral", className }: { children: Re
 }
 
 export function PageHeader({ title, description, action }: { title: string; description: string; action?: ReactNode }) {
-  return <div className="mb-8 flex flex-wrap items-start justify-between gap-4"><div className="min-w-0"><h1 className="text-[30px] leading-[1.05] tracking-[-.02em] sm:text-4xl">{title}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p></div>{action}</div>;
+  return <div className="mb-8 flex min-w-0 flex-wrap items-start justify-between gap-4"><div className="min-w-0 max-w-full"><h1 className="text-[30px] leading-[1.05] tracking-[-.02em] sm:text-4xl">{title}</h1><p className="mt-3 max-w-2xl break-words text-sm leading-6 text-muted-foreground">{description}</p></div>{action}</div>;
 }
 
 export function Panel({ title, action, children, className }: { title: string; action?: ReactNode; children: ReactNode; className?: string }) {
-  return <section className={cn("overflow-hidden rounded-xl border bg-card", className)}><div className="flex items-center justify-between gap-4 border-b px-5 py-4"><h2 className="font-sans text-sm font-semibold">{title}</h2>{action}</div><div className="p-5">{children}</div></section>;
+  return <section className={cn("overflow-hidden rounded-xl border bg-card", className)}><div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-b px-4 py-4 sm:px-5"><h2 className="min-w-0 break-words font-sans text-sm font-semibold">{title}</h2>{action}</div><div className="min-w-0 break-words p-4 sm:p-5">{children}</div></section>;
 }
 
 export function EmptyState({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
-  return <div className="rounded-xl border border-dashed px-5 py-12 text-center"><h2 className="text-xl">{title}</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">{children}</p>{action ? <div className="mt-5">{action}</div> : null}</div>;
+  return <div className="rounded-xl border border-dashed px-4 py-10 text-center sm:px-5 sm:py-12"><h2 className="text-xl">{title}</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">{children}</p>{action ? <div className="mt-5">{action}</div> : null}</div>;
 }
 
 export function PageSkeleton() {

@@ -33,7 +33,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const mobileItems = [
     ...productConfig.navigation.public,
-    { label: "Sign in", href: "/login" },
+    { label: "Log in", href: "/login" },
     { label: "Get started", href: "/signup" },
   ];
 
@@ -46,15 +46,15 @@ export function PublicShell({ children }: { children: ReactNode }) {
       <header className="border-b border-white/10 bg-background">
         <div className="site-container flex h-16 items-center justify-between gap-4">
           <Brand />
-          <nav aria-label="Main navigation" className="hidden items-center md:flex">
-            <div className="flex items-center gap-7">
+          <nav aria-label="Main navigation" className="hidden items-center lg:flex">
+            <div className="flex items-center gap-5 xl:gap-7">
               {productConfig.navigation.public.map((item) => (
                 <Link className="nav-link" key={item.href} href={item.href}>
                   {item.label}
                 </Link>
               ))}
             </div>
-            <div className="ml-10 flex items-center gap-6">
+            <div className="ml-7 flex items-center gap-4 xl:ml-10 xl:gap-6">
               <Link className="nav-link" href="/login">
                 Log in
               </Link>
@@ -64,7 +64,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
             </div>
           </nav>
           <Button
-            className="md:hidden"
+            className="lg:hidden"
             variant="outline"
             size="sm"
             aria-label="Open navigation"
@@ -93,7 +93,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
       <main id="main">{children}</main>
 
       <footer className="border-t border-white/10 py-12">
-        <div className="site-container grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
+        <div className="site-container grid grid-cols-2 gap-x-6 gap-y-10 sm:gap-x-10 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
             <Brand symbolOnly />
           </div>

@@ -283,3 +283,37 @@ test("the Split X identity is consistent across header, footer, auth and favicon
   await page.goto("/signup");
   await expect(page.locator('img[src="/icon.svg"]')).toHaveCount(1);
 });
+
+
+test("responsive matrix keeps key screens usable from narrow phones to wide desktops", async ({ page }) => {
+  const viewportWidths = [320, 390, 820, 1024, 1920];
+  const routes = ["/", "/signup", "/app", "/app/billing", "/app/example"];
+  for (const width of viewportWidths) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const route of routes) {
+      await page.goto(route);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await assertNoHorizontalOverflow(page);
+      const main = page.locator("main").first();
+      const rect = await main.boundingBox();
+      expect(rect).not.toBeNull();
+      expect(rect!.x).toBeGreaterThanOrEqual(-1);
+      expect(rect!.x + rect!.width).toBeLessThanOrEqual(width + 1);
+    }
+    await page.goto("/");
+    const mobile = width < 1024;
+    const trigger = page.getByRole("button", { name: "Open navigation" });
+    if (mobile) {
+      await expect(trigger).toBeVisible();
+      await trigger.click();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await expect(page.getByRole("navigation", { name: "Mobile navigation" }).getByRole("link", { name: "Log in" })).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("dialog")).not.toBeVisible();
+    } else {
+      await expect(trigger).toBeHidden();
+      await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Log in" })).toBeVisible();
+    }
+  }
+});
+
