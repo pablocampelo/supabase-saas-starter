@@ -92,9 +92,9 @@ test("dark visual system stays consistent on public, auth and app surfaces", asy
 
 test("social cards advertise Xerv with a generated PNG", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /\/social-preview\.png/);
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /\/opengraph-image/);
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
-  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute("content", /\/social-preview\.png/);
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute("content", /\/opengraph-image/);
   await expect(page.getByText("MOST POPULAR", { exact: true })).toBeVisible();
 
   for (const route of ["/opengraph-image"]) {
