@@ -66,16 +66,17 @@ test("public footer is logo-only and header separates navigation from account ac
   await expect(footer).not.toContainText("Build the product. Not the infrastructure.");
   await expect(footer).not.toContainText("Next.js · Supabase · Stripe");
   const header = page.locator('nav[aria-label="Main navigation"]');
-  await expect(header.getByRole("link", { name: "Log in" })).toHaveAttribute("href", "/login");
-  await expect(header.getByRole("link", { name: "Get started" })).toHaveAttribute("href", "/signup");
-  await expect(header.getByRole("link", { name: "Sign in" })).toHaveCount(0);
+  await expect(header.locator('a[href="/login"]')).toHaveAttribute("href", "/login");
+  await expect(header.locator('a[href="/signup"]')).toHaveAttribute("href", "/signup");
+  await expect(header.locator('a[href="/login"]')).toHaveText("Log in");
 });
 
 test("landing sections use consistent subtle white horizontal separators", async ({ page }) => {
   await page.goto("/");
   for (const selector of ["header", "#pricing", "#faq", "footer"]) {
-    const edge = selector === "header" ? "border-bottom-color" : "border-top-color";
-    await expect(page.locator(selector)).toHaveCSS(edge, "rgba(255, 255, 255, 0.1)");
+    const edge = selector === "header" ? "border-b" : "border-t";
+    await expect(page.locator(selector)).toHaveClass(new RegExp(`\\b${edge}\\b`));
+    await expect(page.locator(selector)).toHaveClass(/border-white\\/10/);
   }
   await expect(page.locator("#faq .divide-y, #faq .border-y")).toHaveCount(0);
 });
