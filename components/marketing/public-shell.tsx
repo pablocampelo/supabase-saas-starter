@@ -95,7 +95,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
       <footer className="border-t border-white/10 py-12">
         <div className="site-container grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
-            <Brand />
+            <Brand symbolOnly />
           </div>
 
           {footerGroups.map((group) => (
