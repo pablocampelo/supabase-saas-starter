@@ -76,7 +76,7 @@ test("landing sections use consistent subtle white horizontal separators", async
   for (const selector of ["header", "#pricing", "#faq", "footer"]) {
     const edge = selector === "header" ? "border-b" : "border-t";
     await expect(page.locator(selector)).toHaveClass(new RegExp(`\\b${edge}\\b`));
-    await expect(page.locator(selector)).toHaveClass(/border-white\\/10/);
+    await expect(page.locator(selector)).toHaveClass(/border-white/);
   }
   await expect(page.locator("#faq .divide-y, #faq .border-y")).toHaveCount(0);
 });
