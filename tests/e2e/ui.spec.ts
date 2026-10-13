@@ -252,3 +252,13 @@ test("200 percent zoom reflow retains core controls", async ({ page }) => {
     expect(overflow).toEqual([]);
   }
 });
+
+test("signup fits entirely into a standard viewport", async ({ page }) => {
+  await page.goto("/signup");
+  await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
+  for (const field of ["Name", "Email", "Password"]) await expect(page.getByLabel(field, { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Create account" })).toBeVisible();
+  await expect(page.getByText("By creating an account", { exact: false })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1)).toBe(true);
+});
+

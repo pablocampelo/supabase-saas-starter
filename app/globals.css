@@ -129,3 +129,9 @@ body:has(dialog[open]) { overflow: hidden; }
   .rounded-lg.border > .flex { flex-wrap: wrap; }
   header [data-slot="button"] { padding-inline: 8px; }
 }
+
+/* Signup occupies one viewport at standard sizes, while tiny/zoomed viewports
+   may grow rather than clip accessible form controls or server errors. */
+@media (max-height: 680px) {
+  .signup-viewport { height: auto; min-height: 100svh; overflow: visible; }
+}
