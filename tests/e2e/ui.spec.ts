@@ -126,11 +126,17 @@ test("social cards use the current Xerv branding", async ({ page }) => {
   await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute("content", /\/opengraph-image/);
   await expect(page.getByText("MOST POPULAR", { exact: true })).toBeVisible();
 
-  for (const route of ["/opengraph-image"]) {
-    const response = await page.request.get(route);
-    expect(response.ok()).toBe(true);
-    expect(response.headers()["content-type"]).toContain("image/png");
-  }
+  const response = await page.request.get("/opengraph-image");
+  expect(response.ok()).toBe(true);
+  expect(response.headers()["content-type"]).toContain("image/png");
+  const image = await response.body();
+  expect(image.subarray(1, 4).toString()).toBe("PNG");
+  expect(image.readUInt32BE(16)).toBe(1280);
+  expect(image.readUInt32BE(20)).toBe(640);
+  const ogImage = await page.locator('meta[property="og:image"]').getAttribute("content");
+  const twitterImage = await page.locator('meta[name="twitter:image"]').getAttribute("content");
+  expect(ogImage).toBe(twitterImage);
+  await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute("content", /Xerv/);
 });
 
 test("robots and sitemap expose only supported public surfaces", async ({ page }) => {
