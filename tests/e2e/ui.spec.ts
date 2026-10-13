@@ -262,3 +262,24 @@ test("signup fits entirely into a standard viewport", async ({ page }) => {
   expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1)).toBe(true);
 });
 
+
+
+test("the Split X identity is consistent across header, footer, auth and favicon", async ({ page, request }) => {
+  await page.goto("/");
+  const header = page.locator("header .brand");
+  const footer = page.locator("footer .brand");
+  await expect(header).toContainText("Xerv");
+  await expect(footer).not.toContainText("Xerv");
+  await expect(header.locator('img[src="/icon.svg"]')).toHaveCount(1);
+  await expect(footer.locator('img[src="/icon.svg"]')).toHaveCount(1);
+  await expect(header.locator("span")).toHaveCSS("font-size", "20px");
+
+  const icon = await request.get("/icon.svg");
+  expect(icon.ok()).toBe(true);
+  const source = await icon.text();
+  expect(source).toContain("#e4f222");
+  expect(source).toContain("Xerv Split X");
+
+  await page.goto("/signup");
+  await expect(page.locator('img[src="/icon.svg"]')).toHaveCount(1);
+});
