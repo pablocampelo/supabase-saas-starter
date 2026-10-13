@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="img" aria-label="Xerv">
-  <rect width="48" height="48" rx="11" fill="#e4f222"/>
-  <path d="m14 14 20 20M34 14 14 34" fill="none" stroke="#08090a" stroke-width="5.5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 100 100" role="img" aria-label="Xerv">
+  <title>Xerv Split X</title>
+  <path fill="#e4f222" d="M8 12H37L48 27 36 40H34L8 12Z"/>
+  <path fill="#e4f222" d="M7 89H32L93 12H69L7 89Z"/>
+  <path fill="#e4f222" d="M63 60H73L94 89H69L54 72Z"/>
 </svg>
