@@ -43,7 +43,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
 
-      <header className="bg-background">
+      <header className="border-b border-white/10 bg-background">
         <div className="site-container flex h-16 items-center justify-between gap-4">
           <Brand />
           <nav aria-label="Main navigation" className="hidden items-center md:flex">
@@ -92,7 +92,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
 
       <main id="main">{children}</main>
 
-      <footer className="py-12">
+      <footer className="border-t border-white/10 py-12">
         <div className="site-container grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
             <Brand />
