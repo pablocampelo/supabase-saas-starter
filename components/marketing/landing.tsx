@@ -22,8 +22,8 @@ export function Landing({ pricing }: { pricing: PricingViewModel }) {
   return (
     <>
       <section className="site-container flex min-h-[72svh] flex-col justify-center py-24 sm:min-h-[76svh] sm:py-32 lg:py-40">
-        <div className="w-full max-w-[1000px]">
-          <h1 className="font-heading text-[clamp(42px,8.2vw,96px)] font-medium leading-[1.015] tracking-[-.045em]">
+        <div className="w-full min-w-0 max-w-[1000px]">
+          <h1 className="font-heading break-words text-[clamp(36px,7.4vw,96px)] font-medium leading-[1.015] tracking-[-.045em]">
             <span className="block text-foreground">Build the product.</span>
             <span className="mt-2 block text-muted-foreground sm:mt-3">Not the infrastructure.</span>
           </h1>
@@ -47,7 +47,7 @@ export function Landing({ pricing }: { pricing: PricingViewModel }) {
       <Pricing pricing={pricing} />
 
       <section id="faq" className="section-space border-t border-white/10">
-        <div className="site-container grid gap-10 lg:grid-cols-[1fr_1.5fr]">
+        <div className="site-container grid min-w-0 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
           <div>
             <p className="eyebrow">FAQ</p>
             <h2 className="section-heading mt-4">
