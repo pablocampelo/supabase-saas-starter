@@ -13,7 +13,7 @@ export default function Image() {
         <span style={{ marginLeft: "auto", padding: "10px 18px", border: "1px solid #303238", borderRadius: 30, color: "#a3a9b4", fontSize: 18 }}>OPEN SOURCE · MIT</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-        <div style={{ fontSize: 74, fontWeight: 700, letterSpacing: -3, lineHeight: 1.09 }}>Build the product.<br />Not the infrastructure.</div>
+        <div style={{ display: "flex", flexDirection: "column", fontSize: 74, fontWeight: 700, letterSpacing: -3, lineHeight: 1.09 }}><span>Build the product.</span><span>Not the infrastructure.</span></div>
         <div style={{ fontSize: 26, color: "#a3a9b4", letterSpacing: -0.3 }}>Authentication, billing, database, email and deployment. Wired up.</div>
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 21, color: "#a3a9b4" }}>
