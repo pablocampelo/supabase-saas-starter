@@ -5,7 +5,7 @@ Xerv is an MIT-licensed source repository, not a managed SaaS. Each deployment m
 ## Repository and distribution
 
 - [ ] The README, package metadata, brand config, GitHub About/description and repository topics consistently say Xerv.
-- [ ] Public screenshots and social previews reflect the current product, without stale branding.
+- [ ] The generated Open Graph card at /opengraph-image renders the current brand and responds with image/png.
 - [ ] Check every public link and verify the live demo is accessible without team SSO or a Vercel login.
 - [ ] Check CI for the exact release commit: frozen install, lint, typecheck, unit tests, build, SQL/RLS database tests, and browser E2E.
 - [ ] Confirm no API secrets, personal tokens or real customer records are committed.

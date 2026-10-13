@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { productConfig } from "./product";
 
 const socialImage = {
-  url: "/social-preview.png",
+  url: "/opengraph-image",
   width: 1200,
   height: 630,
-  alt: "Xerv SaaS foundation preview",
+  alt: "Xerv — Build the product. Not the infrastructure.",
 };
 
 export function publicMetadata(title: string, description: string, path: string): Metadata {
