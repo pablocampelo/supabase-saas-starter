@@ -13,7 +13,7 @@ const examples: ExampleResourceViewModel[] = [
 ];
 export const fixtureExampleIds = examples.map((example) => example.id);
 
-export function getPreview(scenario: Scenario): AppViewModel {
+export function getPreview(scenario: Scenario): AppViewModel & { examples: ExampleResourceViewModel[] } {
   const plan: AccountPlanViewModel = { tier: "free", interval: null, status: "free", currentPeriodEnd: null, cancelAtPeriodEnd: false, hasCurrentSubscription: false };
   if (["pro-monthly", "pro-annual", "pro-empty", "canceling"].includes(scenario)) {
     Object.assign(plan, { tier: "pro", interval: scenario === "pro-annual" ? "year" : "month", status: scenario === "canceling" ? "canceling" : "active", currentPeriodEnd: scenario === "pro-annual" ? "2027-09-24" : "2026-10-24", cancelAtPeriodEnd: scenario === "canceling", hasCurrentSubscription: true });

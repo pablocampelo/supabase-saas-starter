@@ -53,6 +53,8 @@ Google client secrets and Resend SMTP credentials live with the relevant provide
 
 `public.example_resources` is deliberately ordinary private user data. Postgres sets and protects `user_id`; RLS denies cross-user/anonymous access and permits owner read/delete. Create/update require a current Pro entitlement. A database trigger rejects owner changes.
 
+The authenticated app shell loads identity, plan and entitlements only. Dashboard reads the three most recently updated Example summaries; the Example list reads up to 50. Both use `lib/example/queries.ts` with the user's session and select only ID, title and update time. The detail route reads the full individual resource independently, including resources outside the list limit. Existing mutations revalidate the `/app` layout and its pages. Preview fixtures stay separate from live account data.
+
 `public.billing_projection` is a privileged, reconstructible authorization projection. Authenticated clients cannot write it. The canonical current-user `has_pro()` interface accepts **no arbitrary user ID**, protecting both Example and replacement domains.
 
 The SQL migration series is the only schema authority. `pnpm supabase:types` regenerates TypeScript types from the actual local database. Use new versioned migrations for schema changes; do not hand-edit generated types.

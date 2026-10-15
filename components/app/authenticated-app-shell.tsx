@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { LiveAppShell } from "@/components/app/live-app-shell";
 import { toAccountPlanViewModel, type CurrentBillingPlan } from "@/lib/billing/view";
-import { toExampleResourceViewModel } from "@/lib/example/data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { AppViewModel, PricingViewModel } from "@/lib/ui/models";
 
@@ -17,16 +16,11 @@ export async function AuthenticatedAppShell({ children, pricing, supportEmail }:
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user?.email) redirect("/login");
 
-  const [entitlement, billingPlan, examples] = await Promise.all([
+  const [entitlement, billingPlan] = await Promise.all([
     supabase.rpc("has_pro"),
     supabase.rpc("current_billing_plan").maybeSingle(),
-    supabase
-      .from("example_resources")
-      .select("id,title,content,created_at,updated_at")
-      .order("updated_at", { ascending: false })
-      .limit(50),
   ]);
-  if (entitlement.error || billingPlan.error || examples.error) throw new Error("APP_DATA_LOAD_FAILED");
+  if (entitlement.error || billingPlan.error) throw new Error("APP_DATA_LOAD_FAILED");
 
   const name = displayName(user);
   const canWriteExample = entitlement.data === true;
@@ -46,7 +40,6 @@ export async function AuthenticatedAppShell({ children, pricing, supportEmail }:
       canReadOwnExample: true,
       canDeleteOwnExample: true,
     },
-    examples: (examples.data ?? []).map(toExampleResourceViewModel),
   };
 
   return <LiveAppShell app={app} pricing={pricing} supportEmail={supportEmail}>{children}</LiveAppShell>;
