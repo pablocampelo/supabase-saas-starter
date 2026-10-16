@@ -37,5 +37,5 @@ export function generateMetadata(): Metadata {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className={inter.variable}><body>{children}<Analytics /></body></html>;
+  return <html lang="en" className={inter.variable}><body>{children}{process.env.NODE_ENV === "production" && <Analytics />}</body></html>;
 }
