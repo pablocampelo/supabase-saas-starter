@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Analytics } from "@vercel/analytics/next";
 import { getSiteConfig } from "@/config/site";
 import "./globals.css";
 
@@ -36,5 +37,5 @@ export function generateMetadata(): Metadata {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className={inter.variable}><body>{children}</body></html>;
+  return <html lang="en" className={inter.variable}><body>{children}{process.env.NODE_ENV === "production" && <Analytics />}</body></html>;
 }
