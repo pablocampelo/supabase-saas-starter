@@ -20,6 +20,9 @@ export function displayPrice(pricing: PricingViewModel, interval: "month" | "yea
 export function formatMoney(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: amount % 100 === 0 ? 0 : 2 }).format(amount / 100);
 }
+let dateFormatter: Intl.DateTimeFormat | undefined;
+
 export function displayDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(value));
+  dateFormatter ??= new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+  return dateFormatter.format(new Date(value));
 }
